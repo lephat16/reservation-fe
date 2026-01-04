@@ -1,0 +1,60 @@
+
+.message {
+  position: fixed;
+  top: 30px;
+  right: 35px;
+  padding: 10px;
+  background-color: #fffae6;
+  border: 1px solid #ffe58f;
+  border-radius: 5px;
+  color: #ad8b00;
+  font-weight: 500;
+  font-size: 14px;
+  transition: 0.3s;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: fadeInOut 4s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  10%,
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.message.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.message.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.error {
+  color: #e53935;
+  font-size: 13px;
+  margin-top: 4px;
+  margin-bottom: 0;
+  margin-left: 4px;
+  text-align: left;
+}

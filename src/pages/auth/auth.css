@@ -1,0 +1,83 @@
+.auth-container {
+  width: 400px;
+  margin: 100px auto;
+  padding: 40px 30px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-family: "Poppins", sans-serif;
+  position: relative;
+}
+
+.auth-container h2 {
+  font-size: 26px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.auth-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.auth-container input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.auth-container input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+}
+
+.auth-container button {
+  margin-top: 12px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+}
+
+.auth-container button:hover {
+  background-color: #0056b3;
+}
+
+.auth-container button:active {
+  transform: scale(0.98);
+}
+
+.auth-container button:disabled {
+  background-color: #a0c4ff;
+  cursor: not-allowed;
+}
+
+.auth-container .footer-msg {
+  margin-top: 18px;
+  font-size: 14px;
+  color: #555;
+}
+
+.auth-container a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-container a:hover {
+  text-decoration: underline;
+}

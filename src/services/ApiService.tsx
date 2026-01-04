@@ -1,0 +1,151 @@
+import CryptoJS from "crypto-js";
+import type { AllUserRespose, ApiResponse, CategoryData, CategorySummariesData, CategorySummaryData, DashboardDTO, LoginRequest, LoginResponse, ProductData, ProductDetailData, RegisterRequest, RegisterResponse, ResponseData, SellData, SupplierResponse, TransactionsResponse, UserData } from "../types";
+import { api } from "../api/axiosClient";
+export default class ApiService {
+    static ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
+    static encrypt(data: string): string {
+        return CryptoJS.AES.encrypt(data, this.ENCRYPTION_KEY).toString();
+    }
+    static decrypt(data: string): string {
+        const bytes = CryptoJS.AES.decrypt(data, this.ENCRYPTION_KEY);
+        return bytes.toString(CryptoJS.enc.Utf8);
+    }
+    static saveToken(token: string): void {
+        const encryptToken = this.encrypt(token);
+        localStorage.setItem("token", encryptToken);
+    }
+    static getToken(): string | null {
+        const encryptedToken = localStorage.getItem("token");
+        if (!encryptedToken) return null;
+        return this.decrypt(encryptedToken);
+    }
+    static saveRefreshToken(refreshToken: string): void {
+        const encryptRefreshToken = this.encrypt(refreshToken);
+        localStorage.setItem("refreshToken", encryptRefreshToken);
+    }
+    static getRefreshToken(): string | null {
+        const encryptedRefreshToken = localStorage.getItem("refreshToken");
+        if (!encryptedRefreshToken) return null;
+        return this.decrypt(encryptedRefreshToken);
+    }
+    static saveRole(role: string): void {
+        const encryptRole = this.encrypt(role);
+        localStorage.setItem("role", encryptRole);
+    }
+    static getRole(): string | null {
+        const encryptedRole = localStorage.getItem("role");
+        if (!encryptedRole) return null;
+        return this.decrypt(encryptedRole);
+    }
+    static clearAuth(): void {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+    }
+
+
+    static async registerUser(registerData: RegisterRequest): Promise<RegisterResponse> {
+        return (await api.post(`/auth/register`, registerData)).data;
+    }
+    static async loginUser(loginUser: LoginRequest): Promise<LoginResponse> {
+        console.log(api);
+        return (await api.post(`/auth/login`, loginUser)).data;
+    }
+    static async getAllUsers(): Promise<AllUserRespose> {
+        return (await api.get(`/users/all`)).data;
+    }
+    static async getLoggedInUser(): Promise<ApiResponse<UserData>> {
+        return ((await api.get(`/users/current`)));
+    }
+    static async getUserById(userId: number): Promise<UserData> {
+        return (await api.get(`/users/transaction/${userId}`)).data;
+    }
+    static async updateUserById(userId: number, userData: Partial<UserData>): Promise<ApiResponse<UserData>> {
+        return (await api.put(`/users/update/${userId}`, userData));
+    }
+    static async deleteUser(userId: number): Promise<RegisterResponse> {
+        return (await api.delete(`/users/delete/${userId}`)).data;
+    }
+    static logout(): void {
+        this.clearAuth();
+    }
+    static isAuthenticated(): boolean {
+        const token = this.getToken();
+        return !!token;
+    }
+    static isAdmin(): boolean {
+        const role = this.getRole();
+        return role === "ADMIN";
+    }
+    static async createCategory(categoryData: any): Promise<ApiResponse<CategoryData>> {
+        return (await api.post(`/categories/add`, categoryData));
+    }
+    static async getAllCategories(): Promise<ApiResponse<CategoryData[]>> {
+        return (await api.get(`/categories/all`));
+    }
+    static async getAllCategorySummaries(): Promise<ApiResponse<CategorySummariesData[]>> {
+        return (await api.get(`/categories/summaries`));
+    }
+    static async getCategorySummariesById(categoryId: number): Promise<ApiResponse<CategorySummaryData>> {
+        return (await api.get(`/categories/summaries/${categoryId}`));
+    }
+    static async getCategoryById(categoryId: number): Promise<ApiResponse<CategoryData>> {
+        return (await api.get(`/categories/${categoryId}/`)).data;
+    }
+    static async updateCategory(categoryId: number, categoryData: { name: string, code: string }): Promise<any> {
+        return (await api.put(`/categories/update/${categoryId}`, categoryData)).data;
+    }
+    static async deleteCategory(categoryId: number): Promise<ResponseData> {
+        return (await api.delete(`/categories/delete/${categoryId}`)).data;
+    }
+    static async addProduct(productData: FormData): Promise<ResponseData> {
+        return (await api.post(`/products/add`, productData)).data;
+    }
+    static async getAllProducts(): Promise<ApiResponse<ProductData[]>> {
+        return (await api.get(`/products/info/all`));
+    }
+    static async getProductInfoDetail(productId: number): Promise<ApiResponse<ProductDetailData>> {
+        return (await api.get(`/products/info-detai/${productId}`));
+    }
+    static async getProductsByCategory(categoryId: number): Promise<ApiResponse<ProductData[]>> {
+        return (await api.get(`/products/all/by-category/${categoryId}`)).data;
+    }
+    
+    static async getProductsById(productId: number): Promise<ApiResponse<ProductData>> {
+        return (await api.get(`/products/${productId}`)).data;
+    }
+    
+    static async getProductsBySupplier(supplierId: number): Promise<any> {
+        return (await api.get(`/products/all/supplier/${supplierId}`)).data;
+    }
+    static async updateProduct(productData: FormData): Promise<ResponseData> {
+        return (await api.put(`/products/update`, productData)).data;
+    }
+    static async deleteProduct(id: number): Promise<ResponseData> {
+        return (await api.delete(`/products/delete/${id}`)).data;
+    }
+    static async getAllSuppliers(): Promise<SupplierResponse> {
+        return (await api.get(`/suppliers/all`)).data;
+    }
+    static async purchaseProduct(purchaseData: any): Promise<TransactionsResponse> {
+        return (await api.post(`/transactions/purchase`, purchaseData)).data;
+    }
+    static async sellProduct(sellData: any): Promise<SellData> {
+        return (await api.post(`/transactions/sell`, sellData)).data;
+    }
+    static async getAllTransations(): Promise<TransactionsResponse> {
+        return (await api.get(`/transactions/all`)).data;
+    }
+    static async getTransationsByUserId(userId: number): Promise<TransactionsResponse> {
+        return (await api.get(`/transactions/user/${userId}`)).data;
+    }
+    static async updateTransaction(id: number, data: { description: string, note: string }): Promise<TransactionsResponse> {
+        return (await api.put(`/transactions/update/${id}`, data)).data;
+    }
+    static async deleteTransaction(ids: number[]): Promise<TransactionsResponse[]> {
+        const responses = await Promise.all(ids.map(id => api.delete(`/transactions/delete/${id}`)));
+        return responses.map(res => res.data);
+    }
+    static async getDashboard(): Promise<DashboardDTO> {
+        return (await api.get(`/transactions/dashboard`)).data;
+    }
+}
