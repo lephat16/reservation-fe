@@ -6,11 +6,11 @@ import { tokens } from "../../theme";
 import { useNavigate } from "react-router-dom";
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
-import type { PurchaseOrderData } from "../../types";
 import { useState } from "react";
 import { useSnackbar } from "../../hooks/useSnackbar";
 import { DeleteConfirmDialog } from "../product/ProductPage";
 import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
+import CreateOrderDialog from "../../components/forms/CreatePurchaseForm";
 
 const renderStatusChip = (status: string) => {
     const colorMap: Record<string, "default" | "primary" | "success" | "error"> = {
@@ -38,14 +38,20 @@ const PurchaseOrderPage = () => {
     const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
     const [selectedPurchaseOrderId, setSelectedPurchaseOrderId] = useState(0);
 
+    const [openCreateOrderDialog, setOpenCreateOrderDialog] = useState(false);
+
 
     const queryClient = useQueryClient();
 
     const { isLoading, error, data } = useQuery({
         queryKey: ["purchaseOrders"],
         queryFn: async () => {
-            const res = await ApiService.getPurchaseOrders();
-            return res.data;
+            const resPO = await ApiService.getPurchaseOrders();
+            const resSuppliers = await ApiService.getAllSuppliers();
+            return { 
+                resPO: resPO.data,
+                resSuppliers: resSuppliers.data
+            }
         },
     });
 
@@ -58,6 +64,8 @@ const PurchaseOrderPage = () => {
         { key: "createdAt", label: "作成日", width: "15%", align: "center", truncate: true, hideOnMobile: true },
         { key: "action", label: "操作", width: isMobile ? "35%" : "20%", align: "center" },
     ];
+
+
 
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => ApiService.deletePurchaseOrder(id),
@@ -77,6 +85,7 @@ const PurchaseOrderPage = () => {
         setSelectedPurchaseOrderId(id)
         setOpenDeleteConfirm(true)
     }
+
 
     return (
         <Box m={3}>
@@ -102,6 +111,15 @@ const PurchaseOrderPage = () => {
                 )}
                 {error && <p className="error">データの取得に失敗しました。</p>}
 
+                <Box textAlign="right" mb={2}>
+                    <Button
+                        variant="contained"
+                        color="success"
+                        onClick={() => setOpenCreateOrderDialog(true)}
+                    >
+                        新規購入注文
+                    </Button>
+                </Box>
                 <TableContainer component={Paper} sx={{ mb: 3 }}>
                     <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
                         <colgroup>
@@ -124,8 +142,8 @@ const PurchaseOrderPage = () => {
                         </TableHead>
 
                         <TableBody>
-                            {data && data.length > 0 ? (
-                                data.map((order) => (
+                            {data && data.resPO.length > 0 ? (
+                                data.resPO.map((order) => (
                                     <TableRow key={order.id}>
                                         {columns.map((col) => {
                                             if (isMobile && col.hideOnMobile) return null;
@@ -201,6 +219,14 @@ const PurchaseOrderPage = () => {
                         selectedPurchaseOrderId &&
                         deleteMutation.mutate(Number(selectedPurchaseOrderId) || 0)}
                     isDeleting={deleteMutation.isPending}
+                />
+                <CreateOrderDialog
+                    open={openCreateOrderDialog}
+                    onClose={() => setOpenCreateOrderDialog(false)}
+                    supplier={data?.resSuppliers.map(s => ({
+                        supplierId: String (s.id),
+                        supplierName: s.name
+                    })) ?? []}
                 />
             </Box>
         </Box>

@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from "@mui/material";
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from "@mui/material";
 import Header from "../../layout/Header";
 import ApiService from "../../services/ApiService";
 import { useNavigate, useParams } from "react-router-dom";
@@ -179,7 +179,7 @@ const PurchaseOrderDetailPage = () => {
             showSnackbar(error.response?.data?.message || "注文に失敗しました", "error");
         }
     });
-    
+
 
     const mappedQty = details?.map(item => {
         const sumReceived = dataReceivedQty?.find(d => d.sku === item.sku);
@@ -323,30 +323,37 @@ const PurchaseOrderDetailPage = () => {
                 </Box>
 
             </Box>
-            {isEditing ? (
-                <Button variant="contained" color="success" onClick={() => handleSave()}>
-                    保存
-                </Button>
-            ) : (
-                <Button variant="contained" color="secondary" onClick={() => setIsEditing(!isEditing)}>
-                    編集
+            <Stack
+                direction="row"
+                spacing={2}
+            >
+
+                {data?.status === 'NEW' && (isEditing ? (
+                    <Button variant="contained" color="success" onClick={() => handleSave()}>
+                        保存
+                    </Button>
+                ) : (
+                    <Button variant="contained" color="secondary" onClick={() => setIsEditing(!isEditing)}>
+                        編集
+                    </Button>
+
+                ))}
+
+                <Button variant="contained" color="error" onClick={() => setOpenDeleteConfirm(true)}>
+                    削除
                 </Button>
 
-            )}
-            <Button variant="contained" color="error" onClick={() => setOpenDeleteConfirm(true)}>
-                削除
-            </Button>
-
-            {data?.status === 'NEW' && (
-                <Button variant="contained" color="info" onClick={() => setOpenSubmitConfirm(true)}>
-                    注文
-                </Button>
-            )}
-            {(data?.status === 'PENDING' || data?.status === 'PROCESSING') && (
-                <Button variant="contained" color="info" onClick={() => navigate(`/purchase-order/${poId}/receive`)}>
-                    受領
-                </Button>
-            )}
+                {data?.status === 'NEW' && (
+                    <Button variant="contained" color="info" onClick={() => setOpenSubmitConfirm(true)}>
+                        注文
+                    </Button>
+                )}
+                {(data?.status === 'PENDING' || data?.status === 'PROCESSING') && (
+                    <Button variant="contained" color="info" onClick={() => navigate(`/purchase-order/${poId}/receive`)}>
+                        受領
+                    </Button>
+                )}
+            </Stack>
 
             <DeleteConfirmDialog
                 open={openDeleteConfirm}

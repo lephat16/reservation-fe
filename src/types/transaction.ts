@@ -102,3 +102,17 @@ export interface ReceiveStockResultData {
     stockHistories: string[],
 }
 
+export interface InventoryHistoryByPurchaseOrder {
+    id: number;
+    location: string;
+    warehouseName: string;
+    changeQty: number;
+    notes: string;
+    productName: string;
+    supplierName: string;
+    refType: string;
+    createdAt: string;  
+    supplierSku: string;
+}
+
+

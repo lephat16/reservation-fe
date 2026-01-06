@@ -2,7 +2,7 @@ import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, Di
 import { tokens } from "../../theme";
 import Header from "../../layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { PurchaseOrderData, ReceiveStockItem, SumReceivedGroupByProduct, WarehouseWithLocationData } from "../../types";
+import type { InventoryHistoryByPurchaseOrder, PurchaseOrderData, ReceiveStockItem, SumReceivedGroupByProduct, WarehouseWithLocationData } from "../../types";
 import { useNavigate, useParams } from "react-router-dom";
 import ApiService from "../../services/ApiService";
 import CustomSnackbar from "../customSnackbar/CustomSnackbar";
@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
+import { DataGrid, type GridColDef } from '@mui/x-data-grid'
 
 interface PurchaseConfirmDialogProps {
     open: boolean;
@@ -121,7 +122,7 @@ export const ReceiveFormDialog = ({
             .matches(/^[a-zA-Z0-9\s]*$/, "文字と数字のみ入力できます。")
             .max(200, "メモの最大文字数は200文字です。"),
     });
-    const { control, handleSubmit, reset, formState: { errors },getValues } = useForm({
+    const { control, handleSubmit, reset, formState: { errors }, getValues } = useForm({
         defaultValues: {
             productName: product.productName || "",
             warehouses: "",
@@ -169,7 +170,7 @@ export const ReceiveFormDialog = ({
                     paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: 2, p: 2 } }
                 }}
             >
-                <DialogTitle>受領</DialogTitle>
+                <DialogTitle fontSize={20} textAlign="center">受領</DialogTitle>
                 <DialogContent
                     sx={{
                         "& .MuiTextField-root": {
@@ -277,8 +278,8 @@ export const ReceiveFormDialog = ({
                 warehouse={getValues("warehouses")}
                 quantity={getValues("receiveQty")}
                 onConfirm={() => {
-                    const values = getValues();  
-                    onSubmit(values);  
+                    const values = getValues();
+                    onSubmit(values);
                     setOpenSubmitConfirm(false);
                 }}
                 isPending={isPending}
@@ -309,23 +310,27 @@ const ReceiveForm = () => {
         purchaseOrder: PurchaseOrderData;
         receivedQtyMap: Record<number, number>;
         resWarehouse: WarehouseWithLocationData[];
+        resInventoryHistoryByPurchaseOrder: InventoryHistoryByPurchaseOrder[];
     }>({
         queryKey: ['purchaseOrderDetail', poId],
         queryFn: async () => {
             const resPODetail = await ApiService.getPurchaseOrderById(Number(poId));
             const resSumReceivedQty = await ApiService.getSumReceivedQtyByPoGroupByProduct(Number(poId));
             const resWarehouse = await ApiService.getAllWarehouseWithLocation();
+            const resInventoryHistoryByPurchaseOrder = await ApiService.getInventoryHistoryByPurchaseOrder(Number(poId));
+
             const receivedQtyMap: Record<number, number> = {};
 
             resSumReceivedQty.data.forEach((item: SumReceivedGroupByProduct) => {
 
                 receivedQtyMap[Number(item.productId)] = item.receivedQty;
             });
-            console.log(resPODetail.data);
+            console.log(resInventoryHistoryByPurchaseOrder.data);
             return {
                 purchaseOrder: resPODetail.data,
                 receivedQtyMap,
                 resWarehouse: resWarehouse.data,
+                resInventoryHistoryByPurchaseOrder: resInventoryHistoryByPurchaseOrder.data,
             };
         },
         enabled: !!poId
@@ -346,6 +351,44 @@ const ReceiveForm = () => {
             showSnackbar(error.response?.data?.message || "注文に失敗しました", "error");
         }
     });
+
+    const columns: GridColDef<(typeof rows)[number]>[] = [
+        { field: 'detailId', headerName: 'ID', flex: 1 },
+
+        {
+            field: 'productName',
+            headerName: '商品名',
+            flex: 2,
+            editable: true,
+        },
+        {
+            field: 'warehouseName',
+            headerName: '倉庫',
+            flex: 1.5,
+            editable: true,
+        },
+        {
+            field: 'changeQty',
+            headerName: '受領数量',
+            sortable: false,
+            flex: 1.5,
+        },
+        {
+            field: 'notes',
+            headerName: '説明',
+            flex: 2,
+            editable: true,
+        },
+    ];
+
+    const rows = data?.resInventoryHistoryByPurchaseOrder?.map((row, index) => ({
+        id: index,
+        detailId: row.id,
+        productName: row.productName,
+        warehouseName: row.warehouseName,
+        changeQty: row.changeQty,
+        notes: row.notes,
+    })) ?? [];
 
     return (
         <Box
@@ -412,19 +455,21 @@ const ReceiveForm = () => {
                                                     </IconButton>
                                                 </Tooltip>
                                             ) : (
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => {
-                                                        setSelectedProduct({
-                                                            productName: detail.productName,
-                                                            detailId: detail.id
-                                                        });
-                                                        setOpenReceiveForm(true);
-                                                        setSelectedRemains(remains);
-                                                    }}
-                                                >
-                                                    <WarehouseIcon fontSize="small" />
-                                                </IconButton>
+                                                <Tooltip title="受領">
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => {
+                                                            setSelectedProduct({
+                                                                productName: detail.productName,
+                                                                detailId: detail.id
+                                                            });
+                                                            setOpenReceiveForm(true);
+                                                            setSelectedRemains(remains);
+                                                        }}
+                                                    >
+                                                        <WarehouseIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
                                             )}
                                         </TableCell>
                                         <TableCell>{detail.productName}</TableCell>
@@ -437,6 +482,64 @@ const ReceiveForm = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                <Typography
+                    sx={{
+                        mb: 3,
+                        mt: 5,
+                        textAlign: "center",
+                        fontSize: 18,
+                        fontWeight: 600,
+                        color: colors.grey[200]
+                    }}>
+                    在庫履歴
+                </Typography>
+                <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    initialState={{
+                        pagination: {
+                            paginationModel: {
+                                pageSize: 5,
+                            },
+                        },
+                    }}
+                    pageSizeOptions={[5]}
+                    disableRowSelectionOnClick
+                    autoHeight
+                    sx={{
+                        "--DataGrid-t-color-interactive-focus": "none !important",
+                        "& .MuiDataGrid-root": {
+                            border: "none",
+                        },
+                        "& .MuiDataGrid-cell": {
+                            borderBottom: "none",
+                        },
+                        "& .name-column--cell": {
+                            color: colors.greenAccent[300],
+                        },
+                        "& .MuiDataGrid-columnHeaders": {
+                            color: colors.grey[100],
+                            borderBottom: "none",
+                        },
+                        "& .MuiDataGrid-virtualScroller": {
+                            backgroundColor: colors.primary[400],
+                        },
+                        "& .MuiDataGrid-footerContainer": {
+                            borderTop: "none",
+                            backgroundColor: colors.greenAccent[700],
+                        },
+                        "& .MuiCheckbox-root": {
+                            color: `${colors.greenAccent[400]} !important`,
+                        },
+                        "& .MuiDataGrid-toolbar": {
+                            backgroundColor: colors.greenAccent[700],
+                        },
+                        "& .MuiDataGrid-columnHeader": {
+                            backgroundColor: colors.greenAccent[800],
+                        },
+                    }}
+                />
+
                 {selectedProduct && (
                     <ReceiveFormDialog
                         open={openReceiveForm}

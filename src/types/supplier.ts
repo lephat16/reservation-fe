@@ -13,12 +13,15 @@ export interface SupplierProductData {
     sku: string;
     product: string;
     price: number;
-    stock: number;
+    stock?: number;
+    leadTime?: number;
 }
 
 
 export interface SupplierProductWithCategoryData {
-    categoryName: string;
+    categoryName?: string;
+    supplierName?: string;
+    supplierId?: string;
     products: SupplierProductData[];
 }
 
