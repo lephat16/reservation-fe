@@ -1,4 +1,18 @@
-import { Box, CircularProgress, Collapse, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Toolbar, Typography, useTheme } from "@mui/material";
+import {
+    Box,
+    CircularProgress,
+    Collapse,
+    IconButton,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Typography,
+    useTheme
+} from "@mui/material";
 import { tokens } from "../../theme";
 import Header from "../../layout/Header";
 import ApiService from "../../services/ApiService";
@@ -27,7 +41,7 @@ function ProductRow({ product }: ProductRowProps) {
 
     return (
         <>
-            {/* ===== MAIN ROW ===== */}
+            {/* MAIN ROW */}
             <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
                 <TableCell>
                     <IconButton size="small" onClick={() => setOpen(!open)}>
@@ -44,7 +58,7 @@ function ProductRow({ product }: ProductRowProps) {
                 <TableCell align="right">{totalStock}</TableCell>
             </TableRow>
 
-            {/* ===== EXPAND ROW ===== */}
+            {/* EXPAND ROW */}
             <TableRow
                 sx={{
                     backgroundColor: colors.primary[800],
@@ -54,15 +68,15 @@ function ProductRow({ product }: ProductRowProps) {
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box m={1} display="flex" gap={4}>
 
-                            {/* ===== SUPPLIERS TABLE ===== */}
+                            {/* SUPPLIERS TABLE */}
 
                             <Table
                                 size="small"
                             >
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell>Supplier</TableCell>
-                                        <TableCell align="right">Price</TableCell>
+                                        <TableCell>仕入先名</TableCell>
+                                        <TableCell align="right">仕入価格</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -77,15 +91,15 @@ function ProductRow({ product }: ProductRowProps) {
                                 </TableBody>
                             </Table>
 
-                            {/* ===== STOCK TABLE ===== */}
+                            {/* STOCK TABLE */}
                             {(product.stocks && product.stocks.length > 0) ? (
                                 <>
 
                                     <Table size="small">
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell>Warehouse</TableCell>
-                                                <TableCell align="right">Quantity</TableCell>
+                                                <TableCell>倉庫</TableCell>
+                                                <TableCell align="right">在庫数</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -142,10 +156,10 @@ const CategoryDetailPage = () => {
     };
 
     return (
-        <Box m="20px">
+        <Box m={3}>
             <Header
                 title={`カテゴリ: ${data?.categoryName ?? ""}`}
-                subtitle={`サプライヤー: ${getAllSuppliers(data?.products)}`}
+                subtitle={`仕入先: ${getAllSuppliers(data?.products)}`}
             />
             <Box m="40px 0 0 0" height="75vh">
                 {/* ローディング表示 */}
@@ -169,19 +183,27 @@ const CategoryDetailPage = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell />
-                                <TableCell>Product</TableCell>
-                                <TableCell>Suppliers</TableCell>
-                                <TableCell align="right">Total Stock</TableCell>
+                                <TableCell>商品</TableCell>
+                                <TableCell>仕入先</TableCell>
+                                <TableCell align="right">在庫合計</TableCell>
                             </TableRow>
                         </TableHead>
 
                         <TableBody>
-                            {(data?.products || []).map(p => (
-                                <ProductRow
-                                    key={p.productName}
-                                    product={p}
-                                />
-                            ))}
+                            {(data?.products && data.products.length > 0) ? (
+                                data.products.map(p => (
+                                    <ProductRow
+                                        key={p.productName}
+                                        product={p}
+                                    />
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={4} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                                        該当する商品がありません
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>

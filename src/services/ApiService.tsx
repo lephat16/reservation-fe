@@ -1,6 +1,7 @@
 import CryptoJS from "crypto-js";
-import type { AllUserRespose, ApiResponse, CategoryData, CategorySummariesData, CategorySummaryData, DashboardDTO, LoginRequest, LoginResponse, ProductData, ProductDetailData, RegisterRequest, RegisterResponse, ResponseData, SellData, SupplierResponse, TransactionsResponse, UserData } from "../types";
+import type { AllUserRespose, ApiResponse, CategoryData, CategorySummariesData, CategorySummaryData, DashboardDTO, LoginRequest, LoginResponse, ProductData, ProductDetailData, PurchaseOrderData, ReceiveStockItem, ReceiveStockResultData, RegisterRequest, RegisterResponse, ResponseData, SellData, SumReceivedGroupByProduct, TransactionsResponse, UserData, WarehouseWithLocationData } from "../types";
 import { api } from "../api/axiosClient";
+import type { SupplierData, SupplierProductWithCategoryData } from "../types/supplier";
 export default class ApiService {
     static ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
     static encrypt(data: string): string {
@@ -47,7 +48,6 @@ export default class ApiService {
         return (await api.post(`/auth/register`, registerData)).data;
     }
     static async loginUser(loginUser: LoginRequest): Promise<LoginResponse> {
-        console.log(api);
         return (await api.post(`/auth/login`, loginUser)).data;
     }
     static async getAllUsers(): Promise<AllUserRespose> {
@@ -104,29 +104,63 @@ export default class ApiService {
         return (await api.get(`/products/info/all`));
     }
     static async getProductInfoDetail(productId: number): Promise<ApiResponse<ProductDetailData>> {
-        return (await api.get(`/products/info-detai/${productId}`));
+        return (await api.get(`/products/info-detail/${productId}`));
     }
     static async getProductsByCategory(categoryId: number): Promise<ApiResponse<ProductData[]>> {
         return (await api.get(`/products/all/by-category/${categoryId}`)).data;
     }
-    
+
     static async getProductsById(productId: number): Promise<ApiResponse<ProductData>> {
         return (await api.get(`/products/${productId}`)).data;
     }
-    
+
     static async getProductsBySupplier(supplierId: number): Promise<any> {
         return (await api.get(`/products/all/supplier/${supplierId}`)).data;
     }
-    static async updateProduct(productData: FormData): Promise<ResponseData> {
-        return (await api.put(`/products/update`, productData)).data;
+    static async updateProduct(productData: FormData, productId: number): Promise<ApiResponse<ProductData>> {
+        return (await api.put(`/products/update/${productId}`, productData)).data;
     }
     static async deleteProduct(id: number): Promise<ResponseData> {
         return (await api.delete(`/products/delete/${id}`)).data;
     }
-    static async getAllSuppliers(): Promise<SupplierResponse> {
-        return (await api.get(`/suppliers/all`)).data;
+    static async getAllSuppliers(): Promise<ApiResponse<SupplierData[]>> {
+        return (await api.get(`/suppliers/all`));
     }
-    static async purchaseProduct(purchaseData: any): Promise<TransactionsResponse> {
+    static async getSupplierById(supplierId: number): Promise<ApiResponse<SupplierData>> {
+        return (await api.get(`/suppliers/${supplierId}`));
+    }
+    static async getSupplierProductsWithStock(supplierId: Number): Promise<ApiResponse<SupplierProductWithCategoryData[]>> {
+        return (await api.get(`/sup-product/with-stock/${supplierId}`));
+    }
+    static async deleteSupplier(supplierId: number): Promise<ApiResponse<void>> {
+        return (await api.delete(`/suppliers/delete/${supplierId}`));
+    }
+
+    static async getPurchaseOrders(): Promise<ApiResponse<PurchaseOrderData[]>> {
+        return (await api.get(`/transactions/purchase/all`));
+    }
+    static async deletePurchaseOrder(orderId: number): Promise<ApiResponse<void>> {
+        return (await api.delete(`/transactions/purchase/delete/${orderId}`));
+    }
+    static async getPurchaseOrderById(poId: number): Promise<ApiResponse<PurchaseOrderData>> {
+        return (await api.get(`/transactions/purchase/${poId}`));
+    }
+    static async getSumReceivedQtyByPoGroupByProduct(poId: number): Promise<ApiResponse<SumReceivedGroupByProduct[]>> {
+        return (await api.get(`/products/received-qty/${poId}`));
+    }
+    static async updatePurchaseOrderQuantityAndDescription(poId: number, data: PurchaseOrderData): Promise<ApiResponse<PurchaseOrderData>> {
+        return (await api.put(`/transactions/purchase/update-qty-and-desc/${poId}`, data));
+    }
+    static async placePurchaseOrder(poId: number): Promise<ApiResponse<PurchaseOrderData>> {
+        return (await api.put(`/transactions/purchase/place/${poId}`));
+    }
+    static async getAllWarehouseWithLocation(): Promise<ApiResponse<WarehouseWithLocationData[]>> {
+        return (await api.get(`/warehouses/with-location/all`));
+    }
+    static async receiveStock(receiveItem: ReceiveStockItem[], poId: number): Promise<ApiResponse<ReceiveStockResultData[]>> {
+        return (await api.post(`/inventory/stock/receive-stock/${poId}`, receiveItem));
+    }
+    static async purchaseProduct(purchaseData: any): Promise<ApiResponse<PurchaseOrderData>> {
         return (await api.post(`/transactions/purchase`, purchaseData)).data;
     }
     static async sellProduct(sellData: any): Promise<SellData> {

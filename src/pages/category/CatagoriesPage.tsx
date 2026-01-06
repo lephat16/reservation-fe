@@ -3,13 +3,16 @@ import type { CategorySummariesData } from "../../types";
 import { Box, Chip, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import Header from "../../layout/Header";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ApiService from "../../services/ApiService";
 import { jaJP } from '@mui/x-data-grid/locales';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { DeleteConfirmDialog } from "../product/ProductPage";
+import { useSnackbar } from "../../hooks/useSnackbar";
+import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
 
 interface ActionHandlers {
     deleteCategory: (id: GridRowId) => void;
@@ -89,7 +92,16 @@ const CategoriesPage = () => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+
     const navigate = useNavigate();
+    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
+
+    const queryClient = useQueryClient();
+
+    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+    const [selectedCategory, setSelectedCategory] =
+        useState<CategorySummariesData | null>(null);
+
     const { isLoading, error, data } = useQuery<CategorySummariesData[]>({
         queryKey: ['categories'],
         queryFn: async () => {
@@ -100,12 +112,28 @@ const CategoriesPage = () => {
         }
     });
 
+    const deleteMutation = useMutation({
+        mutationFn: async (id: number) => ApiService.deleteCategory(id),
+        onSuccess: () => {
+            setOpenDeleteConfirm(false);
+            setSelectedCategory(null);
+            showSnackbar("カテゴリーを削除しました", "success");
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
+
+        },
+        onError: (error: any) => {
+            showSnackbar(error.response?.data?.message || "削除に失敗しました", "error");
+        }
+    });
 
     const seeMoreCategory = (id: GridRowId) => {
-         navigate(`/category/${id}`);
+        navigate(`/category/${id}`);
     }
-    const deleteCategory = () => {
-
+    const deleteCategory = (id: GridRowId) => {
+        const category = data?.find(c => c.id === id);
+        if (!category) return;
+        setSelectedCategory(category);
+        setOpenDeleteConfirm(true)
     }
 
     const actionHandlers = useMemo<ActionHandlers>(
@@ -116,12 +144,19 @@ const CategoriesPage = () => {
         [deleteCategory, seeMoreCategory],
     );
     return (
-        <Box m="20px">
+        <Box m={3}>
             <Header
                 title="カテゴリ一覧"
                 subtitle="カテゴリ情報の一覧表示"
             />
-            <Box m="40px 0 0 0" height="75vh">
+            <Box mt={3} height="75vh">
+                {/* メッセージ表示 */}
+                <CustomSnackbar
+                    open={snackbar.open}
+                    message={snackbar.message}
+                    severity={snackbar.severity}
+                    onClose={closeSnackbar}
+                />
 
                 {/* エラー表示 */}
                 {(error) && (
@@ -144,7 +179,7 @@ const CategoriesPage = () => {
                             },
                             "& .name-column--cell": {
                                 color: colors.greenAccent[300],
-                            },  
+                            },
                             "& .MuiDataGrid-columnHeaders": {
                                 color: colors.grey[100],
                                 borderBottom: "none",
@@ -169,7 +204,15 @@ const CategoriesPage = () => {
                         showToolbar
                     />
                 </ActionHandlersContext.Provider>
-
+                <DeleteConfirmDialog
+                    open={openDeleteConfirm}
+                    onClose={() => setOpenDeleteConfirm(false)}
+                    targetName={selectedCategory?.categoryName}
+                    onDelete={() =>
+                        selectedCategory &&
+                        deleteMutation.mutate(selectedCategory?.id || 0)}
+                    isDeleting={deleteMutation.isPending}
+                />
             </Box>
         </Box>
     )

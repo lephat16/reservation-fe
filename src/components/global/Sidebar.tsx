@@ -196,7 +196,7 @@ const Sidebar = () => {
                     </Typography>
                     <Item
                         title="仕入先一覧"
-                        to="/supplier"
+                        to="/suppliers"
                         icon={<PersonOutlinedIcon />}
                         selected={selected}
                         setSelected={setSelected}
@@ -218,7 +218,7 @@ const Sidebar = () => {
                     </Typography>
                     <Item
                         title="入庫"
-                        to="/purchase"
+                        to="/purchase-order"
                         icon={<StoreIcon />}
                         selected={selected}
                         setSelected={setSelected}

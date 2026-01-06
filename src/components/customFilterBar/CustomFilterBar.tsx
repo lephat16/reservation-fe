@@ -45,7 +45,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
 }));
 const FilterBar = ({ searchText, onSearchChange, children }: FilterBarProps) => (
-    <Toolbar sx={{ width: '100%', display: "flex"}} >
+    <Toolbar sx={{ width: '100%', display: "flex", justifyContent: "space-between" }} >
         <Search>
             <SearchIconWrapper>
                 <SearchIcon />

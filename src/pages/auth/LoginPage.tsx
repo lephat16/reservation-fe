@@ -21,6 +21,7 @@ const schema = yup.object({
 
 const loginApi = async (data: LoginRequest) => {
     const response = await ApiService.loginUser(data);
+    console.log(response)
     return response;
 }
 
@@ -44,6 +45,7 @@ const LoginPage = (): JSX.Element => {
     const mutation = useMutation({
         mutationFn: loginApi,
         onSuccess: (response) => {
+            console.log("LOGIN RESPONSE:", response);
             ApiService.saveToken(response.token);  // トークン保存
             ApiService.saveRole(response.role); // ロール情報保存
             ApiService.saveRefreshToken(response.refreshToken) // リフレッシュトークン保存

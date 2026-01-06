@@ -45,14 +45,14 @@ export interface SellDataRequest {
     note: string;
 }
 
-export interface TransactionResponseDTO  {
+export interface TransactionResponseDTO {
     id: number;
     totalProducts: number;
     totalPrice: number;
     transactionType: "PURCHASE" | "SALE" | "RETURN_TO_SUPPLIER";
     createdAt: string;
 }
-export interface DashboardDTO  {
+export interface DashboardDTO {
     todaySales: number;
     weeklySales: number;
     monthlySales: number;
@@ -64,3 +64,41 @@ export interface DashboardDTO  {
     recentTransactions: TransactionResponseDTO[];
 };
 export interface SellData extends BaseTransaction { }
+
+export interface PurchaseOrderDetailData {
+    id: string,
+    purchaseOrderId: string,
+    productId: number,
+    productName: string,
+    qty: number,
+    cost: number,
+    status: string,
+    sku?: string,
+    received?: number,
+}
+
+export interface PurchaseOrderData {
+    id: string,
+    supplierId: string,
+    supplierName: string,
+    userId: string,
+    userName: string,
+    status: string,
+    description: string,
+    total: number,
+    createdAt: string,
+    details: PurchaseOrderDetailData[]
+}
+export interface ReceiveStockItem {
+    detailId: string,
+    warehouseId: string,
+    receivedQty: number,
+    note: string,
+}
+export interface ReceiveStockResultData {
+    purchaseOrderId: string,
+    poStatus: string,
+    completedDetailIds: number[],
+    stockHistories: string[],
+}
+
