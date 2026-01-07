@@ -20,6 +20,7 @@ import SupplierPage from './pages/supplier/SupplierPage'
 import PurchaseOrderPage from './pages/purchase/PurchaseOrderPage'
 import PurchaseOrderDetailPage from './pages/purchase/PurchaseOrderDetailPage'
 import ReceiveForm from './components/forms/ReceiveForm'
+import CreatePurchasePage from './pages/purchase/CreatePurchasePage'
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -44,6 +45,8 @@ function App() {
               <Route path="/purchase-order" element={<ProtectedRoute element={<PurchaseOrderPage />} />} />
               <Route path="/purchase-order/:poId/receive" element={<ProtectedRoute element={<ReceiveForm />} />} />
               <Route path="/purchase-order/:poId" element={<ProtectedRoute element={<PurchaseOrderDetailPage />} />} />
+              <Route path="/purchase-order/create" element={<ProtectedRoute element={<CreatePurchasePage />} />} />
+
               <Route path="/sell" element={<ProtectedRoute element={<SellPage2 />} />} />
               <Route path="/transaction" element={<ProtectedRoute element={<TransactionPage />} />} />
               <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />

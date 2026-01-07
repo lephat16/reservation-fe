@@ -8,7 +8,8 @@ import InputLabel from '@mui/material/InputLabel';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import './NumberField.css'
-import { FormHelperText } from '@mui/material';
+import { FormHelperText, useTheme } from '@mui/material';
+import { tokens } from '../../theme';
 
 /**
  * This component is a placeholder for FormControl to correctly set the shrink label state on SSR.
@@ -33,6 +34,9 @@ export default function NumberField({
     size = 'medium',
     ...other
 }: NumberFieldProps) {
+    const theme = useTheme();
+    const colors = tokens(theme.palette.mode);
+
     let id = React.useId();
     if (idProp) {
         id = idProp;
@@ -59,7 +63,12 @@ export default function NumberField({
             )}
         >
             <SSRInitialFilled {...other} />
-            <InputLabel htmlFor={id} >{label}</InputLabel>
+            <InputLabel sx={{
+                color: colors.grey[100],
+                '&.Mui-focused': {
+                    color: colors.grey[200],
+                },
+            }} htmlFor={id} >{label}</InputLabel>
             <BaseNumberField.Input
                 id={id}
                 render={(props, state) => (
@@ -90,7 +99,8 @@ export default function NumberField({
                                         flex: 1,
                                         borderRadius: 0.5,
                                     },
-                                    border: 'none'
+                                    border: 'none',
+
                                 }}
                             >
                                 <BaseNumberField.Increment
@@ -117,7 +127,17 @@ export default function NumberField({
                             width: "100%",
                             "& input": {
                                 color: error ? "#e53935" : "inherit"
-                            }
+
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: colors.grey[600],
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                                borderColor: colors.grey[400],
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                borderColor: colors.grey[200],
+                            },
                         }}
                     />
                 )}

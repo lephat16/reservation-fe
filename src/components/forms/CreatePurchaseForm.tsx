@@ -30,16 +30,13 @@ const CreateOrderDialog = ({
 
 
     const [products, setProducts] = useState<SupplierProductData[]>([]);
-    const [selectedProduct, setSelectedProduct] = useState<any>(null);
+    const [selectedProduct, setSelectedProduct] = useState<SupplierProductData | null>(null);
 
     const schema = yup.object({
-        supplierName: yup.string().required("仕入先は必須です"),
-        productName: yup.string().required("商品は必須です"),
-        sku: yup.string().required("skuは必須です"),
-        currentPrice: yup.number()
-            .positive("コストは正の数で入力してください")
-            .integer("コストは整数で入力してください")
-            .required("コストは必須です"),
+        supplierId: yup.string().required("仕入先は必須です"),
+        productId: yup.string().required("商品は必須です"),
+        sku: yup.string().notRequired(),
+
         description: yup.string()
             .matches(/^[a-zA-Z0-9\s]*$/, "文字と数字のみ入力できます。")
             .max(200, "説明の最大文字数は200文字です。"),
@@ -47,10 +44,8 @@ const CreateOrderDialog = ({
             .positive("数量は正の数で入力してください")
             .integer("数量は整数で入力してください")
             .required("数量は必須です"),
-        total: yup.number()
-            .positive("数量は正の数で入力してください")
-            .integer("数量は整数で入力してください")
-            .required("数量は必須です"),
+        currentPrice: yup.number().notRequired(),
+        total: yup.number().notRequired(),
     });
     const handleSave = () => {
         onSave();
@@ -60,19 +55,19 @@ const CreateOrderDialog = ({
 
     const { control, handleSubmit, reset, formState: { errors }, getValues, watch, setValue } = useForm({
         defaultValues: {
-            supplierName: "",
-            productName: "",
+            supplierId: "",
+            productId: "",
             sku: "",
-            currentPrice: 0,
             description: "",
             quantity: 0,
+            currentPrice: 0,
             total: 0,
         },
         resolver: yupResolver(schema),
         mode: "onBlur"
     });
-    const selectedSupplierId = watch('supplierName');
-    const selectedProductId = watch('productName');
+    const selectedSupplierId = watch('supplierId');
+    const selectedProductId = watch('productId');
     const quantityValue = watch('quantity');
 
     const fetchProducts = async (supplierId: number) => {
@@ -92,14 +87,11 @@ const CreateOrderDialog = ({
             if (product) {
                 setSelectedProduct(product);
                 setValue('currentPrice', product?.price);
-                if(selectedProduct) {
-                    const total = selectedProduct.price * quantityValue;
-                    setValue('total', total);
-                }
+                setValue('total', product.price * (quantityValue || 0));
             }
         }
-    }, [selectedProductId, products, setValue]);
-    
+    }, [selectedProductId, quantityValue, setValue]);
+
     return (
         <Dialog open={open} onClose={onClose}>
 
@@ -108,7 +100,7 @@ const CreateOrderDialog = ({
             <DialogContent>
 
                 <Controller
-                    name="supplierName"
+                    name="supplierId"
                     control={control}
                     render={({ field }) => (
 
@@ -118,8 +110,8 @@ const CreateOrderDialog = ({
                             fullWidth
                             margin="normal"
                             {...field}
-                            error={!!errors.supplierName}
-                            helperText={errors.supplierName?.message}
+                            error={!!errors.supplierId}
+                            helperText={errors.supplierId?.message}
                         >
                             {supplier?.map((sp) => (
                                 <MenuItem key={sp.supplierId} value={sp.supplierId}>
@@ -130,7 +122,7 @@ const CreateOrderDialog = ({
                     )}
                 />
                 <Controller
-                    name="productName"
+                    name="productId"
                     control={control}
                     render={({ field }) => (
 
@@ -140,8 +132,8 @@ const CreateOrderDialog = ({
                             fullWidth
                             margin="normal"
                             {...field}
-                            error={!!errors.productName}
-                            helperText={errors.productName?.message}
+                            error={!!errors.productId}
+                            helperText={errors.productId?.message}
                         >
                             {products?.map((p) => (
                                 <MenuItem key={p.id} value={p.id}>
@@ -169,46 +161,32 @@ const CreateOrderDialog = ({
                             />
                         )}
                     />
-                    <Controller
-                        name="currentPrice"
-                        control={control}
-                        render={() => (
-                            <TextField
-                                label="コスト"
-                                fullWidth
-                                margin="normal"
-                                value={selectedProduct?.price || 0}
-                                slotProps={{
-                                    input: {
-                                        readOnly: true,
-                                    },
-                                }}
-                            />
-                        )}
-                    />
-                    <Controller
-                        name="total"
-                        control={control}
-                        render={({ field, fieldState }) => {
-                            const total = selectedProduct?.price * (quantityValue || 0) || 0;
-                            return (
-                                <TextField
-                                    {...field}
-                                    label="合計金額"
-                                    fullWidth
-                                    margin="normal"
-                                    value={total}
-                                    error={!!fieldState?.error}
-                                    helperText={fieldState?.error?.message}
-                                    slotProps={{
-                                        input: {
-                                            readOnly: true,
-                                        },
-                                    }}
-                                />
-                            );
+
+                    <TextField
+                        label="コスト"
+                        value={selectedProduct?.price || 0}
+                        fullWidth
+                        margin="normal"
+                        slotProps={{
+                            input: {
+                                readOnly: true,
+                            },
                         }}
                     />
+                    <TextField
+                        label="合計金額"
+                        value={(selectedProduct?.price || 0) * (quantityValue || 0)}
+
+                        fullWidth
+                        margin="normal"
+                        slotProps={{
+                            input: {
+                                readOnly: true,
+                            },
+                        }}
+                    />
+
+
                 </Stack>
 
                 <Controller

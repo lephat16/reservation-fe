@@ -220,14 +220,14 @@ const PurchaseOrderPage = () => {
                         deleteMutation.mutate(Number(selectedPurchaseOrderId) || 0)}
                     isDeleting={deleteMutation.isPending}
                 />
-                <CreateOrderDialog
+                {/* <CreateOrderDialog
                     open={openCreateOrderDialog}
                     onClose={() => setOpenCreateOrderDialog(false)}
                     supplier={data?.resSuppliers.map(s => ({
                         supplierId: String (s.id),
                         supplierName: s.name
                     })) ?? []}
-                />
+                /> */}
             </Box>
         </Box>
     );
