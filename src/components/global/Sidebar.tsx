@@ -225,7 +225,7 @@ const Sidebar = () => {
                     />
                     <Item
                         title="販売"
-                        to="/sell"
+                        to="/sell-order"
                         icon={<SellIcon />}
                         selected={selected}
                         setSelected={setSelected}

@@ -222,6 +222,7 @@ interface DeleteConfirmDialogProps {
 export const DeleteConfirmDialog = ({
     open,
     onClose,
+    title,
     targetName,
     onDelete,
     isDeleting
@@ -241,10 +242,10 @@ export const DeleteConfirmDialog = ({
                 paper: { sx: { backgroundColor: colors.blueAccent[900], borderRadius: 2, p: 2 } }
             }}
         >
-            <DialogTitle>商品削除確認</DialogTitle>
+            <DialogTitle>{title ? `${title}削除確認` : "商品削除確認"}</DialogTitle>
             <DialogContent>
                 <Typography>
-                    {targetName ? `"${targetName}"` : "この商品"} を本当に削除しますか？この操作は取り消せません。
+                    {targetName ? `${targetName}` : "この商品"} を本当に削除しますか？この操作は取り消せません。
                 </Typography>
             </DialogContent>
             <DialogActions>

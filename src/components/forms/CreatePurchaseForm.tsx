@@ -90,7 +90,7 @@ const CreateOrderDialog = ({
                 setValue('total', product.price * (quantityValue || 0));
             }
         }
-    }, [selectedProductId, quantityValue, setValue]);
+    }, [selectedProductId, quantityValue, setValue, products]);
 
     return (
         <Dialog open={open} onClose={onClose}>
@@ -125,7 +125,6 @@ const CreateOrderDialog = ({
                     name="productId"
                     control={control}
                     render={({ field }) => (
-
                         <TextField
                             label="商品名"
                             select
@@ -133,7 +132,11 @@ const CreateOrderDialog = ({
                             margin="normal"
                             {...field}
                             error={!!errors.productId}
-                            helperText={errors.productId?.message}
+                            helperText={
+                                products.length === 0
+                                    ? "この仕入先には商品がありません"
+                                    : errors.productId?.message
+                            }
                         >
                             {products?.map((p) => (
                                 <MenuItem key={p.id} value={p.id}>

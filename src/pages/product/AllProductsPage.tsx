@@ -4,7 +4,7 @@ import ApiService from "../../services/ApiService";
 import './AllProduct.css'
 import CustomPagination from "../../components/customPagination/CustomPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Box, CircularProgress, Container, FormControl, Grid, InputLabel, MenuItem, Select, Stack, Typography } from "@mui/material";
+import { Box, CircularProgress, FormControl, Grid, InputLabel, MenuItem, Select, Stack, Typography } from "@mui/material";
 import FilterBar from "../../components/customFilterBar/CustomFilterBar";
 import Header from "../../layout/Header";
 import { useSnackbar } from "../../hooks/useSnackbar";
@@ -24,7 +24,6 @@ const AllProductPage = () => {
 
     const queryClient = useQueryClient();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
-    const navigate = useNavigate();
 
     const [page, setPage] = useState(1);
     const itemsPerPage = 8;

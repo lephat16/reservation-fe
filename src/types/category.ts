@@ -12,8 +12,8 @@ export interface CategoryData {
 export interface CategorySummariesData {
     id?: number;
     categoryName: string;
-    products: string[] | null;
-    suppliers: string[] | null;
+    products: string;
+    suppliers: string;
     status: "ACTIVE" | "INACTIVE";
 }
 export interface CategorySummaryData {

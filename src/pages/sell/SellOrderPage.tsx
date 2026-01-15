@@ -1,15 +1,17 @@
-import { Box, Button, Chip, CircularProgress, IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useMediaQuery, useTheme, type SxProps, type Theme } from "@mui/material";
-import Header from "../../layout/Header";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import ApiService from "../../services/ApiService";
+import { Box, Button, Chip, CircularProgress, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useMediaQuery, useTheme, type SxProps, type Theme } from "@mui/material";
 import { tokens } from "../../theme";
 import { useNavigate } from "react-router-dom";
+import { useSnackbar } from "../../hooks/useSnackbar";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import ApiService from "../../services/ApiService";
+import Header from "../../layout/Header";
+import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
-import { useState } from "react";
-import { useSnackbar } from "../../hooks/useSnackbar";
+import type { SaleOrderData } from "../../types";
 import { DeleteConfirmDialog } from "../product/ProductPage";
-import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
+
 
 const renderStatusChip = (status: string) => {
     const colorMap: Record<string, "secondary" | "primary" | "success" | "warning" | "error"> = {
@@ -29,37 +31,31 @@ const cellStyle = (align?: "right" | "center", truncate?: boolean): SxProps<Them
     textOverflow: truncate ? "ellipsis" : "clip",
 });
 
-const PurchaseOrderPage = () => {
+const SellOrderPage = () => {
+
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const navigate = useNavigate();
 
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
     const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
-    const [selectedPurchaseOrderId, setSelectedPurchaseOrderId] = useState(0);
-
-
+    const [selectedSellOrderId, setSelectedSellOrderId] = useState(0);
 
     const queryClient = useQueryClient();
 
-    const { isLoading, error, data } = useQuery({
+    const { isLoading, error, data } = useQuery<SaleOrderData[]>({
         queryKey: ["purchaseOrders"],
         queryFn: async () => {
-            const resPO = await ApiService.getPurchaseOrders();
-            const resSuppliers = await ApiService.getAllSuppliers();
-            return {
-                resPO: resPO.data,
-                resSuppliers: resSuppliers.data
-            }
+            const resSO = await ApiService.getSaleOrders();
+            return resSO.data;
         },
     });
 
-    const resPO = data?.resPO ?? [];
-
     const columns = [
         { key: "id", label: "ID", width: isMobile ? "10%" : "5%" },
-        { key: "supplierName", label: "仕入先", width: isMobile ? "35%" : "15%", truncate: true },
+        { key: "customerName", label: "顧客", width: isMobile ? "35%" : "15%", truncate: true },
         { key: "status", label: "ステータス", width: isMobile ? "30%" : "10%", align: "center", truncate: true },
         { key: "userName", label: "ユーザー", width: "15%", align: "center", truncate: true, hideOnMobile: true },
         { key: "total", label: isMobile ? "合計" : "合計金額", width: isMobile ? "30%" : "10%", align: "right", truncate: true },
@@ -67,14 +63,12 @@ const PurchaseOrderPage = () => {
         { key: "action", label: "操作", width: isMobile ? "35%" : "10%", align: "center" },
     ];
 
-
-
     const deleteMutation = useMutation({
-        mutationFn: async (id: number) => ApiService.deletePurchaseOrder(id),
+        mutationFn: async (id: number) => ApiService.deleteSellOrder(id),
         onSuccess: () => {
             setOpenDeleteConfirm(false);
-            setSelectedPurchaseOrderId(0);
-            showSnackbar("orderを削除しました", "success");
+            setSelectedSellOrderId(0);
+            showSnackbar("販売注文書を削除しました", "success");
             queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
 
         },
@@ -84,22 +78,20 @@ const PurchaseOrderPage = () => {
     });
 
     const handleDelete = (id: number) => {
-        setSelectedPurchaseOrderId(id)
+        setSelectedSellOrderId(id)
         setOpenDeleteConfirm(true)
     }
-
-
     return (
         <Box m={3}>
             <Box display="flex" justifyContent="space-between">
-                <Header title="購入一覧:" subtitle="購入情報の一覧表示" />
+                <Header title="販売一覧:" subtitle="販売情報の一覧表示" />
                 <Box mt={4}>
                     <Button
                         variant="contained"
                         color="success"
-                        onClick={() => navigate(`/purchase-order/create`)}
+                        onClick={() => navigate(`/sell-order/create`)}
                     >
-                        新規購入注文
+                        新規販売注文
                     </Button>
 
                 </Box>
@@ -126,8 +118,6 @@ const PurchaseOrderPage = () => {
                     </Box>
                 )}
                 {error && <p className="error">データの取得に失敗しました。</p>}
-
-
                 <TableContainer component={Paper} sx={{ mb: 3 }}>
                     <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
                         <colgroup>
@@ -150,8 +140,8 @@ const PurchaseOrderPage = () => {
                         </TableHead>
 
                         <TableBody>
-                            {resPO.length > 0 ? (
-                                resPO.map((order) => (
+                            {data && data.length > 0 ? (
+                                data.map((order) => (
                                     <TableRow key={order.id}>
                                         {columns.map((col) => {
                                             if (isMobile && col.hideOnMobile) return null;
@@ -173,7 +163,7 @@ const PurchaseOrderPage = () => {
                                                                     },
                                                                     transition: "color 0.2s ease",
                                                                 }}
-                                                                onClick={() => navigate(`/purchase-order/${order.id}`)}
+                                                                onClick={() => navigate(`/sell-order/${order.id}`)}
                                                             >
                                                                 <InfoIcon />
                                                             </IconButton>
@@ -224,16 +214,16 @@ const PurchaseOrderPage = () => {
                     open={openDeleteConfirm}
                     onClose={() => setOpenDeleteConfirm(false)}
                     onDelete={() =>
-                        selectedPurchaseOrderId &&
-                        deleteMutation.mutate(Number(selectedPurchaseOrderId) || 0)}
+                        selectedSellOrderId &&
+                        deleteMutation.mutate(Number(selectedSellOrderId) || 0)}
                     isDeleting={deleteMutation.isPending}
-                    targetName={`${selectedPurchaseOrderId}の注文`}
-                    title="購入注文"
+                    targetName={`${selectedSellOrderId}の注文`}
+                    title="販売注文"
                 />
-                
             </Box>
-        </Box>
-    );
-};
 
-export default PurchaseOrderPage;
+        </Box>
+    )
+}
+
+export default SellOrderPage

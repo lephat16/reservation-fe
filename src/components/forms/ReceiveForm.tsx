@@ -2,7 +2,7 @@ import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, Di
 import { tokens } from "../../theme";
 import Header from "../../layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { InventoryHistoryByPurchaseOrder, PurchaseOrderData, ReceiveStockItem, SumReceivedGroupByProduct, WarehouseWithLocationData } from "../../types";
+import type { DeliverStockItem, InventoryHistoryByPurchaseOrder, PurchaseOrderData, ReceiveStockItem, SumReceivedGroupByProduct, WarehouseWithLocationData } from "../../types";
 import { useNavigate, useParams } from "react-router-dom";
 import ApiService from "../../services/ApiService";
 import CustomSnackbar from "../customSnackbar/CustomSnackbar";
@@ -14,11 +14,13 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import { DataGrid, type GridColDef } from '@mui/x-data-grid'
+import { jaJP } from "@mui/x-data-grid/locales";
 
+// 購入確認ダイアログ
 interface PurchaseConfirmDialogProps {
     open: boolean;
-    onClose: () => void;
-    onConfirm: () => void;
+    onClose: () => void;    // ダイアログの開閉
+    onConfirm: () => void;  // 背景クリックで閉じる
     supplier: string;
     warehouse: string;
     quantity: number;
@@ -76,10 +78,12 @@ export const PurchaseConfirmDialog = ({
     )
 }
 
+// 受領フォームダイアログ
 interface ReceiveFormDialogProps {
     open: boolean;
     onClose: () => void;
-    onReceive: (receiveItem: ReceiveStockItem[]) => void;
+    onReceive?: (receiveItem: ReceiveStockItem[]) => void;
+    onDeliver?: (deliverItem: DeliverStockItem[]) => void;
     product: {
         productName: string;
         detailId: string;
@@ -90,65 +94,89 @@ interface ReceiveFormDialogProps {
     targetName?: string;
     isPending?: boolean;
     remains: number;
+    title: string;
 }
 
 export const ReceiveFormDialog = ({
     open,
     onClose,
     onReceive,
+    onDeliver,
     product,
     poId,
     supplier,
     warehouses,
     isPending,
     remains,
+    title,
 }: ReceiveFormDialogProps) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
     const [openSubmitConfirm, setOpenSubmitConfirm] = useState(false);
 
+    // バリデーションスキーマ
     const schema = yup.object({
         productName: yup.string().required("商品名は必須です"),
         warehouses: yup.string().required("倉庫は必須です"),
 
-        receiveQty: yup
+        quantity: yup
             .number()
             .positive("受領数量は正の数で入力してください")
             .integer("受領数量は整数で入力してください")
             .required("受領数量は必須です")
             .max(remains, `受領数量は残りの数量(${remains})を超えることはできません`),
         note: yup.string()
-            .matches(/^[a-zA-Z0-9\s]*$/, "文字と数字のみ入力できます。")
-            .max(200, "メモの最大文字数は200文字です。"),
+            .max(200, "メモの最大文字数は200文字です。")
+            .required("メモは必須です")
     });
     const { control, handleSubmit, reset, formState: { errors }, getValues } = useForm({
         defaultValues: {
             productName: product.productName || "",
             warehouses: "",
-            receiveQty: 1,
+            quantity: 1,
             note: "",
         },
         resolver: yupResolver(schema),
         mode: "onBlur"
     });
 
-    const onSubmit = (data: any) => {
-        const receiveItem = [{
-            detailId: product.detailId,
-            warehouseId: data.warehouses,
-            receivedQty: data.receiveQty,
-            note: data.note,
-        }];
+    // 送信処理
+    const onSubmit = (data: {
+        productName: string;
+        warehouses: string;
+        quantity: number;
+        note: string;
 
-        onReceive(receiveItem);
+    }) => {
+        // 親コンポーネントに送信
+        if (onReceive) {
+            const receiveItem = [{
+                detailId: product.detailId,
+                warehouseId: data.warehouses,
+                receivedQty: data.quantity,
+                note: data.note,
+            }];
+            onReceive(receiveItem);
+        }
+        if (onDeliver) {
+            const deliverItem = [{
+                detailId: product.detailId,
+                warehouseId: data.warehouses,
+                deliveredQty: data.quantity,
+                note: data.note,
+            }];
+            onDeliver(deliverItem);
+        }
     };
+
+    // ダイアログ閉じたときにフォームリセット
     useEffect(() => {
         if (!open) {
             reset({
                 productName: product.productName || "",
                 warehouses: "",
-                receiveQty: 1,
+                quantity: 1,
                 note: "",
             });
         }
@@ -170,7 +198,7 @@ export const ReceiveFormDialog = ({
                     paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: 2, p: 2 } }
                 }}
             >
-                <DialogTitle fontSize={20} textAlign="center">受領</DialogTitle>
+                <DialogTitle fontSize={20} textAlign="center">{title}</DialogTitle>
                 <DialogContent
                     sx={{
                         "& .MuiTextField-root": {
@@ -184,6 +212,7 @@ export const ReceiveFormDialog = ({
                         }
                     }}
                 >
+                    {/* 商品名フィールド（読み取り専用） */}
                     <Controller
                         name="productName"
                         control={control}
@@ -201,6 +230,7 @@ export const ReceiveFormDialog = ({
                             />
                         )}
                     />
+                    {/* 倉庫選択フィールド */}
                     <Controller
                         name="warehouses"
                         control={control}
@@ -223,22 +253,23 @@ export const ReceiveFormDialog = ({
                             </TextField>
                         )}
                     />
-
+                    {/* 受領数量フィールド */}
                     <Controller
-                        name="receiveQty"
+                        name="quantity"
                         control={control}
                         render={({ field }) => (
                             <TextField
-                                label="受領数量"
+                                label={`${title}数量`}
                                 type="number"
                                 fullWidth
                                 margin="normal"
                                 {...field}
-                                error={!!errors.receiveQty}
-                                helperText={errors.receiveQty?.message}
+                                error={!!errors.quantity}
+                                helperText={errors.quantity?.message}
                             />
                         )}
                     />
+                    {/* メモフィールド */}
                     <Controller
                         name="note"
                         control={control}
@@ -256,6 +287,7 @@ export const ReceiveFormDialog = ({
                         )}
                     />
                 </DialogContent>
+                {/* アクションボタン */}
                 <DialogActions>
                     <Button variant="contained" color="warning" onClick={onClose}>
                         キャンセル
@@ -270,13 +302,14 @@ export const ReceiveFormDialog = ({
                     </Button>
                 </DialogActions>
             </Dialog>
+            {/* 確認ダイアログ */}
             <PurchaseConfirmDialog
                 open={openSubmitConfirm}
                 onClose={() => setOpenSubmitConfirm(false)}
                 poId={poId}
                 supplier={supplier}
                 warehouse={getValues("warehouses")}
-                quantity={getValues("receiveQty")}
+                quantity={getValues("quantity")}
                 onConfirm={() => {
                     const values = getValues();
                     onSubmit(values);
@@ -289,11 +322,12 @@ export const ReceiveFormDialog = ({
     )
 }
 
+// 受領フォームメインコンポーネント
 const ReceiveForm = () => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    const { poId } = useParams<{ poId: string }>();
+    const { poId } = useParams<{ poId: string }>(); // URLパラメータから発注IDを取得
 
     const queryClient = useQueryClient();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
@@ -304,8 +338,9 @@ const ReceiveForm = () => {
     } | null>(null);
 
     const [openReceiveForm, setOpenReceiveForm] = useState(false);
-    const [selectedRemains, setSelectedRemains] = useState<number | null>(null);
+    const [selectedRemains, setSelectedRemains] = useState<number | null>(null);    // 残り数量
 
+    // データ取得
     const { isLoading, error, data } = useQuery<{
         purchaseOrder: PurchaseOrderData;
         receivedQtyMap: Record<number, number>;
@@ -314,11 +349,15 @@ const ReceiveForm = () => {
     }>({
         queryKey: ['purchaseOrderDetail', poId],
         queryFn: async () => {
+            // 発注詳細
             const resPODetail = await ApiService.getPurchaseOrderById(Number(poId));
+            // 発注詳細
             const resSumReceivedQty = await ApiService.getSumReceivedQtyByPoGroupByProduct(Number(poId));
+            // 倉庫情報
             const resWarehouse = await ApiService.getAllWarehouseWithLocation();
+            // 在庫履歴
             const resInventoryHistoryByPurchaseOrder = await ApiService.getInventoryHistoryByPurchaseOrder(Number(poId));
-
+            // 受領済数量マップを作成
             const receivedQtyMap: Record<number, number> = {};
 
             resSumReceivedQty.data.forEach((item: SumReceivedGroupByProduct) => {
@@ -333,9 +372,10 @@ const ReceiveForm = () => {
                 resInventoryHistoryByPurchaseOrder: resInventoryHistoryByPurchaseOrder.data,
             };
         },
-        enabled: !!poId
+        enabled: !!poId // poIdがある場合のみ実行
     });
 
+    // 受領処理用Mutation
     const receiveMutation = useMutation({
         mutationFn: async (data: { receiveItem: ReceiveStockItem[], poId: number }) => {
             return ApiService.receiveStock(data.receiveItem, data.poId);
@@ -352,6 +392,7 @@ const ReceiveForm = () => {
         }
     });
 
+    // DataGrid列定義
     const columns: GridColDef<(typeof rows)[number]>[] = [
         { field: 'detailId', headerName: 'ID', flex: 1 },
 
@@ -381,6 +422,7 @@ const ReceiveForm = () => {
         },
     ];
 
+    // DataGrid行データ作成
     const rows = data?.resInventoryHistoryByPurchaseOrder?.map((row, index) => ({
         id: index,
         detailId: row.id,
@@ -389,6 +431,7 @@ const ReceiveForm = () => {
         changeQty: row.changeQty,
         notes: row.notes,
     })) ?? [];
+
 
     return (
         <Box
@@ -421,10 +464,9 @@ const ReceiveForm = () => {
                 {(error) && (
                     <p className="error">データの取得に失敗しました。</p>
                 )}
+                {/* 発注詳細テーブル */}
                 <TableContainer component={Paper} sx={{ mb: 3 }}>
                     <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
-
-
                         <TableHead>
                             <TableRow
                                 sx={{
@@ -438,7 +480,6 @@ const ReceiveForm = () => {
                                 <TableCell>発注</TableCell>
                                 <TableCell>受領数</TableCell>
                                 <TableCell>残数</TableCell>
-
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -482,6 +523,7 @@ const ReceiveForm = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                {/* 在庫履歴タイトル */}
                 <Typography
                     sx={{
                         mb: 3,
@@ -503,6 +545,7 @@ const ReceiveForm = () => {
                             },
                         },
                     }}
+                    localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
                     pageSizeOptions={[5]}
                     disableRowSelectionOnClick
                     autoHeight
@@ -539,7 +582,7 @@ const ReceiveForm = () => {
                         },
                     }}
                 />
-
+                {/* 受領フォームダイアログ */}
                 {selectedProduct && (
                     <ReceiveFormDialog
                         open={openReceiveForm}
@@ -557,6 +600,7 @@ const ReceiveForm = () => {
                         remains={selectedRemains || 0}
                         poId={poId || ""}
                         supplier={data?.purchaseOrder.supplierName || ""}
+                        title="受領"
                     />
                 )}
             </Box>

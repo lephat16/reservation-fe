@@ -1,15 +1,16 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from "@mui/material";
-import Header from "../../layout/Header";
-import ApiService from "../../services/ApiService";
-import { useNavigate, useParams } from "react-router-dom";
-import type { PurchaseOrderData, PurchaseOrderDetailData, SumReceivedGroupByProduct } from "../../types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Box, Button, CircularProgress, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
+import { useNavigate, useParams } from "react-router-dom";
+import type { SaleOrderData, SaleOrderDetailData } from "../../types";
 import { useEffect, useMemo, useState } from "react";
-import * as yup from "yup";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../hooks/useSnackbar";
+import ApiService from "../../services/ApiService";
+import Header from "../../layout/Header";
 import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
+import * as yup from "yup";
 import { DeleteConfirmDialog } from "../product/ProductPage";
+import { SubmitConfirmDialog } from "../purchase/PurchaseOrderDetailPage";
 
 const descriptionSchema = yup.object({
     description: yup
@@ -18,70 +19,13 @@ const descriptionSchema = yup.object({
         .max(500, "説明は500文字以内で入力してください"),
 });
 
-
-interface SubmitConfirmDialogProps {
-    open: boolean;
-    onClose: () => void;
-    onConfirm: () => void;
-    targetName?: string;
-    type: string;
-    isPending?: boolean;
-}
-
-export const SubmitConfirmDialog = ({
-    open,
-    onClose,
-    onConfirm,
-    type,
-    targetName,
-    isPending
-}: SubmitConfirmDialogProps) => {
-    const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
-
-
-    return (
-        <Dialog
-            open={open}
-            onClose={onClose}
-            maxWidth="xs"
-            fullWidth
-            slotProps={{
-                paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: 2, p: 2 } }
-            }}
-        >
-            <DialogTitle>確認</DialogTitle>
-            <DialogContent>
-                <Typography>
-                    {targetName
-                        ? `${targetName}の${type}書を${type}してもよろしいですか？`
-                        : "この商品を注文・受注してもよろしいですか？"}
-                </Typography>
-            </DialogContent>
-            <DialogActions>
-                <Button variant="contained" color="warning" onClick={onClose}>
-                    キャンセル
-                </Button>
-                <Button
-                    variant="contained"
-                    color="success"
-                    onClick={onConfirm}
-                    disabled={isPending}
-                >
-                    {isPending ? "注文中..." : "注文"}
-                </Button>
-            </DialogActions>
-        </Dialog>
-    )
-}
-
-const PurchaseOrderDetailPage = () => {
+const SellOrderDetailPage = () => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    const { poId } = useParams<{ poId: string }>();
+    const { soId } = useParams<{ soId: string }>();
 
-    const [details, setDetails] = useState<PurchaseOrderDetailData[]>([]);
+    const [details, setDetails] = useState<SaleOrderDetailData[]>([]);
     const [description, setDescription] = useState<string>("");
     const [descriptionError, setDescriptionError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -92,30 +36,16 @@ const PurchaseOrderDetailPage = () => {
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
 
-
-
-    const { isLoading, error, data } = useQuery<PurchaseOrderData>({
-        queryKey: ['purchaseOrderDetail', poId],
+    const { isLoading, error, data } = useQuery<SaleOrderData>({
+        queryKey: ['sellOrderDetail', soId],
         queryFn: async () => {
-            const resPODetail = await ApiService.getPurchaseOrderById(Number(poId));
+            const resPODetail = await ApiService.getSaleOrderById(Number(soId));
             console.log(resPODetail);
             console.log(resPODetail.data);
             return resPODetail.data;
         },
-        enabled: !!poId
+        enabled: !!soId
     });
-    console.log(data?.status);
-    const { isLoading: isLoadingReceivedQty, error: errorReceivedQty, data: dataReceivedQty } = useQuery<SumReceivedGroupByProduct[] | undefined>({
-        queryKey: ['getSumReceivedQtyByPoGroupByProduct', poId],
-        queryFn: async () => {
-                const resSumReceivedQty = await ApiService.getSumReceivedQtyByPoGroupByProduct(Number(poId));
-                console.log(resSumReceivedQty);
-                return resSumReceivedQty.data;
-        },
-        enabled: !!poId && data?.status === 'PROCESSING'
-    });
-
-
 
     useEffect(() => {
         if (data?.details) {
@@ -127,18 +57,18 @@ const PurchaseOrderDetailPage = () => {
     }, [data?.details, data?.description]);
 
     const totalAmount = useMemo(() => {
-        return details.reduce((sum, item) => sum + item.qty * item.cost, 0);
+        return details.reduce((sum, item) => sum + item.qty * item.price, 0);
     }, [details]);
 
     const handleSave = async () => {
         try {
             await descriptionSchema.validate({ description }, { abortEarly: false });
-            const updatedData: PurchaseOrderData = {
+            const updatedData: SaleOrderData = {
                 ...data!,
                 details: details,
                 description: description,
             };
-            await ApiService.updatePurchaseOrderQuantityAndDescription(Number(poId), updatedData);
+            await ApiService.updateSalesOrderQuantityAndDescription(Number(soId), updatedData);
             showSnackbar("編集に成功しました", "success");
             setIsEditing(false);
             setDescriptionError(null);
@@ -151,12 +81,12 @@ const PurchaseOrderDetailPage = () => {
     };
 
     const deleteMutation = useMutation({
-        mutationFn: async () => ApiService.deletePurchaseOrder(Number(poId)),
+        mutationFn: async () => ApiService.deleteSellOrder(Number(soId)),
         onSuccess: () => {
-            showSnackbar("注文の削除に成功しました", "success");
-            queryClient.invalidateQueries({ queryKey: ["purchaseOrderDetail"] });
+            showSnackbar("受注の削除に成功しました", "success");
+            queryClient.invalidateQueries({ queryKey: ["sellOrderDetail"] });
             setTimeout(() => {
-                navigate("/purchase-order");
+                navigate("/sell-order");
             }, 500);
         },
         onError: (error: any) => {
@@ -164,34 +94,22 @@ const PurchaseOrderDetailPage = () => {
         }
     });
     const submitMutation = useMutation({
-        mutationFn: async () => ApiService.placePurchaseOrder(Number(poId)),
+        mutationFn: async () => ApiService.prepareSaleOrder(Number(soId)),
         onSuccess: () => {
-            showSnackbar("注文に成功しました", "success");
-            queryClient.invalidateQueries({ queryKey: ["purchaseOrderDetail"] });
+            showSnackbar("受注に成功しました", "success");
+            queryClient.invalidateQueries({ queryKey: ["sellOrderDetail"] });
             setTimeout(() => {
-                navigate("/purchase-order");
+                navigate("/sell-order");
             }, 500);
         },
         onError: (error: any) => {
             showSnackbar(error.response?.data?.message || "注文に失敗しました", "error");
         }
     });
-
-    const mappedQty: PurchaseOrderDetailData[] = useMemo(() => {
-        return details.map(item => {
-            const sumReceived = dataReceivedQty?.find(d => d.sku === item.sku);
-            return sumReceived
-                ? { ...item, received: sumReceived.receivedQty }
-                : item;
-        });
-    }, [details, dataReceivedQty]);
-
-
-    console.log(mappedQty);
     return (
         <Box m={3}>
             <Header
-                title={`注文番号: ${data?.id ?? ""} | 仕入先: ${data?.supplierName ?? ""}`}
+                title={`注文番号: ${data?.id ?? ""}`}
                 subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${data?.createdAt ?? ""}`}
             />
             <Box mt={3} height="75vh">
@@ -203,20 +121,18 @@ const PurchaseOrderDetailPage = () => {
                     onClose={closeSnackbar}
                 />
                 {/* ローディング表示 */}
-                {(isLoading || isLoadingReceivedQty) && (
+                {(isLoading) && (
                     <Box textAlign="center" my={4}>
                         <CircularProgress />
                         <Typography>データを読み込み中...</Typography>
                     </Box>
                 )}
                 {/* エラー表示 */}
-                {(error || errorReceivedQty) && (
+                {(error) && (
                     <p className="error">データの取得に失敗しました。</p>
                 )}
                 <TableContainer component={Paper} sx={{ mb: 3 }}>
                     <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
-
-
                         <TableHead>
                             <TableRow
                                 sx={{
@@ -233,45 +149,40 @@ const PurchaseOrderDetailPage = () => {
                                 <TableCell>ステータス</TableCell>
                             </TableRow>
                         </TableHead>
+
                         <TableBody>
-                            {(mappedQty.length > 0) ? (
-                                mappedQty.map((detail, index) => {
-                                    const subtotal = detail.qty * detail.cost;
+                            {(data?.details ?? [].length > 0) ? (
+                                details.map((detail, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{detail.productName}</TableCell>
+                                        <TableCell>{detail.sku}</TableCell>
+                                        <TableCell>
+                                            {isEditing ? (
+                                                <TextField
+                                                    type="number"
+                                                    value={detail.qty}
+                                                    onChange={(e) => {
+                                                        const newQty = Number(e.target.value);
+                                                        const newDetails = [...details];
+                                                        newDetails[index].qty = newQty;
+                                                        setDetails(newDetails);
+                                                    }}
+                                                    size="small"
+                                                    autoFocus={index === 0}
+                                                    slotProps={{
+                                                        input: {
+                                                            inputProps: { min: 0 },
+                                                        },
+                                                    }}
+                                                />
+                                            ) : (data?.status === "NEW" ? detail.qty : `${detail.deliveredQty || 0}/${detail.qty}`)}
 
-                                    return (
-                                        <TableRow key={index}>
-                                            <TableCell>{detail.productName}</TableCell>
-                                            <TableCell>{detail.sku}</TableCell>
-                                            <TableCell>
-                                                {isEditing ? (
-                                                    <TextField
-                                                        type="number"
-                                                        value={detail.qty}
-                                                        onChange={(e) => {
-                                                            const newQty = Number(e.target.value);
-                                                            const newDetails = [...details];
-                                                            newDetails[index].qty = newQty;
-                                                            setDetails(newDetails);
-                                                        }}
-
-                                                        size="small"
-                                                        autoFocus={index === 0}
-                                                        slotProps={{
-                                                            input: {
-                                                                inputProps: { min: 0 },
-                                                            },
-                                                        }}
-                                                    />
-                                                ) : (data?.status === "NEW" ? detail.qty : `${detail.received || 0}/${detail.qty}`)
-
-                                                }
-                                            </TableCell>
-                                            <TableCell>{detail.cost}</TableCell>
-                                            <TableCell>{subtotal}</TableCell>
-                                            <TableCell>{detail.status}</TableCell>
-                                        </TableRow>
-                                    )
-                                })
+                                        </TableCell>
+                                        <TableCell>{detail.price}</TableCell>
+                                        <TableCell>{detail.qty * detail.price}</TableCell>
+                                        <TableCell>{detail.status}</TableCell>
+                                    </TableRow>
+                                ))
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
@@ -287,6 +198,7 @@ const PurchaseOrderDetailPage = () => {
                                     {totalAmount} 円
                                 </TableCell>
                             </TableRow>
+
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -301,7 +213,9 @@ const PurchaseOrderDetailPage = () => {
                             multiline
                             minRows={3}
                             value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            onChange={(e) => {
+                                setDescription(e.target.value)
+                            }}
                             error={!!descriptionError}
                             helperText={descriptionError}
                             sx={{
@@ -314,7 +228,6 @@ const PurchaseOrderDetailPage = () => {
                         </Typography>
                     )}
                 </Box>
-
             </Box>
             <Stack
                 direction="row"
@@ -338,12 +251,12 @@ const PurchaseOrderDetailPage = () => {
 
                 {data?.status === 'NEW' && (
                     <Button variant="contained" color="info" onClick={() => setOpenSubmitConfirm(true)}>
-                        注文
+                        受注
                     </Button>
                 )}
                 {(data?.status === 'PENDING' || data?.status === 'PROCESSING') && (
-                    <Button variant="contained" color="info" onClick={() => navigate(`/purchase-order/${poId}/receive`)}>
-                        受領
+                    <Button variant="contained" color="info" onClick={() => navigate(`/sell-order/${soId}/deliver`)}>
+                        出荷
                     </Button>
                 )}
             </Stack>
@@ -351,23 +264,20 @@ const PurchaseOrderDetailPage = () => {
             <DeleteConfirmDialog
                 open={openDeleteConfirm}
                 onClose={() => setOpenDeleteConfirm(false)}
-                targetName={poId}
+                targetName={soId}
                 onDelete={() => deleteMutation.mutate()}
                 isDeleting={deleteMutation.isPending}
             />
             <SubmitConfirmDialog
                 open={openSubmitConfirm}
                 onClose={() => setOpenSubmitConfirm(false)}
-                targetName={poId}
+                targetName={soId}
                 onConfirm={() => submitMutation.mutate()}
                 isPending={submitMutation.isPending}
                 type="受注"
             />
-
-        </Box >
+        </Box>
     )
 }
 
-export default PurchaseOrderDetailPage;
-
-
+export default SellOrderDetailPage

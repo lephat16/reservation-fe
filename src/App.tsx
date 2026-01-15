@@ -8,12 +8,11 @@ import AllProductPage from './pages/product/AllProductsPage'
 import TransactionPage from './pages/transaction/TransactionPage'
 import ProfilePage from './pages/profile/ProfilePage'
 import DashboardPage from './pages/dashboard/DashboardPage'
-import SellPage2 from './pages/sell/SellPage2'
 import { ColorModeContext, useMode } from './theme'
 import { ThemeProvider } from '@emotion/react'
 import { CssBaseline } from '@mui/material'
 import MainLayout from './layout/Layout'
-import CategoriesPage from './pages/category/CatagoriesPage'
+import CategoriesPage from './pages/category/CategoriesPage'
 import CategoryDetailPage from './pages/category/CategoryDetailPage'
 import AllSupplierPage from './pages/supplier/AllSupplierPage'
 import SupplierPage from './pages/supplier/SupplierPage'
@@ -21,6 +20,10 @@ import PurchaseOrderPage from './pages/purchase/PurchaseOrderPage'
 import PurchaseOrderDetailPage from './pages/purchase/PurchaseOrderDetailPage'
 import ReceiveForm from './components/forms/ReceiveForm'
 import CreatePurchasePage from './pages/purchase/CreatePurchasePage'
+import SellOrderPage from './pages/sell/SellOrderPage'
+import SellOrderDetailPage from './pages/sell/SellOrderDetailPage'
+import DeliverForm from './components/forms/DeliverForm'
+import CreateSellPage from './pages/sell/CreateSellPage'
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -47,7 +50,11 @@ function App() {
               <Route path="/purchase-order/:poId" element={<ProtectedRoute element={<PurchaseOrderDetailPage />} />} />
               <Route path="/purchase-order/create" element={<ProtectedRoute element={<CreatePurchasePage />} />} />
 
-              <Route path="/sell" element={<ProtectedRoute element={<SellPage2 />} />} />
+              <Route path="/sell-order" element={<ProtectedRoute element={<SellOrderPage />} />} />
+              <Route path="/sell-order/:soId/deliver" element={<ProtectedRoute element={<DeliverForm />} />} />
+              <Route path="/sell-order/:soId" element={<ProtectedRoute element={<SellOrderDetailPage />} />} />
+              <Route path="/sell-order/create" element={<ProtectedRoute element={<CreateSellPage />} />} />
+
               <Route path="/transaction" element={<ProtectedRoute element={<TransactionPage />} />} />
               <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
               <Route path="/dashboard" element={<ProtectedRoute element={<DashboardPage />} />} />

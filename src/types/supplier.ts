@@ -9,7 +9,7 @@ export interface SupplierData {
     categoryNames: string[];
 }
 export interface SupplierProductData {
-    id: number
+    id: number;
     sku: string;
     product: string;
     price: number;
@@ -23,6 +23,18 @@ export interface SupplierProductWithCategoryData {
     supplierName?: string;
     supplierId?: string;
     products: SupplierProductData[];
+}
+
+export interface ProductWithSkuByCategoryData {
+    supplierProductId: number;
+    categoryName: string;
+    productId: number;
+    productName: string;
+    sku: string;
+    unit: string;
+    status: string;
+    price: number;
+    totalQuantity: number;
 }
 
 export interface SupplierResponse extends ResponseData {

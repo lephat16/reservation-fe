@@ -65,6 +65,14 @@ export interface DashboardDTO {
 };
 export interface SellData extends BaseTransaction { }
 
+
+export type OrderStatus =
+    | "NEW"
+    | "PROCESSING"
+    | "COMPLETED"
+    | "CANCELLED"
+    | "PENDING";
+
 export interface PurchaseOrderDetailData {
     id: string,
     purchaseOrderId: string,
@@ -72,7 +80,7 @@ export interface PurchaseOrderDetailData {
     productName: string,
     qty: number,
     cost: number,
-    status: string,
+    status: OrderStatus,
     sku?: string,
     received?: number,
 }
@@ -83,7 +91,7 @@ export interface PurchaseOrderData {
     supplierName: string,
     userId: string,
     userName: string,
-    status: string,
+    status: OrderStatus,
     description: string,
     total: number,
     createdAt: string,
@@ -95,9 +103,9 @@ export interface ReceiveStockItem {
     receivedQty: number,
     note: string,
 }
-export interface ReceiveStockResultData {
-    purchaseOrderId: string,
-    poStatus: string,
+export interface StockResultData {
+    orderId: string,
+    status: string,
     completedDetailIds: number[],
     stockHistories: string[],
 }
@@ -111,8 +119,76 @@ export interface InventoryHistoryByPurchaseOrder {
     productName: string;
     supplierName: string;
     refType: string;
-    createdAt: string;  
+    createdAt: string;
+    supplierSku: string;
+}
+export interface InventoryHistoryBySaleOrder {
+    id: number;
+    inventoryStockId: number;
+    location: string;
+    warehouseName: string;
+    changeQty: number;
+    notes: string;
+    productName: string;
+    customerName: string;
+    refType: string;
+    createdAt: string;
     supplierSku: string;
 }
 
+export interface PurchaseDetail {
+    productId: number;
+    qty: number;
+    cost: number;
+    note: string;
+};
+export interface PurchaseOrderItem {
+    supplierId: number;
+    details: PurchaseDetail[];
+    description: string;
+}
 
+export interface SellDetail {
+    productId: number;
+    sku: string;
+    qty: number;
+    price: number;
+    note: string;
+};
+export interface SellOrderItem {
+    customerName: string;
+    details: SellDetail[];
+    description: string;
+}
+
+
+export interface SaleOrderDetailData {
+    id: string,
+    salesOrderId: string,
+    productId: number,
+    productName: string,
+    qty: number,
+    price: number,
+    status: OrderStatus,
+    sku?: string,
+    deliveredQty: number,
+}
+
+export interface SaleOrderData {
+    id: string,
+    customerName: string,
+    userId: string,
+    userName: string,
+    status: OrderStatus,
+    description: string,
+    total: number,
+    createdAt: string,
+    details: SaleOrderDetailData[]
+}
+
+export interface DeliverStockItem {
+    detailId: string,
+    warehouseId: string,
+    deliveredQty: number,
+    note: string,
+}
