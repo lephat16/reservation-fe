@@ -128,7 +128,14 @@ const PurchaseOrderPage = () => {
                 {error && <p className="error">データの取得に失敗しました。</p>}
 
 
-                <TableContainer component={Paper} sx={{ mb: 3 }}>
+                <TableContainer
+                    component={Paper}
+                    sx={{
+                        mb: 3,
+                        maxHeight: '75vh',
+                        overflowY: 'auto',
+                    }}
+                >
                     <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
                         <colgroup>
                             {columns.map(
@@ -230,7 +237,7 @@ const PurchaseOrderPage = () => {
                     targetName={`${selectedPurchaseOrderId}の注文`}
                     title="購入注文"
                 />
-                
+
             </Box>
         </Box>
     );

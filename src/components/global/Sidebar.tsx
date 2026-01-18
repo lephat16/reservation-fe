@@ -232,7 +232,7 @@ const Sidebar = () => {
                     />
                     <Item
                         title="取引履歴"
-                        to="/"
+                        to="/stocks/history"
                         icon={<HistoryIcon />}
                         selected={selected}
                         setSelected={setSelected}

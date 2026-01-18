@@ -24,6 +24,7 @@ import SellOrderPage from './pages/sell/SellOrderPage'
 import SellOrderDetailPage from './pages/sell/SellOrderDetailPage'
 import DeliverForm from './components/forms/DeliverForm'
 import CreateSellPage from './pages/sell/CreateSellPage'
+import StockHistoriesPage from './pages/stocks/StockHistoriesPage'
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -54,6 +55,8 @@ function App() {
               <Route path="/sell-order/:soId/deliver" element={<ProtectedRoute element={<DeliverForm />} />} />
               <Route path="/sell-order/:soId" element={<ProtectedRoute element={<SellOrderDetailPage />} />} />
               <Route path="/sell-order/create" element={<ProtectedRoute element={<CreateSellPage />} />} />
+
+              <Route path="/stocks/history" element={<ProtectedRoute element={<StockHistoriesPage />} />} />
 
               <Route path="/transaction" element={<ProtectedRoute element={<TransactionPage />} />} />
               <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />

@@ -1,11 +1,11 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Stack, TextField, Typography, useTheme, type SelectChangeEvent } from "@mui/material"
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Stack, TextField, Typography, useTheme } from "@mui/material"
 import Header from "../../layout/Header"
 import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar"
 import { useSnackbar } from "../../hooks/useSnackbar";
 import { tokens } from "../../theme";
 import ApiService from "../../services/ApiService";
 import type { CategorySummariesData } from "../../types/category";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { SellOrderItem } from "../../types";
 import SellRowItem from "../../components/rowItem/SellRowItem";
@@ -35,7 +35,7 @@ const sellRowSchema = yup.object({
         .min(1)
         .test(
             "max-by-stock",
-            "在庫数を超えています",
+            "利用可能数量を超えています",
             function (value) {
                 const { stockQty } = this.parent as SellRow;
 
@@ -79,6 +79,8 @@ const CreateSellPage = () => {
             return resCategories.data;
         },
     });
+
+    const queryClient = useQueryClient();
 
     const updateRow = (index: number, patch: Partial<SellRow>) => {
         setRows(prev =>
@@ -152,8 +154,6 @@ const CreateSellPage = () => {
         };
     }
 
-    // const errorsByRow: Record<number, Record<string, string>> = {};
-
     // 保存前のバリデーション
     const validateRows = async (): Promise<boolean> => {
         if (!customerName.trim()) {
@@ -166,18 +166,6 @@ const CreateSellPage = () => {
             return false;
         }
 
-        // try {
-        //     await Promise.all(
-        //         rows.map(row =>
-        //             sellRowSchema.validate(row, { abortEarly: false })));
-        //     return true;
-        // } catch (err) {
-        //     if (err instanceof yup.ValidationError) {
-        //         showSnackbar(err.errors[0], "error");
-        //     }
-        //     return false;
-        // }
-
         try {
             await rowsSchema.validate(rows, { abortEarly: false });
             setErrorsByRow({});
@@ -188,23 +176,10 @@ const CreateSellPage = () => {
 
                 err.inner.forEach(e => {
                     if (!e.path) return;
-                    // const parts = e.path.split('.');
-                    // let rowIndex: number;
-                    // let field: string;
-                    // if (!isNaN(Number(parts[0]))) {
-                    //     rowIndex = Number(parts[0]);
-                    //     field = parts.slice(1).join('.');
-                    // } else {
-                    //     rowIndex = 0;
-                    //     field = e.path;
-                    // }
-                    // if (!errorsByRow[rowIndex]) errorsByRow[rowIndex] = {};
-                    // errorsByRow[rowIndex][field] = e.message;
-                    // remove array index nếu có
+
                     const parts = e.path.replace(/^\[\d+\]\./, '').split('.');
                     const field = parts.join('.');
 
-                    // tách index row
                     const match = e.path.match(/^\[(\d+)\]/);
                     const rowIndex = match ? Number(match[1]) : 0;
 
@@ -225,16 +200,26 @@ const CreateSellPage = () => {
         if (!sellItem) return;
 
         try {
-            // const createdPurchaseOrder = await ApiService.createPurchaseOrder(sellItem);
-            // await ApiService.placeOrder(Number(createdPurchaseOrder.data.id));
+            const createdSaleOrder = await ApiService.createSaleOrder(sellItem);
+            await ApiService.prepareOrder(Number(createdSaleOrder.data.id));
             console.log(sellItem);
             showSnackbar("注文を保存しました", "success");
+
+            const categoryIds = rows
+                .map(row => row.category?.id)
+                .filter((id): id is number => !!id);
 
             // リセット
             setOpenConfirmDialog(false);
             setDescription("");
             setRows([defaultItem]);
             setCustomerName("");
+
+            categoryIds.forEach(categoryId => {
+                queryClient.invalidateQueries({
+                    queryKey: ["supplierProductsByCategory", categoryId]
+                });
+            });
         } catch (err) {
             showSnackbar("保存に失敗しました", "error");
         }
@@ -259,7 +244,7 @@ const CreateSellPage = () => {
         };
 
         try {
-            // await ApiService.createPurchaseOrder(sellItem);
+            await ApiService.createSaleOrder(sellItem);
             console.log(sellItem);
             showSnackbar("注文を保存しました", "success");
 

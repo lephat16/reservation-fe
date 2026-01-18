@@ -35,6 +35,7 @@ export interface ProductWithSkuByCategoryData {
     status: string;
     price: number;
     totalQuantity: number;
+    totalReservedQuantity: number;
 }
 
 export interface SupplierResponse extends ResponseData {

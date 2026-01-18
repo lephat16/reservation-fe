@@ -6,12 +6,13 @@ import type { SupplierData, SupplierProductData } from '../../types/supplier';
 import Header from '../../layout/Header';
 import CustomSnackbar from '../../components/customSnackbar/CustomSnackbar';
 import { useSnackbar } from '../../hooks/useSnackbar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import NumberField from '../../components/fields/NumberField';
 import type { PurchaseOrderItem } from '../../types';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import IconButton from '@mui/material/IconButton';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { useLocation } from 'react-router-dom';
 
 type PurchaseRow = {
     product: SupplierProductData | null;
@@ -26,6 +27,8 @@ const CreatePurchasePage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
+    const location = useLocation();
+    const { preselectedSupplierId, preselectedSku } = location.state || {};
     // ステート管理
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
     const [openSelectSupplier, setOpenSelectSupplier] = useState(false);
@@ -61,6 +64,22 @@ const CreatePurchasePage = () => {
         },
         enabled: !!selectedSupplier  // 仕入先が選択されている場合のみ実行
     });
+
+    useEffect(() => {
+        if (!data || !preselectedSupplierId) return;
+
+        const preSupplier = data.find(s => s.id === Number(preselectedSupplierId)) || null;
+        setSelectedSupplier(preSupplier);
+
+    }, [data, preselectedSupplierId]);
+    useEffect(() => {
+        if (!productData || !preselectedSku) return;
+
+        const preProduct = productData.find(p => p.sku === preselectedSku) || null;
+        if (preProduct) {
+            setRows([{ product: preProduct, qty: 1, note: "" }]);
+        }
+    }, [productData, preselectedSku]);
 
     // 仕入先変更時
     const handleSupplierChange = (event: SelectChangeEvent<number>) => {

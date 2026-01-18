@@ -1,7 +1,8 @@
 import CryptoJS from "crypto-js";
-import type { AllUserRespose, ApiResponse, CategoryData, CategorySummariesData, CategorySummaryData, DashboardDTO, DeliverStockItem, InventoryHistoryByPurchaseOrder, InventoryHistoryBySaleOrder, LoginRequest, LoginResponse, ProductData, ProductDetailData, PurchaseOrderData, PurchaseOrderItem, ReceiveStockItem, StockResultData, RegisterRequest, RegisterResponse, ResponseData, SaleOrderData, SellData, SumReceivedGroupByProduct, TransactionsResponse, UserData, WarehouseWithLocationData } from "../types";
+import type { AllUserRespose, ApiResponse, CategoryData, CategorySummariesData, CategorySummaryData, DashboardDTO, DeliverStockItem, InventoryHistoryByPurchaseOrder, InventoryHistoryBySaleOrder, LoginRequest, LoginResponse, ProductData, ProductDetailData, PurchaseOrderData, PurchaseOrderItem, ReceiveStockItem, StockResultData, RegisterRequest, RegisterResponse, ResponseData, SaleOrderData, SellData, SumReceivedGroupByProduct, TransactionsResponse, UserData, WarehouseWithLocationData, SellOrderItem } from "../types";
 import { api } from "../api/axiosClient";
 import type { ProductWithSkuByCategoryData, SupplierData, SupplierProductWithCategoryData } from "../types/supplier";
+import type { StockHistoriesWithDetailData } from "../types/warehouse";
 export default class ApiService {
     static ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
     static encrypt(data: string): string {
@@ -196,10 +197,20 @@ export default class ApiService {
     static async deliverStock(deliverItem: DeliverStockItem[], soId: number): Promise<ApiResponse<StockResultData[]>> {
         return (await api.post(`/inventory/stock/deliver-stock/${soId}`, deliverItem));
     }
+    static async createSaleOrder(sellData: SellOrderItem): Promise<ApiResponse<SaleOrderData>> {
+        return (await api.post(`/transactions/sales/add`, sellData));
+    }
+    static async prepareOrder(soId: number): Promise<ApiResponse<SaleOrderData>> {
+        return (await api.put(`/transactions/sales/prepare/${soId}`));
+    }
     static async deleteSellOrder(orderId: number): Promise<ApiResponse<void>> {
         return (await api.delete(`/transactions/sales/delete/${orderId}`));
     }
 
+
+    static async getAllStockHistoriesWithDetails(): Promise<ApiResponse<StockHistoriesWithDetailData[]>> {
+        return (await api.get(`/inventory/stock-history/with-details/all`));
+    }
 
     static async purchaseProduct(purchaseData: any): Promise<ApiResponse<PurchaseOrderData>> {
         return (await api.post(`/transactions/purchase`, purchaseData)).data;

@@ -413,6 +413,7 @@ const ProductPage = () => {
                                         <TableCell>仕入先</TableCell>
                                         <TableCell>SKU</TableCell>
                                         <TableCell>仕入単価</TableCell>
+                                        <TableCell></TableCell>
                                     </TableRow>
                                 </TableHead>
 
@@ -422,6 +423,23 @@ const ProductPage = () => {
                                             <TableCell>{s.supplierName}</TableCell>
                                             <TableCell>{s.sku}</TableCell>
                                             <TableCell>¥{s.price.toLocaleString()}</TableCell>
+                                            <TableCell>
+                                                <Button
+                                                    variant="contained"
+                                                    color="success"
+                                                    size="small"
+                                                    onClick={() => {
+                                                        navigate("/purchase-order/create", {
+                                                            state: {
+                                                                preselectedSupplierId: s.supplierId,
+                                                                preselectedSku: s.sku,
+                                                            }
+                                                        });
+                                                    }}
+                                                >
+                                                    発注
+                                                </Button>
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -440,9 +458,7 @@ const ProductPage = () => {
                             >
                                 削除
                             </Button>
-                            <Button variant="contained" color="success">
-                                発注に追加
-                            </Button>
+
                         </Stack>
 
                         <TableContainer component={Paper} sx={{ mb: 2, backgroundColor: colors.primary[400] }}>

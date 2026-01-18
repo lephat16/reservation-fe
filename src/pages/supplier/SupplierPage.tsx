@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { tokens } from "../../theme";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import ApiService from "../../services/ApiService";
 import { Box, Button, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useMediaQuery, useTheme, type SxProps, type Theme } from "@mui/material";
 import Header from "../../layout/Header";
@@ -9,8 +9,9 @@ import type { SupplierProductData } from "../../types/supplier";
 
 
 type Props = {
-    categoryName: string;
+    categoryName: string | undefined;
     products: SupplierProductData[];
+    supplierId: number;
 };
 
 const supplierTableColumns = {
@@ -41,17 +42,13 @@ const cellStyle = (
 });
 
 
-const SupplierCategoryTable = ({ categoryName, products }: Props) => {
+const SupplierCategoryTable = ({ categoryName, products,supplierId }: Props) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const col = supplierTableColumns;
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const navigate = useNavigate();
 
-
-    const handlePurchase = (productId: number) => {
-        navigate(`/suppliers/${productId}`)
-    };
     return (
         <TableContainer component={Paper} sx={{ mb: 3 }}>
             <Table
@@ -136,7 +133,14 @@ const SupplierCategoryTable = ({ categoryName, products }: Props) => {
                                     variant="contained"
                                     size="small"
                                     color="success"
-                                    onClick={() => handlePurchase(p.id)}
+                                    onClick={() => {
+                                        navigate("/purchase-order/create", {
+                                            state: {
+                                                preselectedSupplierId: supplierId,
+                                                preselectedSku: p.sku,
+                                            }
+                                        });
+                                    }}
                                 >
                                     購入
                                 </Button>
@@ -195,6 +199,7 @@ const SupplierPage = () => {
                         key={cat.categoryName}
                         categoryName={cat.categoryName}
                         products={cat.products}
+                        supplierId={Number(supplierId)}
                     />
                 ))}
             </Box>

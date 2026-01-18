@@ -49,7 +49,9 @@ const SellRowItem = ({
     console.log(productData)
 
     const total = row.qty * row.price;
-    console.log(errors)
+    const totalQuantity = selectedProduct?.totalQuantity ?? 0;        // 在庫数
+    const reservedQuantity = selectedProduct?.totalReservedQuantity ?? 0; // 引当済み在庫
+    const availableQuantity = totalQuantity - reservedQuantity;       // 利用可能数量
     return (
         <Box
             border={1}
@@ -153,11 +155,14 @@ const SellRowItem = ({
                     >
                         {Array.from(
                             new Map(productData.map(p => [p.productName, p])).values()
-                        ).map((p) => (
-                            <MenuItem key={p.productId} value={p.productId}>
-                                {p.productName}
-                            </MenuItem>
-                        ))}
+                        ).map((p) => {
+                            console.log(p.productName)    
+                            return (
+                                <MenuItem key={p.productId} value={p.productId}>
+                                    {p.productName}
+                                </MenuItem>
+                            )
+                        })}
                     </Select>
                     {errors?.productId &&
                         <Typography
@@ -189,11 +194,10 @@ const SellRowItem = ({
                         onChange={(e) => {
                             const sku = e.target.value;
                             const product = productData.find(p => p.sku === sku) ?? null;
-                            console.log(product?.totalQuantity)
                             setSelectedProduct(product);
                             onUpdate(index, {
                                 sku,
-                                stockQty: product?.totalQuantity ?? 0,
+                                stockQty: (product?.totalQuantity ?? 0) - (product?.totalReservedQuantity ?? 0),
                                 qty: 1,
                                 price: 0,
                             });
@@ -261,7 +265,7 @@ const SellRowItem = ({
                                     <InventoryIcon />
                                 </Avatar>
                             </ListItemAvatar>
-                            <ListItemText primary={`在庫数: ${selectedProduct?.totalQuantity ?? 0}${selectedProduct?.unit ?? ""}`} />
+                            <ListItemText primary={`利用可能数量: ${availableQuantity}${selectedProduct?.unit ?? ""}`} />
                         </ListItem>
                     </List>
                     <Box mb={1}>

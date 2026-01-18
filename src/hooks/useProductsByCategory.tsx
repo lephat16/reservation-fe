@@ -6,14 +6,16 @@ import type { ProductWithSkuByCategoryData } from "../types/supplier";
 
 const useProductsByCategory = (categoryId: number) => {
     return useQuery<ProductWithSkuByCategoryData[]>({
-        queryKey: ["supplierProducts", categoryId],
+        queryKey: ["supplierProductsByCategory", categoryId],
         queryFn: async () => {
+            console.log("CALL API", categoryId);
             if (!categoryId) return [];
             const response = await ApiService.getAllSupllierProductWithSkuByCategory(categoryId);
             return response.data ?? [];
         },
         enabled: !!categoryId,
         staleTime: 5 * 60 * 1000,
+        
     });
 }
 
