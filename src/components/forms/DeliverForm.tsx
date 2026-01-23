@@ -1,5 +1,5 @@
-import { Box, CircularProgress, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, useTheme } from '@mui/material';
-import React, { useState } from 'react'
+import { Box, CircularProgress, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, useTheme } from '@mui/material';
+import { useState } from 'react'
 import { tokens } from '../../theme';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSnackbar } from '../../hooks/useSnackbar';
@@ -13,6 +13,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import { ReceiveFormDialog } from './ReceiveForm';
 import type { DeliverStockItem, InventoryHistoryBySaleOrder, SaleOrderData, WarehouseWithLocationData } from '../../types';
 import { jaJP } from '@mui/x-data-grid/locales';
+import type { AxiosError } from 'axios';
 
 const DeliverForm = () => {
 
@@ -60,12 +61,10 @@ const DeliverForm = () => {
         onSuccess: () => {
             showSnackbar("商品を注文しました。", "success");
             queryClient.invalidateQueries({ queryKey: ["saleOrderDetail"] });
-            // setTimeout(() => {
-            //     navigate(`/sell-order/${soId}/deliver`);
-            // }, 500);
+
             setOpenDeliverForm(false);
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || "注文に失敗しました", "error");
         }
     });
@@ -122,10 +121,14 @@ const DeliverForm = () => {
                 borderRadius: 1
             }}
         >
-            <Header
-                title={`受注番号: ${data?.saleOrder?.id ?? ""} | 顧客: ${data?.saleOrder?.customerName ?? ""}`}
-                subtitle={`ステータス: ${data?.saleOrder?.status ?? ""}`}
-            />
+            {isLoading ? (
+                <Skeleton variant="text" width="80%" height={40} />
+            ) : (
+                < Header
+                    title={`受注番号: ${data?.saleOrder?.id ?? ""} | 顧客: ${data?.saleOrder?.customerName ?? ""}`}
+                    subtitle={`ステータス: ${data?.saleOrder?.status ?? ""}`}
+                />
+            )}
             <Box mt={3} height="75vh">
                 {/* メッセージ表示 */}
                 <CustomSnackbar
@@ -134,80 +137,77 @@ const DeliverForm = () => {
                     severity={snackbar.severity}
                     onClose={closeSnackbar}
                 />
-                {/* ローディング表示 */}
-                {(isLoading) && (
-                    <Box textAlign="center" my={4}>
-                        <CircularProgress />
-                        <Typography>データを読み込み中...</Typography>
-                    </Box>
-                )}
+
                 {/* エラー表示 */}
                 {(error) && (
                     <p className="error">データの取得に失敗しました。</p>
                 )}
-                <TableContainer component={Paper} sx={{ m3: 3 }} >
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={400} />
+                ) : (
+                    < TableContainer component={Paper} sx={{ m3: 3 }} >
 
-                    <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
-                        <TableHead>
-                            <TableRow
-                                sx={{
-                                    fontWeight: "bold",
-                                    backgroundColor: colors.blueAccent[500],
-                                    color: colors.grey[100]
-                                }}
-                            >
-                                <TableCell></TableCell>
-                                <TableCell>商品名</TableCell>
-                                <TableCell>SKU</TableCell>
-                                <TableCell>売上数</TableCell>
-                                <TableCell>出荷数</TableCell>
-                                <TableCell>残出荷数</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {data?.saleOrder.details.map((detail, index) => {
-                                const remains = detail.qty - detail.deliveredQty;
-                                return (
-                                    <TableRow key={index}>
-                                        <TableCell>
-                                            {remains === 0 ? (
-                                                <Tooltip title="商品はすでに受領済み">
-                                                    <IconButton size="small">
-                                                        <CheckIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            ) : (
-                                                <Tooltip title="出荷">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => {
-                                                            setSelectedProduct({
-                                                                productName: detail.productName,
-                                                                detailId: detail.id
-                                                            });
-                                                            setSelectedSku(detail.sku ?? null)
-                                                            setOpenDeliverForm(true);
-                                                            setSelectedRemains(remains);
-                                                        }}
-                                                    >
-                                                        <WarehouseIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
+                        <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
+                            <TableHead>
+                                <TableRow
+                                    sx={{
+                                        fontWeight: "bold",
+                                        backgroundColor: colors.blueAccent[500],
+                                        color: colors.grey[100]
+                                    }}
+                                >
+                                    <TableCell></TableCell>
+                                    <TableCell>商品名</TableCell>
+                                    <TableCell>SKU</TableCell>
+                                    <TableCell>売上数</TableCell>
+                                    <TableCell>出荷数</TableCell>
+                                    <TableCell>残出荷数</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {data?.saleOrder.details.map((detail, index) => {
+                                    const remains = detail.qty - detail.deliveredQty;
+                                    return (
+                                        <TableRow key={index}>
+                                            <TableCell>
+                                                {remains === 0 ? (
+                                                    <Tooltip title="商品はすでに受領済み">
+                                                        <IconButton size="small">
+                                                            <CheckIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                ) : (
+                                                    <Tooltip title="出荷">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setSelectedProduct({
+                                                                    productName: detail.productName,
+                                                                    detailId: detail.id
+                                                                });
+                                                                setSelectedSku(detail.sku ?? null)
+                                                                setOpenDeliverForm(true);
+                                                                setSelectedRemains(remains);
+                                                            }}
+                                                        >
+                                                            <WarehouseIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
 
-                                            )}
-                                        </TableCell>
-                                        <TableCell>{detail.productName}</TableCell>
-                                        <TableCell>{detail.sku}</TableCell>
-                                        <TableCell>{detail.qty}</TableCell>
-                                        <TableCell>{detail.deliveredQty}</TableCell>
-                                        <TableCell>{remains}</TableCell>
-                                    </TableRow>
-                                )
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-
+                                                )}
+                                            </TableCell>
+                                            <TableCell>{detail.productName}</TableCell>
+                                            <TableCell>{detail.sku}</TableCell>
+                                            <TableCell>{detail.qty}</TableCell>
+                                            <TableCell>{detail.deliveredQty}</TableCell>
+                                            <TableCell>{remains}</TableCell>
+                                        </TableRow>
+                                    )
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
                 {/* 在庫履歴タイトル */}
                 <Typography
                     sx={{
@@ -220,53 +220,57 @@ const DeliverForm = () => {
                     }}>
                     在庫履歴
                 </Typography>
-                <DataGrid
-                    rows={rows}
-                    columns={columns}
-                    initialState={{
-                        pagination: {
-                            paginationModel: {
-                                pageSize: 5,
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={400} />
+                ) : (
+                    <DataGrid
+                        rows={rows}
+                        columns={columns}
+                        initialState={{
+                            pagination: {
+                                paginationModel: {
+                                    pageSize: 5,
+                                },
                             },
-                        },
-                    }}
-                    localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
-                    pageSizeOptions={[5]}
-                    disableRowSelectionOnClick
-                    autoHeight
-                    sx={{
-                        "--DataGrid-t-color-interactive-focus": "none !important",
-                        "& .MuiDataGrid-root": {
-                            border: "none",
-                        },
-                        "& .MuiDataGrid-cell": {
-                            borderBottom: "none",
-                        },
-                        "& .name-column--cell": {
-                            color: colors.greenAccent[300],
-                        },
-                        "& .MuiDataGrid-columnHeaders": {
-                            color: colors.grey[100],
-                            borderBottom: "none",
-                        },
-                        "& .MuiDataGrid-virtualScroller": {
-                            backgroundColor: colors.primary[400],
-                        },
-                        "& .MuiDataGrid-footerContainer": {
-                            borderTop: "none",
-                            backgroundColor: colors.greenAccent[700],
-                        },
-                        "& .MuiCheckbox-root": {
-                            color: `${colors.greenAccent[400]} !important`,
-                        },
-                        "& .MuiDataGrid-toolbar": {
-                            backgroundColor: colors.greenAccent[700],
-                        },
-                        "& .MuiDataGrid-columnHeader": {
-                            backgroundColor: colors.greenAccent[800],
-                        },
-                    }}
-                />
+                        }}
+                        localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
+                        pageSizeOptions={[5]}
+                        disableRowSelectionOnClick
+                        autoHeight
+                        sx={{
+                            "--DataGrid-t-color-interactive-focus": "none !important",
+                            "& .MuiDataGrid-root": {
+                                border: "none",
+                            },
+                            "& .MuiDataGrid-cell": {
+                                borderBottom: "none",
+                            },
+                            "& .name-column--cell": {
+                                color: colors.greenAccent[300],
+                            },
+                            "& .MuiDataGrid-columnHeaders": {
+                                color: colors.grey[100],
+                                borderBottom: "none",
+                            },
+                            "& .MuiDataGrid-virtualScroller": {
+                                backgroundColor: colors.primary[400],
+                            },
+                            "& .MuiDataGrid-footerContainer": {
+                                borderTop: "none",
+                                backgroundColor: colors.greenAccent[700],
+                            },
+                            "& .MuiCheckbox-root": {
+                                color: `${colors.greenAccent[400]} !important`,
+                            },
+                            "& .MuiDataGrid-toolbar": {
+                                backgroundColor: colors.greenAccent[700],
+                            },
+                            "& .MuiDataGrid-columnHeader": {
+                                backgroundColor: colors.greenAccent[800],
+                            },
+                        }}
+                    />
+                )}
                 {/* 受領フォームダイアログ */}
                 {selectedProduct && (
                     <ReceiveFormDialog

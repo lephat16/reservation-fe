@@ -9,6 +9,7 @@ import type { RegisterRequest } from "../../types";
 import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
 import { useSnackbar } from "../../hooks/useSnackbar";
 import './auth.css'
+import type { AxiosError } from "axios";
 
 // yupを使ったフォームバリデーションスキーマ
 const schema = yup.object({
@@ -55,7 +56,7 @@ const RegisterPage = (): JSX.Element => {
             showSnackbar("登録に成功しました。", "success");
             setTimeout(() => navigate("/login"), 500); // ログインページへ遷移
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             // エラー時の通知
             showSnackbar(
                 error.response?.data?.message || "登録に失敗しました。", "error"

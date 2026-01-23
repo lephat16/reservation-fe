@@ -1,4 +1,4 @@
-import { Box, Button, Chip, CircularProgress, IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useMediaQuery, useTheme, type SxProps, type Theme } from "@mui/material";
+import { Box, Button, Chip, CircularProgress, IconButton, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useMediaQuery, useTheme, type SxProps, type Theme } from "@mui/material";
 import Header from "../../layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ApiService from "../../services/ApiService";
@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useSnackbar } from "../../hooks/useSnackbar";
 import { DeleteConfirmDialog } from "../product/ProductPage";
 import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
+import type { AxiosError } from "axios";
 
 const renderStatusChip = (status: string) => {
     const colorMap: Record<string, "secondary" | "primary" | "success" | "warning" | "error"> = {
@@ -78,7 +79,7 @@ const PurchaseOrderPage = () => {
             queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
 
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || "削除に失敗しました", "error");
         }
     });
@@ -92,7 +93,11 @@ const PurchaseOrderPage = () => {
     return (
         <Box m={3}>
             <Box display="flex" justifyContent="space-between">
-                <Header title="購入一覧:" subtitle="購入情報の一覧表示" />
+                {isLoading ? (
+                    <Skeleton variant="text" width="80%" height={40} />
+                ) : (
+                    <Header title="購入一覧:" subtitle="購入情報の一覧表示" />
+                )}
                 <Box mt={4}>
                     <Button
                         variant="contained"
@@ -119,114 +124,121 @@ const PurchaseOrderPage = () => {
                 {(error) && (
                     <p className="error">データの取得に失敗しました。</p>
                 )}
-                {isLoading && (
-                    <Box textAlign="center" my={4}>
-                        <CircularProgress />
-                        <Typography>データを読み込み中...</Typography>
-                    </Box>
-                )}
+
                 {error && <p className="error">データの取得に失敗しました。</p>}
 
-
-                <TableContainer
-                    component={Paper}
-                    sx={{
-                        mb: 3,
-                        maxHeight: '75vh',
-                        overflowY: 'auto',
-                    }}
-                >
-                    <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
-                        <colgroup>
-                            {columns.map(
-                                (col) => (!isMobile || !col.hideOnMobile ? <col key={col.key} style={{ width: col.width }} /> : null)
-                            )}
-                        </colgroup>
-
-                        <TableHead>
-                            <TableRow sx={{ fontWeight: "bold", backgroundColor: colors.blueAccent[500], color: colors.grey[100] }}>
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={400} />
+                ) : (
+                    <TableContainer
+                        component={Paper}
+                        sx={{
+                            mb: 3,
+                            maxHeight: '75vh',
+                            overflowY: 'auto',
+                        }}
+                    >
+                        <Table stickyHeader sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
+                            <colgroup>
                                 {columns.map(
-                                    (col) =>
-                                        !isMobile || !col.hideOnMobile ? (
-                                            <TableCell key={col.key} sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}>
-                                                {col.label}
-                                            </TableCell>
-                                        ) : null
+                                    (col) => (!isMobile || !col.hideOnMobile ? <col key={col.key} style={{ width: col.width }} /> : null)
                                 )}
-                            </TableRow>
-                        </TableHead>
+                            </colgroup>
 
-                        <TableBody>
-                            {resPO.length > 0 ? (
-                                resPO.map((order) => (
-                                    <TableRow key={order.id}>
-                                        {columns.map((col) => {
-                                            if (isMobile && col.hideOnMobile) return null;
+                            <TableHead>
+                                <TableRow
+                                    sx={{
+                                        "& .MuiTableCell-root": {
+                                            fontWeight: "bold",
+                                            backgroundColor: colors.blueAccent[500],
+                                            color: colors.grey[100],
+                                        },
 
-                                            let content;
-                                            switch (col.key) {
-                                                case "status":
-                                                    content = renderStatusChip(order.status);
-                                                    break;
-                                                case "action":
-                                                    content = (
-                                                        <>
-                                                            <IconButton
-                                                                aria-label="info"
-                                                                sx={{
-                                                                    "&:hover": {
-                                                                        color: "lightblue",
-                                                                        backgroundColor: "transparent",
-                                                                    },
-                                                                    transition: "color 0.2s ease",
-                                                                }}
-                                                                onClick={() => navigate(`/purchase-order/${order.id}`)}
-                                                            >
-                                                                <InfoIcon />
-                                                            </IconButton>
-                                                            {!isMobile && (
+                                    }}
+                                >
+                                    {columns.map(
+                                        (col) =>
+                                            !isMobile || !col.hideOnMobile ? (
+                                                <TableCell key={col.key} sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}>
+                                                    {col.label}
+                                                </TableCell>
+                                            ) : null
+                                    )}
+                                </TableRow>
+                            </TableHead>
+
+                            <TableBody>
+                                {resPO.length > 0 ? (
+                                    resPO.map((order) => (
+                                        <TableRow key={order.id}>
+                                            {columns.map((col) => {
+                                                if (isMobile && col.hideOnMobile) return null;
+
+                                                let content;
+                                                switch (col.key) {
+                                                    case "status":
+                                                        content = renderStatusChip(order.status);
+                                                        break;
+                                                    case "action":
+                                                        content = (
+                                                            <>
                                                                 <IconButton
-                                                                    aria-label="delete"
+                                                                    aria-label="info"
                                                                     sx={{
                                                                         "&:hover": {
-                                                                            color: "red",
+                                                                            color: "lightblue",
                                                                             backgroundColor: "transparent",
                                                                         },
                                                                         transition: "color 0.2s ease",
                                                                     }}
-                                                                    onClick={() => handleDelete(Number(order.id))}
+                                                                    onClick={() => navigate(`/purchase-order/${order.id}`)}
                                                                 >
-                                                                    <DeleteIcon />
+                                                                    <InfoIcon />
                                                                 </IconButton>
-                                                            )}
-                                                        </>
-                                                    );
-                                                    break;
-                                                case "total":
-                                                    content = `¥${order.total.toLocaleString()}`;
-                                                    break;
-                                                default:
-                                                    content = (order as any)[col.key];
-                                            }
+                                                                {!isMobile && (
+                                                                    <IconButton
+                                                                        aria-label="delete"
+                                                                        sx={{
+                                                                            "&:hover": {
+                                                                                color: "red",
+                                                                                backgroundColor: "transparent",
+                                                                            },
+                                                                            transition: "color 0.2s ease",
+                                                                        }}
+                                                                        onClick={() => handleDelete(Number(order.id))}
+                                                                    >
+                                                                        <DeleteIcon />
+                                                                    </IconButton>
+                                                                )}
+                                                            </>
+                                                        );
+                                                        break;
+                                                    case "total":
+                                                        content = `¥${order.total.toLocaleString()}`;
+                                                        break;
+                                                    default:
+                                                        content = (order as any)[col.key];
+                                                }
 
-                                            return (
-                                                <TableCell key={col.key} sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}>
-                                                    {content}
-                                                </TableCell>
-                                            );
-                                        })}
+                                                return (
+                                                    <TableCell key={col.key} sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}>
+                                                        {content}
+                                                    </TableCell>
+                                                );
+                                            })}
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={isMobile ? 4 : 7} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                                            該当する商品がありません
+                                        </TableCell>
                                     </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={isMobile ? 4 : 7} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                                        該当する商品がありません
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
                 <DeleteConfirmDialog
                     open={openDeleteConfirm}
                     onClose={() => setOpenDeleteConfirm(false)}

@@ -1,4 +1,4 @@
-import { type JSX } from "react";
+import { useEffect, type JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import ApiService from "../../services/ApiService";
 import { useForm } from "react-hook-form";
@@ -9,6 +9,7 @@ import type { LoginRequest } from "../../types";
 import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
 import { useSnackbar } from "../../hooks/useSnackbar";
 import './auth.css'
+import type { AxiosError } from "axios";
 
 // yupを使ったフォームバリデーションスキーマ
 const schema = yup.object({
@@ -21,7 +22,6 @@ const schema = yup.object({
 
 const loginApi = async (data: LoginRequest) => {
     const response = await ApiService.loginUser(data);
-    console.log(response)
     return response;
 }
 
@@ -32,6 +32,12 @@ const LoginPage = (): JSX.Element => {
     // スナックバー状態管理
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
 
+    useEffect(() => {
+        const token = localStorage.getItem("token"); // Kiểm tra token
+        if (token) {
+            navigate("/profile", { replace: true });
+        }
+    }, [navigate]);
     // React Hook Form初期化
     const {
         register,
@@ -45,14 +51,13 @@ const LoginPage = (): JSX.Element => {
     const mutation = useMutation({
         mutationFn: loginApi,
         onSuccess: (response) => {
-            console.log("LOGIN RESPONSE:", response);
             ApiService.saveToken(response.token);  // トークン保存
             ApiService.saveRole(response.role); // ロール情報保存
             ApiService.saveRefreshToken(response.refreshToken) // リフレッシュトークン保存
             showSnackbar("ログインしました。", "success");
             setTimeout(() => navigate("/profile"), 500); // カテゴリページへ遷移
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message ||
                 "ログインに失敗しました。", "error"
             );

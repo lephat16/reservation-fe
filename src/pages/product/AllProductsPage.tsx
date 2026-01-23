@@ -4,12 +4,13 @@ import ApiService from "../../services/ApiService";
 import './AllProduct.css'
 import CustomPagination from "../../components/customPagination/CustomPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Box, CircularProgress, FormControl, Grid, InputLabel, MenuItem, Select, Stack, Typography } from "@mui/material";
+import { Box, CircularProgress, FormControl, Grid, InputLabel, MenuItem, Select, Skeleton, Stack, Typography } from "@mui/material";
 import FilterBar from "../../components/customFilterBar/CustomFilterBar";
 import Header from "../../layout/Header";
 import { useSnackbar } from "../../hooks/useSnackbar";
 import { useNavigate } from "react-router-dom";
 import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
+import type { AxiosError } from "axios";
 
 // ソートオプションの型
 type SortOption = 'priceAsc' | 'priceDesc' | 'nameAsc' | 'nameDesc' | 'none';
@@ -33,8 +34,6 @@ const AllProductPage = () => {
         queryFn: async () => {
             const productRes = await ApiService.getAllProducts();
             const categoryRes = await ApiService.getAllCategories();
-            console.log(productRes)
-            console.log(categoryRes)
             return {
                 products: productRes.data ?? [],
                 categories: categoryRes.data ?? []
@@ -52,7 +51,7 @@ const AllProductPage = () => {
             showSnackbar(response.message || "商品を編集しました", "success"); // スナックバー表示
             queryClient.invalidateQueries({ queryKey: ["products-and-categories"] });
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || "販売に失敗しました。", "error");
         },
 
@@ -65,7 +64,7 @@ const AllProductPage = () => {
             queryClient.invalidateQueries({ queryKey: ["products-and-categories"] });
 
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || "削除に失敗しました", "error");
         }
     });
@@ -97,14 +96,18 @@ const AllProductPage = () => {
 
     return (
         <Box m={3}>
-            <Header
-                title="商品一覧"
-                subtitle="商品情報の一覧表示"
-            />
-            <Box 
-            mt={3} 
-            minHeight="90vh"
-            height="auto"
+            {isLoading ? (
+                <Skeleton variant="text" width="80%" height={40} />
+            ) : (
+                <Header
+                    title="商品一覧"
+                    subtitle="商品情報の一覧表示"
+                />
+            )}
+            <Box
+                mt={3}
+                minHeight="90vh"
+                height="auto"
             >
                 {/* メッセージ表示 */}
                 <CustomSnackbar
@@ -114,12 +117,7 @@ const AllProductPage = () => {
                     onClose={closeSnackbar}
                 />
                 {/* ローディング表示 */}
-                {(isLoading) && (
-                    <Box textAlign="center" my={4}>
-                        <CircularProgress />
-                        <Typography>データを読み込み中...</Typography>
-                    </Box>
-                )}
+
                 {/* エラー表示 */}
                 {(error) && (
                     <p className="error">データの取得に失敗しました。</p>

@@ -1,5 +1,6 @@
 import { createContext, useState, useMemo } from "react";
 import { createTheme } from "@mui/material/styles";
+import { jaJP } from "@mui/material/locale";
 
 // color design tokens export
 export const tokens = (mode: 'light' | 'dark') => ({
@@ -212,6 +213,6 @@ export const useMode = () => {
     []
   );
 
-  const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
+  const theme = useMemo(() => createTheme(themeSettings(mode),jaJP), [mode]);
   return [theme, colorMode] as const;
 };

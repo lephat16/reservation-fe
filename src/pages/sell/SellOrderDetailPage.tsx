@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from "@mui/material";
+import { Box, Button, CircularProgress, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import { useNavigate, useParams } from "react-router-dom";
 import type { SaleOrderData, SaleOrderDetailData } from "../../types";
@@ -11,6 +11,7 @@ import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
 import * as yup from "yup";
 import { DeleteConfirmDialog } from "../product/ProductPage";
 import { SubmitConfirmDialog } from "../purchase/PurchaseOrderDetailPage";
+import type { AxiosError } from "axios";
 
 const descriptionSchema = yup.object({
     description: yup
@@ -40,8 +41,6 @@ const SellOrderDetailPage = () => {
         queryKey: ['sellOrderDetail', soId],
         queryFn: async () => {
             const resPODetail = await ApiService.getSaleOrderById(Number(soId));
-            console.log(resPODetail);
-            console.log(resPODetail.data);
             return resPODetail.data;
         },
         enabled: !!soId
@@ -89,7 +88,7 @@ const SellOrderDetailPage = () => {
                 navigate("/sell-order");
             }, 500);
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || "削除に失敗しました", "error");
         }
     });
@@ -102,16 +101,20 @@ const SellOrderDetailPage = () => {
                 navigate("/sell-order");
             }, 500);
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || "注文に失敗しました", "error");
         }
     });
     return (
         <Box m={3}>
-            <Header
-                title={`注文番号: ${data?.id ?? ""}`}
-                subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${data?.createdAt ?? ""}`}
-            />
+            {isLoading ? (
+                <Skeleton variant="text" width="80%" height={40} />
+            ) : (
+                <Header
+                    title={`注文番号: ${data?.id ?? ""}`}
+                    subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${data?.createdAt ?? ""}`}
+                />
+            )}
             <Box mt={3} height="75vh">
                 {/* メッセージ表示 */}
                 <CustomSnackbar
@@ -120,114 +123,116 @@ const SellOrderDetailPage = () => {
                     severity={snackbar.severity}
                     onClose={closeSnackbar}
                 />
-                {/* ローディング表示 */}
-                {(isLoading) && (
-                    <Box textAlign="center" my={4}>
-                        <CircularProgress />
-                        <Typography>データを読み込み中...</Typography>
-                    </Box>
-                )}
+
                 {/* エラー表示 */}
                 {(error) && (
                     <p className="error">データの取得に失敗しました。</p>
                 )}
-                <TableContainer component={Paper} sx={{ mb: 3 }}>
-                    <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
-                        <TableHead>
-                            <TableRow
-                                sx={{
-                                    fontWeight: "bold",
-                                    backgroundColor: colors.blueAccent[500],
-                                    color: colors.grey[100]
-                                }}
-                            >
-                                <TableCell>商品名</TableCell>
-                                <TableCell>SKUコード</TableCell>
-                                <TableCell>数量</TableCell>
-                                <TableCell>単価（円）</TableCell>
-                                <TableCell>小計（円）</TableCell>
-                                <TableCell>ステータス</TableCell>
-                            </TableRow>
-                        </TableHead>
 
-                        <TableBody>
-                            {(data?.details ?? [].length > 0) ? (
-                                details.map((detail, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell>{detail.productName}</TableCell>
-                                        <TableCell>{detail.sku}</TableCell>
-                                        <TableCell>
-                                            {isEditing ? (
-                                                <TextField
-                                                    type="number"
-                                                    value={detail.qty}
-                                                    onChange={(e) => {
-                                                        const newQty = Number(e.target.value);
-                                                        const newDetails = [...details];
-                                                        newDetails[index].qty = newQty;
-                                                        setDetails(newDetails);
-                                                    }}
-                                                    size="small"
-                                                    autoFocus={index === 0}
-                                                    slotProps={{
-                                                        input: {
-                                                            inputProps: { min: 0 },
-                                                        },
-                                                    }}
-                                                />
-                                            ) : (data?.status === "NEW" ? detail.qty : `${detail.deliveredQty || 0}/${detail.qty}`)}
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={400} />
+                ) : (
+                    <TableContainer component={Paper} sx={{ mb: 3 }}>
+                        <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
+                            <TableHead>
+                                <TableRow
+                                    sx={{
+                                        fontWeight: "bold",
+                                        backgroundColor: colors.blueAccent[500],
+                                        color: colors.grey[100]
+                                    }}
+                                >
+                                    <TableCell>商品名</TableCell>
+                                    <TableCell>SKUコード</TableCell>
+                                    <TableCell>数量</TableCell>
+                                    <TableCell>単価（円）</TableCell>
+                                    <TableCell>小計（円）</TableCell>
+                                    <TableCell>ステータス</TableCell>
+                                </TableRow>
+                            </TableHead>
 
+                            <TableBody>
+                                {(data?.details ?? [].length > 0) ? (
+                                    details.map((detail, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell>{detail.productName}</TableCell>
+                                            <TableCell>{detail.sku}</TableCell>
+                                            <TableCell>
+                                                {isEditing ? (
+                                                    <TextField
+                                                        type="number"
+                                                        value={detail.qty}
+                                                        onChange={(e) => {
+                                                            const newQty = Number(e.target.value);
+                                                            const newDetails = [...details];
+                                                            newDetails[index].qty = newQty;
+                                                            setDetails(newDetails);
+                                                        }}
+                                                        size="small"
+                                                        autoFocus={index === 0}
+                                                        slotProps={{
+                                                            input: {
+                                                                inputProps: { min: 0 },
+                                                            },
+                                                        }}
+                                                    />
+                                                ) : (data?.status === "NEW" ? detail.qty : `${detail.deliveredQty || 0}/${detail.qty}`)}
+
+                                            </TableCell>
+                                            <TableCell>{detail.price}</TableCell>
+                                            <TableCell>{detail.qty * detail.price}</TableCell>
+                                            <TableCell>{detail.status}</TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                                            該当する商品がありません
                                         </TableCell>
-                                        <TableCell>{detail.price}</TableCell>
-                                        <TableCell>{detail.qty * detail.price}</TableCell>
-                                        <TableCell>{detail.status}</TableCell>
                                     </TableRow>
-                                ))
-                            ) : (
+                                )}
                                 <TableRow>
-                                    <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                                        該当する商品がありません
+                                    <TableCell colSpan={5} align="right" sx={{ fontWeight: 'bold' }}>
+                                        合計金額:
+                                    </TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold' }}>
+                                        {totalAmount} 円
                                     </TableCell>
                                 </TableRow>
-                            )}
-                            <TableRow>
-                                <TableCell colSpan={5} align="right" sx={{ fontWeight: 'bold' }}>
-                                    合計金額:
-                                </TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>
-                                    {totalAmount} 円
-                                </TableCell>
-                            </TableRow>
 
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-
-                <Box mt={2} mb={2}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} mb={2}>
-                        注文説明:
-                    </Typography>
-                    {isEditing ? (
-                        <TextField
-                            fullWidth
-                            multiline
-                            minRows={3}
-                            value={description}
-                            onChange={(e) => {
-                                setDescription(e.target.value)
-                            }}
-                            error={!!descriptionError}
-                            helperText={descriptionError}
-                            sx={{
-                                backgroundColor: colors.primary[800],
-                            }}
-                        />
-                    ) : (
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            {description || "説明なし"}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={200} />
+                ) : (
+                    <Box mt={2} mb={2}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} mb={2}>
+                            注文説明:
                         </Typography>
-                    )}
-                </Box>
+                        {isEditing ? (
+                            <TextField
+                                fullWidth
+                                multiline
+                                minRows={3}
+                                value={description}
+                                onChange={(e) => {
+                                    setDescription(e.target.value)
+                                }}
+                                error={!!descriptionError}
+                                helperText={descriptionError}
+                                sx={{
+                                    backgroundColor: colors.primary[800],
+                                }}
+                            />
+                        ) : (
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                {description || "説明なし"}
+                            </Typography>
+                        )}
+                    </Box>
+                )}
             </Box>
             <Stack
                 direction="row"

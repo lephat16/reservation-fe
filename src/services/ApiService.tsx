@@ -1,8 +1,9 @@
 import CryptoJS from "crypto-js";
-import type { AllUserRespose, ApiResponse, CategoryData, CategorySummariesData, CategorySummaryData, DashboardDTO, DeliverStockItem, InventoryHistoryByPurchaseOrder, InventoryHistoryBySaleOrder, LoginRequest, LoginResponse, ProductData, ProductDetailData, PurchaseOrderData, PurchaseOrderItem, ReceiveStockItem, StockResultData, RegisterRequest, RegisterResponse, ResponseData, SaleOrderData, SellData, SumReceivedGroupByProduct, TransactionsResponse, UserData, WarehouseWithLocationData, SellOrderItem } from "../types";
+import type { AllUserRespose, ApiResponse, CategoryData, CategorySummariesData, CategorySummaryData, DashboardDTO, DeliverStockItem, InventoryHistoryByPurchaseOrder, InventoryHistoryBySaleOrder, LoginRequest, LoginResponse, ProductData, ProductDetailData, PurchaseOrderData, PurchaseOrderItem, ReceiveStockItem, StockResultData, RegisterRequest, RegisterResponse, ResponseData, SaleOrderData, SellData, SumReceivedGroupByProduct, TransactionsResponse, UserData, WarehouseWithLocationData, SellOrderItem, } from "../types";
 import { api } from "../api/axiosClient";
 import type { ProductWithSkuByCategoryData, SupplierData, SupplierProductWithCategoryData } from "../types/supplier";
-import type { StockHistoriesWithDetailData } from "../types/warehouse";
+import type { StockHistoriesWithDetailData, WarehouseFormData, WarehousesData, WarehouseWithTotalChangedQtyData } from "../types/warehouse";
+import type { StockWithSupplierAndProduct } from "../types/stock";
 export default class ApiService {
     static ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
     static encrypt(data: string): string {
@@ -90,7 +91,7 @@ export default class ApiService {
         return (await api.get(`/categories/summaries/${categoryId}`));
     }
     static async getCategoryById(categoryId: number): Promise<ApiResponse<CategoryData>> {
-        return (await api.get(`/categories/${categoryId}/`)).data;
+        return (await api.get(`/categories/${categoryId}`));
     }
     static async updateCategory(categoryId: number, categoryData: { name: string, code: string }): Promise<any> {
         return (await api.put(`/categories/update/${categoryId}`, categoryData)).data;
@@ -103,6 +104,9 @@ export default class ApiService {
     }
     static async getAllProducts(): Promise<ApiResponse<ProductData[]>> {
         return (await api.get(`/products/info/all`));
+    }
+    static async getAllStockWithSupplierAndProduct(): Promise<ApiResponse<StockWithSupplierAndProduct[]>> {
+        return (await api.get(`/inventory/stock/all-with-supplier`));
     }
     static async getProductInfoDetail(productId: number): Promise<ApiResponse<ProductDetailData>> {
         return (await api.get(`/products/info-detail/${productId}`));
@@ -126,6 +130,9 @@ export default class ApiService {
     }
     static async getAllSuppliers(): Promise<ApiResponse<SupplierData[]>> {
         return (await api.get(`/suppliers/all`));
+    }
+    static async addSupplier(data: SupplierData): Promise<ApiResponse<SupplierData[]>> {
+        return (await api.post(`/suppliers/add`, data));
     }
     static async getSupplierById(supplierId: number): Promise<ApiResponse<SupplierData>> {
         return (await api.get(`/suppliers/${supplierId}`));
@@ -210,6 +217,22 @@ export default class ApiService {
 
     static async getAllStockHistoriesWithDetails(): Promise<ApiResponse<StockHistoriesWithDetailData[]>> {
         return (await api.get(`/inventory/stock-history/with-details/all`));
+    }
+    static async getAllWarehouses(): Promise<ApiResponse<WarehousesData[]>> {
+        return (await api.get(`/warehouses/all`));
+    }
+    static async getWarehouseWithTotalChangedQty(): Promise<ApiResponse<WarehouseWithTotalChangedQtyData[]>> {
+        return (await api.get(`/warehouses/all-with-total-changed-qty`));
+    }
+
+    static async createWarehouse(createItem: WarehouseFormData): Promise<ApiResponse<WarehousesData>> {
+        return (await api.post(`/warehouses/add`, createItem));
+    }
+    static async updateWarehouse(id: number, updateItem: WarehouseFormData): Promise<ApiResponse<WarehousesData>> {
+        return (await api.put(`/warehouses/update/${id}`, updateItem));
+    }
+    static async deleteWarehouse(id: number): Promise<ApiResponse<void>> {
+        return (await api.delete(`/warehouses/delete/${id}`));
     }
 
     static async purchaseProduct(purchaseData: any): Promise<ApiResponse<PurchaseOrderData>> {

@@ -46,7 +46,6 @@ const SellRowItem = ({
 
     const categoryId = row.category?.id;
     const { data: productData = [] } = useProductsByCategory(Number(categoryId));
-    console.log(productData)
 
     const total = row.qty * row.price;
     const totalQuantity = selectedProduct?.totalQuantity ?? 0;        // 在庫数
@@ -156,7 +155,6 @@ const SellRowItem = ({
                         {Array.from(
                             new Map(productData.map(p => [p.productName, p])).values()
                         ).map((p) => {
-                            console.log(p.productName)    
                             return (
                                 <MenuItem key={p.productId} value={p.productId}>
                                     {p.productName}

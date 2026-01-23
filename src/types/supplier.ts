@@ -1,12 +1,13 @@
 import type { ResponseData } from ".";
 
 export interface SupplierData {
-    id: number
+    id?: number
     name: string;
     contactInfo: string;
+    mail: string;
     address: string;
-    supplierStatus: string;
-    categoryNames: string[];
+    supplierStatus: "ACTIVE" | "INACTIVE";
+    categoryNames?: string[];
 }
 export interface SupplierProductData {
     id: number;
@@ -15,6 +16,7 @@ export interface SupplierProductData {
     price: number;
     stock?: number;
     leadTime?: number;
+    status?:string;
 }
 
 

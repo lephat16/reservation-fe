@@ -1,9 +1,15 @@
 import {
     Box,
+    Card,
+    CardContent,
+    CardMedia,
+    Chip,
     CircularProgress,
     Collapse,
+    Grid,
     IconButton,
     Paper,
+    Skeleton,
     Table,
     TableBody,
     TableCell,
@@ -17,7 +23,7 @@ import { tokens } from "../../theme";
 import Header from "../../layout/Header";
 import ApiService from "../../services/ApiService";
 import { useQuery } from "@tanstack/react-query";
-import type { CategorySummaryData, ProductStockData } from "../../types";
+import type { CategoryData, CategorySummaryData, ProductStockData } from "../../types";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -137,12 +143,20 @@ const CategoryDetailPage = () => {
     const colors = tokens(theme.palette.mode);
     const { categoryId } = useParams<{ categoryId: string }>();
 
-    const { isLoading, error, data } = useQuery<CategorySummaryData>({
-        queryKey: ['categories'],
+    const [showMore, setShowMore] = useState(false);
+
+    const { isLoading, error, data } = useQuery<{
+        categorySummary: CategorySummaryData;
+        categoryInfo: CategoryData;
+    }>({
+        queryKey: ['category'],
         queryFn: async () => {
-            const resCategories = await ApiService.getCategorySummariesById(Number(categoryId));
-            console.log(resCategories.data);
-            return resCategories.data;
+            const resCategory = await ApiService.getCategorySummariesById(Number(categoryId));
+            const resCategoryInfo = await ApiService.getCategoryById(Number(categoryId));
+            return {
+                categorySummary: resCategory.data,
+                categoryInfo: resCategoryInfo.data,
+            }
         }
     });
 
@@ -157,56 +171,151 @@ const CategoryDetailPage = () => {
 
     return (
         <Box m={3}>
-            <Header
-                title={`カテゴリ: ${data?.categoryName ?? ""}`}
-                subtitle={`仕入先: ${getAllSuppliers(data?.products)}`}
-            />
-            <Box m="40px 0 0 0" height="75vh">
-                {/* ローディング表示 */}
-                {(isLoading) && (
-                    <Box textAlign="center" my={4}>
-                        <CircularProgress />
-                        <Typography>データを読み込み中...</Typography>
-                    </Box>
-                )}
+            {isLoading ? (
+                <Skeleton variant="text" width="80%" height={40} />
+            ) : (
+                <Header
+                    title={`カテゴリ: ${data?.categorySummary?.categoryName ?? ""}`}
+                    subtitle={`仕入先: ${getAllSuppliers(data?.categorySummary?.products)}`}
+                />
+            )}
+            <Box m="40px 0 0 0" minHeight="75vh">
+
                 {/* エラー表示 */}
                 {(error) && (
                     <p className="error">データの取得に失敗しました。</p>
                 )}
 
-                <TableContainer component={Paper}>
-                    <Table
-                        sx={{
-                            backgroundColor: colors.primary[400]
-                        }}
-                    >
-                        <TableHead>
-                            <TableRow>
-                                <TableCell />
-                                <TableCell>商品</TableCell>
-                                <TableCell>仕入先</TableCell>
-                                <TableCell align="right">在庫合計</TableCell>
-                            </TableRow>
-                        </TableHead>
+                {data && (
+                    <>
+                        {isLoading ? (
+                            <Skeleton variant="rectangular" height={250} sx={{ mb: 2 }} />
+                        ) : (
+                            <Card
+                                sx={{
+                                    display: 'flex',
+                                    mb: 2,
+                                    backgroundColor: colors.primary[400],
+                                    borderRadius: 1,
+                                    overflow: 'hidden',
+                                }}>
 
-                        <TableBody>
-                            {(data?.products && data.products.length > 0) ? (
-                                data.products.map(p => (
-                                    <ProductRow
-                                        key={p.productName}
-                                        product={p}
-                                    />
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                                        該当する商品がありません
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        flex: 1,
+                                    }}>
+                                    <CardContent sx={{ flex: '1 0 auto' }}>
+                                        <Typography
+                                            component="div"
+                                            variant="h5"
+                                            sx={{ fontWeight: 'bold', mb: 1 }}
+                                        >
+                                            {data.categoryInfo.name}
+                                        </Typography>
+                                        <Typography
+                                            variant="subtitle2"
+                                            component="div"
+                                            sx={{
+                                                color: data.categoryInfo.status === 'ACTIVE' ? 'success.main' : 'error.main',
+                                                fontWeight: 'medium',
+                                                mb: 1
+                                            }}
+                                        >
+                                            {data.categoryInfo.status}
+                                        </Typography>
+                                        <Chip
+                                            label={data.categoryInfo.status === "ACTIVE" ? "稼働中" : "停止中"}
+                                            color={data.categoryInfo.status === "ACTIVE" ? "success" : "error"}
+                                            size="small"
+                                            sx={{ mb: 1 }}
+                                        />
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                color: 'text.secondary',
+                                                mb: 1,
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: showMore ? 'none' : 2,
+                                                WebkitBoxOrient: 'vertical',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={() => setShowMore(!showMore)}
+                                        >
+                                            {data.categoryInfo.description}
+                                        </Typography>
+
+                                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                                            作成日: {data.categoryInfo.createdAt ? new Date(data.categoryInfo.createdAt).toLocaleDateString() : '-'}
+                                        </Typography>
+
+                                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                                            更新日: {data.categoryInfo.updatedAt ? new Date(data.categoryInfo.updatedAt).toLocaleDateString() : '-'}
+                                        </Typography>
+                                    </CardContent>
+                                </Box>
+                                <CardMedia
+                                    component="img"
+                                    sx={{ width: 180, objectFit: 'cover' }}
+                                    image={data.categoryInfo.imageUrl}
+                                    alt={data.categoryInfo.name}
+                                />
+                            </Card>
+                        )}
+                        {isLoading ? (
+                            <Skeleton variant="rectangular" height={400} />
+                        ) : (
+                            <TableContainer component={Paper} sx={{ height: "100%" }}>
+                                <Table
+                                    stickyHeader
+                                    sx={{
+                                        backgroundColor: colors.primary[400]
+                                    }}
+                                >
+                                    <TableHead>
+                                        <TableRow
+                                            sx={{
+                                                "& .MuiTableCell-root": {
+                                                    fontWeight: "bold",
+                                                    backgroundColor: colors.blueAccent[800],
+                                                    color: colors.grey[100],
+                                                },
+
+                                            }}
+                                        >
+                                            <TableCell />
+                                            <TableCell>商品</TableCell>
+                                            <TableCell>仕入先</TableCell>
+                                            <TableCell align="right">在庫合計</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+
+                                    <TableBody>
+                                        {(data?.categorySummary?.products && data.categorySummary.products.length > 0) ? (
+                                            data.categorySummary.products.map(p => (
+                                                <ProductRow
+                                                    key={p.productName}
+                                                    product={p}
+                                                />
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={4} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                                                    該当する商品がありません
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        )}
+                    </>
+
+                )}
+
 
             </Box>
         </Box>

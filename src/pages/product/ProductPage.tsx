@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ApiService from "../../services/ApiService";
-import { Box, Button, Card, CardContent, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, MenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from "@mui/material";
+import { Box, Button, Card, CardContent, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, MenuItem, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from "@mui/material";
 import Header from "../../layout/Header";
 import { mapProductDetailResponse } from "../../mapper/product.mapper";
 import { tokens } from "../../theme";
@@ -11,6 +11,7 @@ import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
 import * as yup from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import type { AxiosError } from "axios";
 
 
 
@@ -236,7 +237,7 @@ export const DeleteConfirmDialog = ({
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth="xs"
+            maxWidth="sm"
             fullWidth
             slotProps={{
                 paper: { sx: { backgroundColor: colors.blueAccent[900], borderRadius: 2, p: 2 } }
@@ -286,7 +287,6 @@ const ProductPage = () => {
 
             const categoryRes = await ApiService.getAllCategories();
             const categories = categoryRes.data;
-            console.log(categories)
             return {
                 productDetail,
                 categories,
@@ -305,7 +305,7 @@ const ProductPage = () => {
             showSnackbar(response.message || "商品を編集しました", "success"); // スナックバー表示
             queryClient.invalidateQueries({ queryKey: ["product-detail", productId] });
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || "販売に失敗しました。", "error");
         },
 
@@ -319,7 +319,7 @@ const ProductPage = () => {
                 navigate("/products");
             }, 500);
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || "削除に失敗しました", "error");
         }
     });
@@ -350,10 +350,14 @@ const ProductPage = () => {
                 borderRadius: 1
             }}
         >
-            <Header
-                title="商品情報"
-                subtitle={productDetail?.product?.productName ?? "―"}
-            />
+            {isLoading ? (
+                <Skeleton variant="text" width="80%" height={40} />
+            ) : (
+                <Header
+                    title="商品情報"
+                    subtitle={productDetail?.product?.productName ?? "―"}
+                />
+            )}
             <Box m="40px 0 0 0" height="90vh">
                 {/* メッセージ表示 */}
                 <CustomSnackbar
@@ -363,12 +367,7 @@ const ProductPage = () => {
                     onClose={closeSnackbar}
                 />
                 {/* ローディング表示 */}
-                {(isLoading) && (
-                    <Box textAlign="center" my={4}>
-                        <CircularProgress />
-                        <Typography>データを読み込み中...</Typography>
-                    </Box>
-                )}
+
 
                 {/* エラー表示 */}
                 {(error) && (
@@ -376,7 +375,7 @@ const ProductPage = () => {
                 )}
 
                 {/* メイン表示 */}
-                {!isLoading && !error && data && (
+                {(!isLoading && !error && data) ? (
                     <>
                         <Card sx={{ mb: 2, backgroundColor: colors.primary[400] }}>
                             <CardContent>
@@ -403,8 +402,6 @@ const ProductPage = () => {
                                 </Grid>
                             </CardContent>
                         </Card>
-
-
 
                         <TableContainer component={Paper} sx={{ mb: 2, backgroundColor: colors.primary[400] }}>
                             <Table>
@@ -473,7 +470,7 @@ const ProductPage = () => {
                                     {productDetail?.inventoryStock.length === 0 ? (
                                         <TableRow>
                                             <TableCell
-                                                colSpan={2} // phải đúng số cột
+                                                colSpan={2}
                                                 align="center"
                                                 sx={{ py: 3, color: colors.grey[100] }}
                                             >
@@ -545,7 +542,7 @@ const ProductPage = () => {
                             isDeleting={deleteMutation.isPending}
                         />
                     </>
-                )}
+                ) : (<Skeleton variant="rectangular" height={400} />)}
 
             </Box>
 

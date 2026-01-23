@@ -1,6 +1,6 @@
 import { DataGrid, GridActionsCell, GridActionsCellItem, type GridColDef, type GridRenderCellParams, type GridRowId } from "@mui/x-data-grid";
 import type { CategorySummariesData } from "../../types";
-import { Box, Chip, useTheme } from "@mui/material";
+import { Box, Chip, IconButton, Skeleton, Tooltip, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import Header from "../../layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +13,8 @@ import { useNavigate } from "react-router-dom";
 import { DeleteConfirmDialog } from "../product/ProductPage";
 import { useSnackbar } from "../../hooks/useSnackbar";
 import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar";
+import NewLabelIcon from '@mui/icons-material/NewLabel';
+import type { AxiosError } from "axios";
 
 interface ActionHandlers {
     deleteCategory: (id: GridRowId) => void;
@@ -99,6 +101,8 @@ const CategoriesPage = () => {
     const queryClient = useQueryClient();
 
     const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+    const [openAddCategories, setOpenAddCategories] = useState(false);
+
     const [selectedCategory, setSelectedCategory] =
         useState<CategorySummariesData | null>(null);
 
@@ -106,8 +110,6 @@ const CategoriesPage = () => {
         queryKey: ['categories'],
         queryFn: async () => {
             const resCategories = await ApiService.getAllCategorySummaries();
-            console.log(resCategories);
-            console.log(resCategories.data);
             return resCategories.data;
         }
     });
@@ -121,7 +123,7 @@ const CategoriesPage = () => {
             queryClient.invalidateQueries({ queryKey: ["categories"] });
 
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || "削除に失敗しました", "error");
         }
     });
@@ -145,10 +147,26 @@ const CategoriesPage = () => {
     );
     return (
         <Box m={3}>
-            <Header
-                title="カテゴリ一覧"
-                subtitle="カテゴリ情報の一覧表示"
-            />
+            <Box display="flex" justifyContent="space-between">
+                {isLoading ? (
+                    <Skeleton variant="text" width="80%" height={40} />
+                ) : (
+                    <Header
+                        title="カテゴリ一覧"
+                        subtitle="カテゴリ情報の一覧表示"
+                    />
+                )}
+                <Box mt={4}>
+                    <Tooltip title="追加">
+                        <IconButton color="success" onClick={() => {
+                            setOpenAddCategories(true)
+                        }}>
+                            <NewLabelIcon fontSize="large" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
+
             <Box mt={3} height="75vh">
                 {/* メッセージ表示 */}
                 <CustomSnackbar
@@ -162,48 +180,52 @@ const CategoriesPage = () => {
                 {(error) && (
                     <p className="error">データの取得に失敗しました。</p>
                 )}
-                <ActionHandlersContext.Provider value={actionHandlers}>
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={400} />
+                ) : (
+                    <ActionHandlersContext.Provider value={actionHandlers}>
 
-                    <DataGrid<CategorySummariesData>
-                        rows={data ?? []}
-                        columns={columns}
-                        localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
-                        loading={isLoading}
-                        sx={{
-                            "--DataGrid-t-color-interactive-focus": "none !important",
-                            "& .MuiDataGrid-root": {
-                                border: "none",
-                            },
-                            "& .MuiDataGrid-cell": {
-                                borderBottom: "none",
-                            },
-                            "& .name-column--cell": {
-                                color: colors.greenAccent[300],
-                            },
-                            "& .MuiDataGrid-columnHeaders": {
-                                color: colors.grey[100],
-                                borderBottom: "none",
-                            },
-                            "& .MuiDataGrid-virtualScroller": {
-                                backgroundColor: colors.primary[400],
-                            },
-                            "& .MuiDataGrid-footerContainer": {
-                                borderTop: "none",
-                                backgroundColor: colors.blueAccent[700],
-                            },
-                            "& .MuiCheckbox-root": {
-                                color: `${colors.greenAccent[400]} !important`,
-                            },
-                            "& .MuiDataGrid-toolbar": {
-                                backgroundColor: colors.blueAccent[700],
-                            },
-                            "& .MuiDataGrid-columnHeader": {
-                                backgroundColor: colors.blueAccent[500],
-                            },
-                        }}
-                        showToolbar
-                    />
-                </ActionHandlersContext.Provider>
+                        <DataGrid<CategorySummariesData>
+                            rows={data ?? []}
+                            columns={columns}
+                            localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
+                            loading={isLoading}
+                            sx={{
+                                "--DataGrid-t-color-interactive-focus": "none !important",
+                                "& .MuiDataGrid-root": {
+                                    border: "none",
+                                },
+                                "& .MuiDataGrid-cell": {
+                                    borderBottom: "none",
+                                },
+                                "& .name-column--cell": {
+                                    color: colors.greenAccent[300],
+                                },
+                                "& .MuiDataGrid-columnHeaders": {
+                                    color: colors.grey[100],
+                                    borderBottom: "none",
+                                },
+                                "& .MuiDataGrid-virtualScroller": {
+                                    backgroundColor: colors.primary[400],
+                                },
+                                "& .MuiDataGrid-footerContainer": {
+                                    borderTop: "none",
+                                    backgroundColor: colors.blueAccent[700],
+                                },
+                                "& .MuiCheckbox-root": {
+                                    color: `${colors.greenAccent[400]} !important`,
+                                },
+                                "& .MuiDataGrid-toolbar": {
+                                    backgroundColor: colors.blueAccent[700],
+                                },
+                                "& .MuiDataGrid-columnHeader": {
+                                    backgroundColor: colors.blueAccent[500],
+                                },
+                            }}
+                            showToolbar
+                        />
+                    </ActionHandlersContext.Provider>
+                )}
                 <DeleteConfirmDialog
                     open={openDeleteConfirm}
                     onClose={() => setOpenDeleteConfirm(false)}

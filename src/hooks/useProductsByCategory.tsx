@@ -8,7 +8,6 @@ const useProductsByCategory = (categoryId: number) => {
     return useQuery<ProductWithSkuByCategoryData[]>({
         queryKey: ["supplierProductsByCategory", categoryId],
         queryFn: async () => {
-            console.log("CALL API", categoryId);
             if (!categoryId) return [];
             const response = await ApiService.getAllSupllierProductWithSkuByCategory(categoryId);
             return response.data ?? [];

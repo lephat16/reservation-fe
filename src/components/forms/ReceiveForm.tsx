@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, MenuItem, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography, useTheme } from "@mui/material";
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, MenuItem, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import Header from "../../layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,6 +15,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import { DataGrid, type GridColDef } from '@mui/x-data-grid'
 import { jaJP } from "@mui/x-data-grid/locales";
+import type { AxiosError } from "axios";
 
 // 購入確認ダイアログ
 interface PurchaseConfirmDialogProps {
@@ -364,7 +365,6 @@ const ReceiveForm = () => {
 
                 receivedQtyMap[Number(item.productId)] = item.receivedQty;
             });
-            console.log(resInventoryHistoryByPurchaseOrder.data);
             return {
                 purchaseOrder: resPODetail.data,
                 receivedQtyMap,
@@ -387,7 +387,7 @@ const ReceiveForm = () => {
                 navigate(`/purchase-order/${poId}`);
             }, 500);
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || "注文に失敗しました", "error");
         }
     });
@@ -441,10 +441,14 @@ const ReceiveForm = () => {
                 borderRadius: 1
             }}
         >
-            <Header
-                title={`注文番号: ${data?.purchaseOrder?.id ?? ""} | 仕入先: ${data?.purchaseOrder?.supplierName ?? ""}`}
-                subtitle={`ステータス: ${data?.purchaseOrder?.status ?? ""}`}
-            />
+            {isLoading ? (
+                <Skeleton variant="text" width="80%" height={40} />
+            ) : (
+                <Header
+                    title={`注文番号: ${data?.purchaseOrder?.id ?? ""} | 仕入先: ${data?.purchaseOrder?.supplierName ?? ""}`}
+                    subtitle={`ステータス: ${data?.purchaseOrder?.status ?? ""}`}
+                />
+            )}
             <Box mt={3} height="75vh">
                 {/* メッセージ表示 */}
                 <CustomSnackbar
@@ -453,76 +457,75 @@ const ReceiveForm = () => {
                     severity={snackbar.severity}
                     onClose={closeSnackbar}
                 />
-                {/* ローディング表示 */}
-                {(isLoading) && (
-                    <Box textAlign="center" my={4}>
-                        <CircularProgress />
-                        <Typography>データを読み込み中...</Typography>
-                    </Box>
-                )}
+
                 {/* エラー表示 */}
                 {(error) && (
                     <p className="error">データの取得に失敗しました。</p>
                 )}
+
                 {/* 発注詳細テーブル */}
-                <TableContainer component={Paper} sx={{ mb: 3 }}>
-                    <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
-                        <TableHead>
-                            <TableRow
-                                sx={{
-                                    fontWeight: "bold",
-                                    backgroundColor: colors.blueAccent[500],
-                                    color: colors.grey[100]
-                                }}
-                            >
-                                <TableCell></TableCell>
-                                <TableCell>商品名</TableCell>
-                                <TableCell>発注</TableCell>
-                                <TableCell>受領数</TableCell>
-                                <TableCell>残数</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {data?.purchaseOrder?.details.map((detail, index) => {
-                                const received = data.receivedQtyMap[detail.productId] || 0;
-                                const remains = detail.qty - received;
-                                return (
-                                    < TableRow key={index} >
-                                        <TableCell>
-                                            {remains === 0 ? (
-                                                <Tooltip title="商品はすでに受領済み">
-                                                    <IconButton size="small">
-                                                        <CheckIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            ) : (
-                                                <Tooltip title="受領">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => {
-                                                            setSelectedProduct({
-                                                                productName: detail.productName,
-                                                                detailId: detail.id
-                                                            });
-                                                            setOpenReceiveForm(true);
-                                                            setSelectedRemains(remains);
-                                                        }}
-                                                    >
-                                                        <WarehouseIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>{detail.productName}</TableCell>
-                                        <TableCell>{detail.qty}</TableCell>
-                                        <TableCell>{received}</TableCell>
-                                        <TableCell>{remains}</TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={400} />
+                ) : (
+                    <TableContainer component={Paper} sx={{ mb: 3 }}>
+                        <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
+                            <TableHead>
+                                <TableRow
+                                    sx={{
+                                        fontWeight: "bold",
+                                        backgroundColor: colors.blueAccent[500],
+                                        color: colors.grey[100]
+                                    }}
+                                >
+                                    <TableCell></TableCell>
+                                    <TableCell>商品名</TableCell>
+                                    <TableCell>発注</TableCell>
+                                    <TableCell>受領数</TableCell>
+                                    <TableCell>残数</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {data?.purchaseOrder?.details.map((detail, index) => {
+                                    const received = data.receivedQtyMap[detail.productId] || 0;
+                                    const remains = detail.qty - received;
+                                    return (
+                                        < TableRow key={index} >
+                                            <TableCell>
+                                                {remains === 0 ? (
+                                                    <Tooltip title="商品はすでに受領済み">
+                                                        <IconButton size="small">
+                                                            <CheckIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                ) : (
+                                                    <Tooltip title="受領">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setSelectedProduct({
+                                                                    productName: detail.productName,
+                                                                    detailId: detail.id
+                                                                });
+                                                                setOpenReceiveForm(true);
+                                                                setSelectedRemains(remains);
+                                                            }}
+                                                        >
+                                                            <WarehouseIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>{detail.productName}</TableCell>
+                                            <TableCell>{detail.qty}</TableCell>
+                                            <TableCell>{received}</TableCell>
+                                            <TableCell>{remains}</TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
                 {/* 在庫履歴タイトル */}
                 <Typography
                     sx={{
@@ -535,53 +538,57 @@ const ReceiveForm = () => {
                     }}>
                     在庫履歴
                 </Typography>
-                <DataGrid
-                    rows={rows}
-                    columns={columns}
-                    initialState={{
-                        pagination: {
-                            paginationModel: {
-                                pageSize: 5,
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={400} />
+                ) : (
+                    <DataGrid
+                        rows={rows}
+                        columns={columns}
+                        initialState={{
+                            pagination: {
+                                paginationModel: {
+                                    pageSize: 5,
+                                },
                             },
-                        },
-                    }}
-                    localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
-                    pageSizeOptions={[5]}
-                    disableRowSelectionOnClick
-                    autoHeight
-                    sx={{
-                        "--DataGrid-t-color-interactive-focus": "none !important",
-                        "& .MuiDataGrid-root": {
-                            border: "none",
-                        },
-                        "& .MuiDataGrid-cell": {
-                            borderBottom: "none",
-                        },
-                        "& .name-column--cell": {
-                            color: colors.greenAccent[300],
-                        },
-                        "& .MuiDataGrid-columnHeaders": {
-                            color: colors.grey[100],
-                            borderBottom: "none",
-                        },
-                        "& .MuiDataGrid-virtualScroller": {
-                            backgroundColor: colors.primary[400],
-                        },
-                        "& .MuiDataGrid-footerContainer": {
-                            borderTop: "none",
-                            backgroundColor: colors.greenAccent[700],
-                        },
-                        "& .MuiCheckbox-root": {
-                            color: `${colors.greenAccent[400]} !important`,
-                        },
-                        "& .MuiDataGrid-toolbar": {
-                            backgroundColor: colors.greenAccent[700],
-                        },
-                        "& .MuiDataGrid-columnHeader": {
-                            backgroundColor: colors.greenAccent[800],
-                        },
-                    }}
-                />
+                        }}
+                        localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
+                        pageSizeOptions={[5]}
+                        disableRowSelectionOnClick
+                        autoHeight
+                        sx={{
+                            "--DataGrid-t-color-interactive-focus": "none !important",
+                            "& .MuiDataGrid-root": {
+                                border: "none",
+                            },
+                            "& .MuiDataGrid-cell": {
+                                borderBottom: "none",
+                            },
+                            "& .name-column--cell": {
+                                color: colors.greenAccent[300],
+                            },
+                            "& .MuiDataGrid-columnHeaders": {
+                                color: colors.grey[100],
+                                borderBottom: "none",
+                            },
+                            "& .MuiDataGrid-virtualScroller": {
+                                backgroundColor: colors.primary[400],
+                            },
+                            "& .MuiDataGrid-footerContainer": {
+                                borderTop: "none",
+                                backgroundColor: colors.greenAccent[700],
+                            },
+                            "& .MuiCheckbox-root": {
+                                color: `${colors.greenAccent[400]} !important`,
+                            },
+                            "& .MuiDataGrid-toolbar": {
+                                backgroundColor: colors.greenAccent[700],
+                            },
+                            "& .MuiDataGrid-columnHeader": {
+                                backgroundColor: colors.greenAccent[800],
+                            },
+                        }}
+                    />
+                )}
                 {/* 受領フォームダイアログ */}
                 {selectedProduct && (
                     <ReceiveFormDialog

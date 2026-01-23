@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { tokens } from "../../theme";
 import { useQuery } from "@tanstack/react-query";
 import ApiService from "../../services/ApiService";
-import { Box, Button, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useMediaQuery, useTheme, type SxProps, type Theme } from "@mui/material";
+import { Box, Button, CircularProgress, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useMediaQuery, useTheme, type SxProps, type Theme } from "@mui/material";
 import Header from "../../layout/Header";
 import type { SupplierProductData } from "../../types/supplier";
 
@@ -42,7 +42,7 @@ const cellStyle = (
 });
 
 
-const SupplierCategoryTable = ({ categoryName, products,supplierId }: Props) => {
+const SupplierCategoryTable = ({ categoryName, products, supplierId }: Props) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const col = supplierTableColumns;
@@ -178,30 +178,33 @@ const SupplierPage = () => {
 
     return (
         <Box m={3}>
-            <Header
-                title={`仕入先: ${data?.supplier.name ?? ""}`}
-                subtitle={` 住所: ${data?.supplier.address ?? ""}`}
-            />
+            {isLoading ? (
+                <Skeleton variant="text" width="80%" height={40} />
+            ) : (
+                <Header
+                    title={`仕入先: ${data?.supplier.name ?? ""}`}
+                    subtitle={` 住所: ${data?.supplier.address ?? ""}`}
+                />
+            )}
             <Box m={3} height="75vh">
-                {/* ローディング表示 */}
-                {(isLoading) && (
-                    <Box textAlign="center" my={4}>
-                        <CircularProgress />
-                        <Typography>データを読み込み中...</Typography>
-                    </Box>
-                )}
+
                 {/* エラー表示 */}
                 {(error) && (
                     <p className="error">データの取得に失敗しました。</p>
                 )}
-                {data?.supplierProducts.map(cat => (
-                    <SupplierCategoryTable
-                        key={cat.categoryName}
-                        categoryName={cat.categoryName}
-                        products={cat.products}
-                        supplierId={Number(supplierId)}
-                    />
-                ))}
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={400} />
+                ) : (
+                    data?.supplierProducts.map(cat => (
+                        <SupplierCategoryTable
+                            key={cat.categoryName}
+                            categoryName={cat.categoryName}
+                            products={cat.products}
+                            supplierId={Number(supplierId)}
+                        />
+                    ))
+                )}
+
             </Box>
         </Box>
     )

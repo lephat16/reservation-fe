@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography, useTheme, type SelectChangeEvent } from '@mui/material';
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid, InputLabel, MenuItem, Select, Skeleton, Stack, TextField, Tooltip, Typography, useTheme, type SelectChangeEvent } from '@mui/material';
 import { tokens } from '../../theme';
 import { useQuery } from '@tanstack/react-query';
 import ApiService from '../../services/ApiService';
@@ -118,7 +118,7 @@ const CreatePurchasePage = () => {
         if (!selectedSupplier) return null;
 
         return {
-            supplierId: selectedSupplier.id,
+            supplierId: selectedSupplier.id ?? 0,
             description: "",
             details: rows
                 .filter(row => row.product !== null)
@@ -159,7 +159,6 @@ const CreatePurchasePage = () => {
         try {
             const createdPurchaseOrder = await ApiService.createPurchaseOrder(purchaseItem);
             await ApiService.placeOrder(Number(createdPurchaseOrder.data.id));
-            console.log(purchaseItem);
             showSnackbar("注文に成功しました", "success");
 
             // リセット
@@ -176,7 +175,7 @@ const CreatePurchasePage = () => {
     const handleConfirmSave = async () => {
         if (!selectedSupplier) return;
         const purchaseItem: PurchaseOrderItem = {
-            supplierId: selectedSupplier.id,
+            supplierId: selectedSupplier.id ?? 0,
             description,
             details: rows
                 .filter(r => r.product)
@@ -190,7 +189,6 @@ const CreatePurchasePage = () => {
 
         try {
             await ApiService.createPurchaseOrder(purchaseItem);
-            console.log(purchaseItem);
             showSnackbar("注文を保存しました", "success");
 
             // reset
@@ -227,10 +225,14 @@ const CreatePurchasePage = () => {
     }
     return (
         <Box m={3}>
-            <Header
-                title="新規注文作成"
-                subtitle="新しい注文の詳細を入力してください"
-            />
+            {isLoading ? (
+                <Skeleton variant="text" width="80%" height={40} />
+            ) : (
+                <Header
+                    title="新規注文作成"
+                    subtitle="新しい注文の詳細を入力してください"
+                />
+            )}
             <Box mt={3} minHeight="75vh">
                 {/* メッセージ表示 */}
                 <CustomSnackbar
@@ -239,72 +241,69 @@ const CreatePurchasePage = () => {
                     severity={snackbar.severity}
                     onClose={closeSnackbar}
                 />
-                {/* ローディング表示 */}
-                {(isLoading) && (
-                    <Box textAlign="center" my={4}>
-                        <CircularProgress />
-                        <Typography>データを読み込み中...</Typography>
-                    </Box>
-                )}
+
                 {/* エラー表示 */}
                 {(error) && (
                     <p className="error">データの取得に失敗しました。</p>
                 )}
 
                 {/* 仕入先選択 */}
-                <Box m={1}>
-                    <Button
-                        sx={{ display: 'block', mt: 2, ml: 1 }}
-                        color="secondary"
-                        onClick={handleOpenSelectSupplier}
-                    >
-                        仕入先を選択
-                    </Button>
-                    <FormControl sx={{ m: 1, minWidth: 340 }}>
-                        <InputLabel
-                            id="controlled-open-select-suppliers-label"
-                            sx={{
-                                color: colors.grey[100],
-                                '&.Mui-focused': {
-                                    color: colors.grey[200],
-                                },
-                            }}
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={400} />
+                ) : (
+                    <Box m={1}>
+                        <Button
+                            sx={{ display: 'block', mt: 2, ml: 1 }}
+                            color="secondary"
+                            onClick={handleOpenSelectSupplier}
                         >
-                            仕入先</InputLabel>
-                        <Select
-                            labelId="controlled-open-select-suppliers-label"
-                            id="controlled-open-select-suppliers"
-                            open={openSelectSupplier}
-                            onClose={handleCloseSelectSupplier}
-                            onOpen={handleOpenSelectSupplier}
-                            value={selectedSupplier?.id || ''}
-                            label="仕入先"
-                            onChange={handleSupplierChange}
-                            sx={{
-                                '& .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: colors.grey[600],
-                                },
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: colors.grey[400],
-                                },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: colors.grey[200],
-                                },
+                            仕入先を選択
+                        </Button>
+                        <FormControl sx={{ m: 1, minWidth: 340 }}>
+                            <InputLabel
+                                id="controlled-open-select-suppliers-label"
+                                sx={{
+                                    color: colors.grey[100],
+                                    '&.Mui-focused': {
+                                        color: colors.grey[200],
+                                    },
+                                }}
+                            >
+                                仕入先</InputLabel>
+                            <Select
+                                labelId="controlled-open-select-suppliers-label"
+                                id="controlled-open-select-suppliers"
+                                open={openSelectSupplier}
+                                onClose={handleCloseSelectSupplier}
+                                onOpen={handleOpenSelectSupplier}
+                                value={selectedSupplier?.id || ''}
+                                label="仕入先"
+                                onChange={handleSupplierChange}
+                                sx={{
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: colors.grey[600],
+                                    },
+                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: colors.grey[400],
+                                    },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: colors.grey[200],
+                                    },
 
 
-                            }}
-                        >
+                                }}
+                            >
 
-                            {data?.map((supplier) => (
-                                <MenuItem key={supplier.id} value={supplier.id}>
-                                    {supplier.name}
-                                </MenuItem>
-                            ))}
+                                {data?.map((supplier) => (
+                                    <MenuItem key={supplier.id} value={supplier.id}>
+                                        {supplier.name}
+                                    </MenuItem>
+                                ))}
 
-                        </Select>
-                    </FormControl>
-                </Box>
-
+                            </Select>
+                        </FormControl>
+                    </Box>
+                )}
                 {/* 選択中の仕入先がある場合、商品行を表示 */}
                 {selectedSupplier && (
                     <Box m={1} sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -319,7 +318,7 @@ const CreatePurchasePage = () => {
 
                                     {/* 商品選択 */}
                                     {isLoadingProducts ? (
-                                        <CircularProgress />
+                                        <Skeleton variant="rectangular" height={200} />
                                     ) : productError ? (
                                         <Typography color="error">商品データの取得に失敗しました</Typography>
                                     ) : productData?.length === 0 ? (

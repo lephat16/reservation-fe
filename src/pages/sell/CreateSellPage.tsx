@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Stack, TextField, Typography, useTheme } from "@mui/material"
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Skeleton, Stack, TextField, Typography, useTheme } from "@mui/material"
 import Header from "../../layout/Header"
 import CustomSnackbar from "../../components/customSnackbar/CustomSnackbar"
 import { useSnackbar } from "../../hooks/useSnackbar";
@@ -202,7 +202,6 @@ const CreateSellPage = () => {
         try {
             const createdSaleOrder = await ApiService.createSaleOrder(sellItem);
             await ApiService.prepareOrder(Number(createdSaleOrder.data.id));
-            console.log(sellItem);
             showSnackbar("注文を保存しました", "success");
 
             const categoryIds = rows
@@ -245,7 +244,6 @@ const CreateSellPage = () => {
 
         try {
             await ApiService.createSaleOrder(sellItem);
-            console.log(sellItem);
             showSnackbar("注文を保存しました", "success");
 
             // reset
@@ -273,10 +271,14 @@ const CreateSellPage = () => {
 
     return (
         <Box m={3}>
-            <Header
-                title="新規販売注文作成"
-                subtitle="新しい規販注文の詳細を入力してください"
-            />
+            {isLoading ? (
+                <Skeleton variant="text" width="80%" height={40} />
+            ) : (
+                <Header
+                    title="新規販売注文作成"
+                    subtitle="新しい規販注文の詳細を入力してください"
+                />
+            )}
             <Box mt={3} minHeight="75vh">
                 {/* メッセージ表示 */}
                 <CustomSnackbar
@@ -285,72 +287,72 @@ const CreateSellPage = () => {
                     severity={snackbar.severity}
                     onClose={closeSnackbar}
                 />
-                {/* ローディング表示 */}
-                {(isLoading) && (
-                    <Box textAlign="center" my={4}>
-                        <CircularProgress />
-                        <Typography>データを読み込み中...</Typography>
-                    </Box>
-                )}
+
                 {/* エラー表示 */}
                 {(error) && (
                     <p className="error">データの取得に失敗しました。</p>
                 )}
-
-                <Box m={2}>
-                    <TextField
-                        required
-                        label="顧客名"
-                        sx={{
-                            minWidth: 340,
-                            m: 1,
-                            '& .MuiInputLabel-root': {
-                                color: colors.grey[100],
-                            },
-                            '& .MuiInputLabel-root.Mui-focused': {
-                                color: colors.grey[200],
-                            },
-                            '& .MuiOutlinedInput-root': {
-                                '& fieldset': {
-                                    borderColor: colors.grey[600],
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={200} />
+                ) : (
+                    <Box m={2}>
+                        <TextField
+                            required
+                            label="顧客名"
+                            sx={{
+                                minWidth: 340,
+                                m: 1,
+                                '& .MuiInputLabel-root': {
+                                    color: colors.grey[100],
                                 },
-                                '&:hover fieldset': {
-                                    borderColor: colors.grey[400],
+                                '& .MuiInputLabel-root.Mui-focused': {
+                                    color: colors.grey[200],
                                 },
-                                '&.Mui-focused fieldset': {
-                                    borderColor: colors.grey[200],
+                                '& .MuiOutlinedInput-root': {
+                                    '& fieldset': {
+                                        borderColor: colors.grey[600],
+                                    },
+                                    '&:hover fieldset': {
+                                        borderColor: colors.grey[400],
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: colors.grey[200],
+                                    },
                                 },
-                            },
-                            '& .MuiOutlinedInput-input': {
-                                color: colors.grey[100],
-                            },
-                        }}
-                        value={customerName}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                            const name = event.target.value;
-                            setCustomerName(name)
+                                '& .MuiOutlinedInput-input': {
+                                    color: colors.grey[100],
+                                },
+                            }}
+                            value={customerName}
+                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                const name = event.target.value;
+                                setCustomerName(name)
 
-                        }}
-                    />
-                </Box>
-
-                <Grid container>
-                    {rows.map((row, i) => (
-                        <SellRowItem
-                            key={i}
-                            row={row}
-                            index={i}
-                            isLast={i === rows.length - 1}
-                            categories={categories}
-                            onUpdate={updateRow}
-                            onAdd={addRow}
-                            onDelete={deleteRow}
-                            totalRows={rows.length}
-                            customerName={customerName}
-                            errors={errorsByRow[i]}
+                            }}
                         />
-                    ))}
-                </Grid>
+                    </Box>
+                )}
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={400} />
+                ) : (
+                    <Grid container>
+                        {rows.map((row, i) => (
+                            <SellRowItem
+                                key={i}
+                                row={row}
+                                index={i}
+                                isLast={i === rows.length - 1}
+                                categories={categories}
+                                onUpdate={updateRow}
+                                onAdd={addRow}
+                                onDelete={deleteRow}
+                                totalRows={rows.length}
+                                customerName={customerName}
+                                errors={errorsByRow[i]}
+                            />
+                        ))}
+                    </Grid>
+                )}
                 {/* ボタン操作 */}
                 <Stack
                     textAlign="center"

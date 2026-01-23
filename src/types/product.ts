@@ -12,6 +12,7 @@ export interface ProductData {
     supplier?: SupplierData[];
 }
 
+
 export interface ProductDetailData {
     product: ProductData;
     supplier: SupplierData[];
