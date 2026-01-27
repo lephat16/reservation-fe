@@ -1,6 +1,6 @@
 
 import axios from "axios";
-import ApiService from "../services/ApiService";
+import ApiService from "../shared/api/ApiService";
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
 });
