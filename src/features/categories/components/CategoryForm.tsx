@@ -1,20 +1,21 @@
 import Dialog from "@mui/material/Dialog";
-import { useTheme } from "@mui/material";
+import { Box, Button, DialogTitle, MenuItem, Stack, TextField, useTheme } from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import * as yup from 'yup';
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm, type Resolver } from "react-hook-form";
+import { Controller, useForm, type Resolver } from "react-hook-form";
+import { StyledDialogContent } from "../../../shared/components/global/StyledDialogContent";
+import { useEffect, } from "react";
+import FileInput from "./FileInput";
+import type { CategoryFormData } from "../types/category";
 
-type CategoryFormData = {
-    name: string;
-    status: "ACTIVE" | "INACTIVE";
-    description: string;
-    imageUrl: string | null;
-};
+
+
+
 type CategoryFormProps = {
     open: boolean;
     onClose: () => void;
-    onSubmit: (data: CategoryFormData) => void;
+    onSubmit: (data: FormData) => void;
     category?: CategoryFormData;
 }
 const CategoryForm = ({
@@ -26,11 +27,12 @@ const CategoryForm = ({
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+
     const schema = yup.object({
         name: yup
             .string()
             .required("名前は必須です")
-            .max(50, "名前は50文字以内で入力してください"),
+            .max(50, "名前は50文字以内で入  力してください"),
         status: yup
             .mixed<"ACTIVE" | "INACTIVE">()
             .required("ステータスは必須です")
@@ -40,20 +42,56 @@ const CategoryForm = ({
             .required("説明は必須です")
             .max(500, "説明は500文字以内で入力してください"),
         imageUrl: yup
-            .string()
+            .mixed<File | string>()
             .nullable()
-            .url("有効なURLを入力してください")
+            .test(
+                "required",
+                "画像は必須です",
+                value => value instanceof File || (typeof value === "string" && value.trim() !== "")
+            )
     });
 
     const { control, handleSubmit, formState: { errors }, reset } = useForm<CategoryFormData>({
         resolver: yupResolver(schema) as Resolver<CategoryFormData>,
-        defaultValues: {
-            name: category?.name ?? '',
-            status: category?.status ?? 'ACTIVE',
-            description: category?.description ?? '',
-            imageUrl: category?.imageUrl ?? null,
+        defaultValues: category || {
+            name: '',
+            status: 'ACTIVE',
+            description: '',
+            imageUrl: null,
         }
     });
+
+    useEffect(() => {
+        if (category) {
+            reset(category);
+        } else {
+            reset({
+                name: '',
+                status: 'ACTIVE',
+                description: '',
+                imageUrl: null,
+            });
+        }
+    }, [category, reset]);
+
+
+    const handleFormSubmit = (data: CategoryFormData) => {
+        const categoryBlob = new Blob([JSON.stringify({
+            name: data.name,
+            status: data.status,
+            description: data.description,
+            imageUrl: typeof data.imageUrl === "string" ? data.imageUrl : undefined
+        })], { type: "application/json" });
+
+        const formData = new FormData();
+        formData.append("category", categoryBlob);
+        if (data.imageUrl instanceof File) {
+            formData.append("file", data.imageUrl);
+        }
+        onSubmit(formData);
+        onClose();
+        console.log(formData);
+    }
     return (
         <Dialog
             open={open}
@@ -68,7 +106,92 @@ const CategoryForm = ({
             slotProps={{
                 paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: 2, p: 2 } }
             }}
-        ></Dialog>
+        >
+            <DialogTitle fontSize={20} textAlign="center">カテゴリーを作成</DialogTitle>
+            <StyledDialogContent>
+                <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} mt={2}>
+                    <Controller
+                        name="name"
+                        control={control}
+                        render={({ field }) => (
+                            <TextField
+                                {...field}
+                                label="カテゴリー名"
+                                variant="outlined"
+                                fullWidth
+                                error={!!errors.name}
+                                helperText={errors.name ? errors.name.message : ''}
+                                sx={{ mb: 2 }}
+                            />
+                        )}
+                    />
+                    <Controller
+                        name="status"
+                        control={control}
+                        render={({ field }) => (
+                            <TextField
+                                select
+                                {...field}
+                                label="ステータス"
+                                variant="outlined"
+                                fullWidth
+                                error={!!errors.status}
+                                helperText={errors.status ? errors.status.message : ''}
+                                sx={{ mb: 2 }}
+                            >
+                                <MenuItem value={"ACTIVE"}>ACTIVE</MenuItem>
+                                <MenuItem value={"INACTIVE"}>INACTIVE</MenuItem>
+                            </TextField>
+                        )}
+                    />
+                    <Controller
+                        name="imageUrl"
+                        control={control}
+                        render={({ field }) => (
+                            <FileInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={errors.imageUrl?.message}
+                            />
+                        )}
+                    />
+                    <Controller
+                        name="description"
+                        control={control}
+                        render={({ field }) => (
+                            <TextField
+                                {...field}
+                                label="説明"
+                                variant="outlined"
+                                fullWidth
+                                multiline
+                                rows={4}
+                                error={!!errors.description}
+                                helperText={errors.description ? errors.description.message : ''}
+                                sx={{ mb: 2 }}
+                            />
+                        )}
+                    />
+                    <Stack direction="row" gap={2} justifyContent="flex-end">
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="success"
+                        >
+                            {`${category ? "編集" : "作成"}`}
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="warning"
+                            onClick={onClose}
+                        >
+                            キャンセル
+                        </Button>
+
+                    </Stack>
+                </Box>
+            </StyledDialogContent>
+        </Dialog >
     )
 }
 export default CategoryForm;

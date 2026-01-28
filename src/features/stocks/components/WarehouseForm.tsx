@@ -55,7 +55,7 @@ const WarehouseForm = ({
                 location: '',
                 stockLimit: 0,
                 status: 'ACTIVE',
-            }); // create
+            }); 
         }
     }, [warehouse, reset]);
 
@@ -84,7 +84,6 @@ const WarehouseForm = ({
                     <Controller
                         name="name"
                         control={control}
-                        rules={{ required: "Name is required" }}
                         render={({ field }) => (
                             <TextField
                                 {...field}
@@ -101,7 +100,6 @@ const WarehouseForm = ({
                     <Controller
                         name="location"
                         control={control}
-                        rules={{ required: "Location is required" }}
                         render={({ field }) => (
                             <TextField
                                 {...field}

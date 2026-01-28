@@ -28,8 +28,13 @@ export interface ProductStockData {
     stocks?: StockData[];
 }
 
-
 export interface StockData {
     quantity: number;
     warehouse: string;
 }
+export interface CategoryFormData {
+    name: string;
+    status: "ACTIVE" | "INACTIVE";
+    description: string;
+    imageUrl: File | string | null;
+};

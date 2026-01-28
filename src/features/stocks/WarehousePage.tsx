@@ -286,7 +286,6 @@ const WarehousePage = () => {
                             direction="row"
                             gap={1}
                         >
-
                             {dataWH && dataWH.map((wh) => (
                                 <Button
                                     key={wh.id}

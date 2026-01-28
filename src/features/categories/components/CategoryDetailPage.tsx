@@ -8,24 +8,37 @@ import {
     IconButton,
     Paper,
     Skeleton,
+    Stack,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
+    Tooltip,
     Typography,
     useTheme
 } from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import Header from "../../../pages/Header";
-import type { ProductStockData } from "../types/category";
+import type { CategoryFormData, ProductStockData } from "../types/category";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { useInfoCategory } from "../hooks/useInfoCategory";
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { DeleteConfirmDialog } from "../../products/components/ProductPage";
+import { useSnackbar } from "../../../shared/hooks/useSnackbar";
+import { useDeleteCategory } from "../hooks/useDeleteCategory";
+import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
+import CategoryForm from "./CategoryForm";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { categoryAPI } from "../api/categoryAPI";
+import { SNACKBAR_MESSAGES } from "../../../constants/message";
+import type { AxiosError } from "axios";
 
 interface ProductRowProps {
     product: ProductStockData;
@@ -141,10 +154,29 @@ const CategoryDetailPage = () => {
     const colors = tokens(theme.palette.mode);
     const { categoryId } = useParams<{ categoryId: string }>();
 
+    const [openEditCategoryForm, setOpenEditCategoryForm] = useState(false);
+    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+
+    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
+
     const [showMore, setShowMore] = useState(false);
 
     const { isLoading, error, data } = useInfoCategory(Number(categoryId))
 
+    const updateMutation = useMutation({
+        mutationFn: async ({ id, data }: { id: number; data: FormData }) => {
+            return categoryAPI.updateCategory(id, data);
+        },
+        onSuccess: () => {
+            showSnackbar(SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success");
+            queryClient.invalidateQueries({ queryKey: ["category"] });
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
+        }
+    });
     const getAllSuppliers = (products?: ProductStockData[]): string => {
         if (!products || products.length === 0) return "";
         const suppliers = products.flatMap(p =>
@@ -154,6 +186,17 @@ const CategoryDetailPage = () => {
         return Array.from(new Set(suppliers)).join(", ");
     };
 
+    const handleDeleteSuccess = () => {
+        setOpenDeleteConfirm(false);
+        navigate("/category");
+    };
+    const deleteMutation = useDeleteCategory(handleDeleteSuccess, showSnackbar);
+    const mappedCategoryFormData: CategoryFormData = {
+        name: data?.categoryInfo.name ?? '',
+        status: data?.categoryInfo.status ?? 'INACTIVE',
+        description: data?.categoryInfo.description ?? '',
+        imageUrl: data?.categoryInfo.imageUrl ?? null,
+    }
     return (
         <Box m={3}>
             {isLoading ? (
@@ -165,6 +208,13 @@ const CategoryDetailPage = () => {
                 />
             )}
             <Box m="40px 0 0 0" minHeight="75vh">
+                {/* メッセージ表示 */}
+                <CustomSnackbar
+                    open={snackbar.open}
+                    message={snackbar.message}
+                    severity={snackbar.severity}
+                    onClose={closeSnackbar}
+                />
 
                 {/* エラー表示 */}
                 {(error) && (
@@ -210,12 +260,47 @@ const CategoryDetailPage = () => {
                                         >
                                             {data.categoryInfo.status}
                                         </Typography>
-                                        <Chip
-                                            label={data.categoryInfo.status === "ACTIVE" ? "稼働中" : "停止中"}
-                                            color={data.categoryInfo.status === "ACTIVE" ? "success" : "error"}
-                                            size="small"
-                                            sx={{ mb: 1 }}
-                                        />
+
+                                        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} mt={1}>
+                                            <Chip
+                                                label={data.categoryInfo.status === "ACTIVE" ? "稼働中" : "停止中"}
+                                                color={data.categoryInfo.status === "ACTIVE" ? "success" : "error"}
+                                                size="small"
+                                                sx={{ mb: 1 }}
+                                            />
+                                            <Tooltip title="削除">
+                                                <IconButton
+                                                    aria-label="delete"
+                                                    size="small"
+                                                    sx={{
+                                                        '&:hover': {
+                                                            color: "red",
+                                                        },
+                                                    }}
+                                                    onClick={() => {
+                                                        setOpenDeleteConfirm(true)
+                                                    }}
+                                                >
+                                                    <DeleteIcon fontSize="inherit" />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="編集">
+                                                <IconButton
+                                                    aria-label="edit"
+                                                    size="small"
+                                                    sx={{
+                                                        '&:hover': {
+                                                            color: "orange",
+                                                        },
+                                                    }}
+                                                    onClick={() => {
+                                                        setOpenEditCategoryForm(true)
+                                                    }}
+                                                >
+                                                    <EditIcon fontSize="inherit" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Stack>
                                         <Typography
                                             variant="body2"
                                             sx={{
@@ -244,8 +329,8 @@ const CategoryDetailPage = () => {
                                 </Box>
                                 <CardMedia
                                     component="img"
-                                    sx={{ width: 180, objectFit: 'cover' }}
-                                    image={data.categoryInfo.imageUrl}
+                                    sx={{ width: 180, height: 180, objectFit: 'cover' }}
+                                    image={`http://localhost:8081${data.categoryInfo.imageUrl}`}
                                     alt={data.categoryInfo.name}
                                 />
                             </Card>
@@ -301,7 +386,29 @@ const CategoryDetailPage = () => {
 
                 )}
 
+                <DeleteConfirmDialog
+                    open={openDeleteConfirm}
+                    onClose={() => setOpenDeleteConfirm(false)}
+                    title="カテゴリー"
+                    targetName={data?.categoryInfo.name}
+                    onDelete={() =>
+                        deleteMutation.mutate(Number(categoryId))}
+                    isDeleting={deleteMutation.isPending}
+                />
+                {openEditCategoryForm && (
+                    <CategoryForm
+                        open
+                        category={mappedCategoryFormData}
+                        onClose={() => setOpenEditCategoryForm(false)}
+                        onSubmit={(formData) => {
+                            updateMutation.mutate({
+                                id: Number(categoryId),
+                                data: formData
+                            });
 
+                        }}
+                    />
+                )}
             </Box>
         </Box>
     )

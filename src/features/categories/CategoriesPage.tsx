@@ -1,4 +1,4 @@
-import {  GridActionsCell, GridActionsCellItem, type GridColDef, type GridRenderCellParams, type GridRowId } from "@mui/x-data-grid";
+import { GridActionsCell, GridActionsCellItem, type GridColDef, type GridRenderCellParams, type GridRowId } from "@mui/x-data-grid";
 import type { CategorySummariesData } from "./types/category";
 import { Box, Chip, IconButton, Skeleton, Tooltip, useTheme } from "@mui/material";
 import { tokens } from "../../shared/theme";
@@ -20,6 +20,7 @@ import { categoryAPI } from "./api/categoryAPI";
 import { useCategorySummaries } from "./hooks/useCategorySummaries";
 import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
 import CategoryForm from "./components/CategoryForm";
+import { useDeleteCategory } from "./hooks/useDeleteCategory";
 
 interface ActionHandlers {
     deleteCategory: (id: GridRowId) => void;
@@ -76,7 +77,6 @@ const columns: GridColDef<CategorySummariesData>[] = [
         flex: 1,
         renderCell: (params) => {
             const value = params.value as string;
-
             return (
                 <Chip
                     label={value}
@@ -113,19 +113,26 @@ const CategoriesPage = () => {
 
     const { isLoading, error, data } = useCategorySummaries();
 
-    const deleteMutation = useMutation({
-        mutationFn: async (id: number) => categoryAPI.deleteCategory(id),
+    const createMutation = useMutation({
+        mutationFn: async (data: FormData) => {
+            const resCategory = await categoryAPI.addCategory(data);
+            return resCategory;
+        },
         onSuccess: () => {
-            setOpenDeleteConfirm(false);
-            setSelectedCategory(null);
             showSnackbar(SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["categories"] });
-
+            queryClient.invalidateQueries({ queryKey: ["category-summaries"] });
         },
         onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || "削除に失敗しました", "error");
+            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
         }
     });
+    
+    const handleDeleteSuccess = () => {
+        setOpenDeleteConfirm(false);
+        setSelectedCategory(null);
+    };
+
+    const deleteMutation = useDeleteCategory(handleDeleteSuccess, showSnackbar);
 
     const seeMoreCategory = (id: GridRowId) => {
         navigate(`/category/${id}`);
@@ -203,6 +210,7 @@ const CategoriesPage = () => {
                 <DeleteConfirmDialog
                     open={openDeleteConfirm}
                     onClose={() => setOpenDeleteConfirm(false)}
+                    title="カテゴリー"
                     targetName={selectedCategory?.categoryName}
                     onDelete={() =>
                         selectedCategory &&
@@ -213,8 +221,8 @@ const CategoriesPage = () => {
                     <CategoryForm
                         open
                         onClose={() => setOpenAddCategoryForm(false)}
-                        onSubmit={() => {
-
+                        onSubmit={(data) => {
+                            createMutation.mutate(data)
                         }}
                     />
                 )}

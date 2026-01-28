@@ -4,6 +4,12 @@ import type { CategoryData, CategorySummariesData, CategorySummaryData } from ".
 
 
 export const categoryAPI = {
+    addCategory: async (data: FormData): Promise<ApiResponse<CategoryData>> => {
+        return (await api.post(`/categories/add`, data));
+    },
+    updateCategory: async (categoryId: number, data: FormData): Promise<ApiResponse<CategoryData>> => {
+        return (await api.put(`/categories/update/${categoryId}`, data));
+    },
     getAllCategories: async (): Promise<ApiResponse<CategoryData[]>> => {
         return (await api.get(`/categories/all`));
     },
