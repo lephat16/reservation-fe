@@ -1,10 +1,9 @@
 import Dialog from "@mui/material/Dialog";
-import { Box, Button, DialogTitle, MenuItem, Stack, TextField, useTheme } from "@mui/material";
+import { Box, Button, DialogContent, DialogTitle, MenuItem, Stack, TextField, useTheme } from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import * as yup from 'yup';
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm, type Resolver } from "react-hook-form";
-import { StyledDialogContent } from "../../../shared/components/global/StyledDialogContent";
 import { useEffect, } from "react";
 import FileInput from "./FileInput";
 import type { CategoryFormData } from "../types/category";
@@ -108,13 +107,14 @@ const CategoryForm = ({
             }}
         >
             <DialogTitle fontSize={20} textAlign="center">カテゴリーを作成</DialogTitle>
-            <StyledDialogContent>
+            <DialogContent>
                 <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} mt={2}>
                     <Controller
                         name="name"
                         control={control}
                         render={({ field }) => (
                             <TextField
+
                                 {...field}
                                 label="カテゴリー名"
                                 variant="outlined"
@@ -125,6 +125,7 @@ const CategoryForm = ({
                             />
                         )}
                     />
+
                     <Controller
                         name="status"
                         control={control}
@@ -190,7 +191,7 @@ const CategoryForm = ({
 
                     </Stack>
                 </Box>
-            </StyledDialogContent>
+            </DialogContent>
         </Dialog >
     )
 }

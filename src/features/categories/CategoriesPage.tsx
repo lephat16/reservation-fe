@@ -1,7 +1,6 @@
-import { GridActionsCell, GridActionsCellItem, type GridColDef, type GridRenderCellParams, type GridRowId } from "@mui/x-data-grid";
+import {  GridActionsCell, GridActionsCellItem, type GridColDef, type GridRenderCellParams, type GridRowId } from "@mui/x-data-grid";
 import type { CategorySummariesData } from "./types/category";
 import { Box, Chip, IconButton, Skeleton, Tooltip, useTheme } from "@mui/material";
-import { tokens } from "../../shared/theme";
 import Header from "../../pages/Header";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { jaJP } from '@mui/x-data-grid/locales';
@@ -18,9 +17,9 @@ import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { DeleteConfirmDialog } from "../products/components/ProductPage";
 import { categoryAPI } from "./api/categoryAPI";
 import { useCategorySummaries } from "./hooks/useCategorySummaries";
-import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
 import CategoryForm from "./components/CategoryForm";
 import { useDeleteCategory } from "./hooks/useDeleteCategory";
+import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
 
 interface ActionHandlers {
     deleteCategory: (id: GridRowId) => void;
@@ -98,7 +97,6 @@ const columns: GridColDef<CategorySummariesData>[] = [
 const CategoriesPage = () => {
 
     const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
 
     const navigate = useNavigate();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
@@ -126,7 +124,7 @@ const CategoriesPage = () => {
             showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
         }
     });
-    
+
     const handleDeleteSuccess = () => {
         setOpenDeleteConfirm(false);
         setSelectedCategory(null);
@@ -200,10 +198,7 @@ const CategoriesPage = () => {
                             localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
                             loading={isLoading}
                             showToolbar
-                            bgColor={colors.primary[400]}
-                            footerColor={colors.blueAccent[700]}
-                            toolbarColor={colors.blueAccent[700]}
-                            headerColor={colors.blueAccent[500]}
+                            mode={theme.palette.mode}
                         />
                     </ActionHandlersContext.Provider>
                 )}

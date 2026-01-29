@@ -1,8 +1,7 @@
-import { Box, Button, Dialog, DialogActions, DialogTitle, Stack, TextField, Typography, useTheme } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography, useTheme } from "@mui/material";
 import type { PurchaseRow } from "../types/purchase";
 import { tokens } from "../../../shared/theme";
 import type { DialogMode } from "./CreatePurchasePage";
-import { StyledDialogContent } from "../../../shared/components/global/StyledDialogContent";
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
 
 
@@ -53,7 +52,7 @@ export const PurchaseConfirmDialog = ({
                 注文内容の確認 ({dialogMode === "save" ? "保存用" : "購入用"})
             </DialogTitle>
 
-            <StyledDialogContent dividers>
+            <DialogContent dividers>
                 <Typography variant="h6" mb={1}>
                     注文商品一覧
                 </Typography>
@@ -102,7 +101,7 @@ export const PurchaseConfirmDialog = ({
                     onChange={(e) => onDescriptionChange(e.target.value)}
                     sx={descriptionTextField}
                 />
-            </StyledDialogContent>
+            </DialogContent>
 
             <DialogActions>
                 <Button

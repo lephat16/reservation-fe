@@ -1,11 +1,12 @@
 import type { SupplierData, SupplierDataWithSku } from "../../suppliers/types/supplier";
 
+export type ProductStatus = "ACTIVE" | "INACTIVE";
 export interface ProductData {
     productName: string;
     id?: number;
     code: string;
     description: string;
-    status: "ACTIVE" | "INACTIVE";
+    status: ProductStatus;
     totalStock: number;
     unit: string;
     categoryName: string;
@@ -16,7 +17,7 @@ export interface ProductDataDTO {
     id?: number;
     productCode: string;
     description: string;
-    status: "ACTIVE" | "INACTIVE";
+    status: ProductStatus;
     totalStock: number;
     unit: string;
     categoryName: string;
@@ -25,19 +26,16 @@ export interface ProductDataDTO {
 
 export interface ProductDetailDataDTO {
     productDTO: ProductDataDTO;
-    // supplierPriceDTO: SupplierData[];
     supplierPriceDTO: SupplierDataWithSku[];
     stockHistoryDTO: StockHistory[];
     inventoryStockDTO: InventoryStock[]
 }
 export interface ProductDetailData {
     product: ProductData;
-    // supplier: SupplierDataWithSku[];
     supplier: SupplierDataWithSku[];
     stockHistory: StockHistory[];
     inventoryStock: InventoryStock[]
 }
-
 
 export interface StockHistory {
     changeQty: number;
@@ -59,4 +57,13 @@ export interface SumReceivedGroupByProduct {
     productId: string;
     receivedQty: number;
     sku: string;
+}
+
+export interface ProductFormData {
+    name: string;
+    productCode: string;
+    description: string;
+    status: ProductStatus;
+    unit: string;
+    categoryName: string;
 }

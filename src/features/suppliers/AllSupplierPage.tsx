@@ -226,9 +226,7 @@ const AllSupplierPage = () => {
                                 },
                             }}
                             pageSizeOptions={[10]}
-                            footerColor={colors.blueAccent[700]}
-                            toolbarColor={colors.blueAccent[700]}
-                            headerColor={colors.blueAccent[500]}
+                            mode={theme.palette.mode}
                         />
                     )}
                 </ActionHandlersContext.Provider>

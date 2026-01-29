@@ -39,6 +39,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { categoryAPI } from "../api/categoryAPI";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import type { AxiosError } from "axios";
+import { styledTable } from "../../../shared/components/global/StyleTable";
 
 interface ProductRowProps {
     product: ProductStockData;
@@ -76,14 +77,10 @@ function ProductRow({ product }: ProductRowProps) {
             </TableRow>
 
             {/* EXPAND ROW */}
-            <TableRow
-                sx={{
-                    backgroundColor: colors.primary[800],
-                }}
-            >
-                <TableCell colSpan={4} sx={{ p: 0 }} >
+            <TableRow >
+                <TableCell colSpan={4} style={{padding:0}} >
                     <Collapse in={open} timeout="auto" unmountOnExit>
-                        <Box m={1} display="flex" gap={4}>
+                        <Box display="flex" gap={1}>
 
                             {/* SUPPLIERS TABLE */}
 
@@ -92,15 +89,15 @@ function ProductRow({ product }: ProductRowProps) {
                             >
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell>仕入先名</TableCell>
-                                        <TableCell align="right">仕入単価</TableCell>
+                                        <TableCell align="center">仕入先名</TableCell>
+                                        <TableCell align="center">仕入単価</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {product.suppliers.map(s => (
                                         <TableRow key={s.supplierName}>
-                                            <TableCell>{s.supplierName}</TableCell>
-                                            <TableCell align="right">
+                                            <TableCell align="center">{s.supplierName}</TableCell>
+                                            <TableCell align="center">
                                                 ¥{s.price.toLocaleString()}
                                             </TableCell>
                                         </TableRow>
@@ -110,25 +107,22 @@ function ProductRow({ product }: ProductRowProps) {
 
                             {/* STOCK TABLE */}
                             {(product.stocks && product.stocks.length > 0) ? (
-                                <>
-
                                     <Table size="small">
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell>倉庫</TableCell>
-                                                <TableCell align="right">在庫数</TableCell>
+                                                <TableCell align="center">倉庫</TableCell>
+                                                <TableCell align="center">在庫数</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
                                             {product.stocks.map((st, idx) => (
                                                 <TableRow key={idx}>
-                                                    <TableCell>{st.warehouse}</TableCell>
-                                                    <TableCell align="right">{st.quantity}</TableCell>
+                                                    <TableCell align="center">{st.warehouse}</TableCell>
+                                                    <TableCell align="center">{st.quantity}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
                                     </Table>
-                                </>
                             ) : (
                                 <Table size="small">
                                     <TableBody>
@@ -140,7 +134,6 @@ function ProductRow({ product }: ProductRowProps) {
                                     </TableBody>
                                 </Table>
                             )}
-
                         </Box>
                     </Collapse>
                 </TableCell>
@@ -342,20 +335,11 @@ const CategoryDetailPage = () => {
                                 <Table
                                     stickyHeader
                                     sx={{
-                                        backgroundColor: colors.primary[400]
+                                        ...styledTable(theme.palette.mode)
                                     }}
                                 >
                                     <TableHead>
-                                        <TableRow
-                                            sx={{
-                                                "& .MuiTableCell-root": {
-                                                    fontWeight: "bold",
-                                                    backgroundColor: colors.blueAccent[800],
-                                                    color: colors.grey[100],
-                                                },
-
-                                            }}
-                                        >
+                                        <TableRow>
                                             <TableCell />
                                             <TableCell>商品</TableCell>
                                             <TableCell>仕入先</TableCell>

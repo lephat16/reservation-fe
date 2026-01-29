@@ -1,23 +1,14 @@
-import { useTheme } from "@mui/material";
 import { DataGrid, type DataGridProps, type GridValidRowModel } from "@mui/x-data-grid";
-import { tokens } from "../../theme";
 
 interface StyledDataGridProps<T extends GridValidRowModel> extends DataGridProps<T> {
-    bgColor?: string;
-    footerColor?: string;
-    toolbarColor?: string;
-    headerColor?: string;
+    mode: 'light' | 'dark';
 }
 
 export function StyledDataGrid<T extends GridValidRowModel>(props: StyledDataGridProps<T>) {
-    const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
+    
 
     const {
-        bgColor = colors.primary[400],
-        footerColor = colors.greenAccent[700],
-        toolbarColor = colors.greenAccent[700],
-        headerColor = colors.greenAccent[800],
+        mode,
         ...rest
     } = props;
 
@@ -25,16 +16,26 @@ export function StyledDataGrid<T extends GridValidRowModel>(props: StyledDataGri
         <DataGrid
             {...rest}
             sx={{
-                "--DataGrid-t-color-interactive-focus": "none !important",
-                "& .MuiDataGrid-root": { border: "none" },
-                "& .MuiDataGrid-cell": { borderBottom: "none" },
-                "& .name-column--cell": { color: colors.greenAccent[300] },
-                "& .MuiDataGrid-columnHeaders": { color: colors.grey[100], borderBottom: "none" },
-                "& .MuiDataGrid-virtualScroller": { backgroundColor: bgColor },
-                "& .MuiDataGrid-footerContainer": { borderTop: "none", backgroundColor: footerColor },
-                "& .MuiCheckbox-root": { color: `${colors.greenAccent[400]} !important` },
-                "& .MuiDataGrid-toolbar": { backgroundColor: toolbarColor },
-                "& .MuiDataGrid-columnHeader": { backgroundColor: headerColor },
+                backgroundColor: mode === 'light' ? '#f8fafc' : '#334155',
+                '& .MuiDataGrid-columnHeader': {
+                    backgroundColor: mode === 'light' ? '#eaeff5' : '#1e293b',
+                    color: mode === 'light' ? '#000' : '#fff',
+                },
+                '& .MuiDataGrid-cell': {
+                    color: mode === 'light' ? '#000' : '#fff',
+                },
+                '& .MuiDataGrid-pinnedRow': {
+                    backgroundColor: mode === 'light' ? '#f1f5f9' : '#293548',
+                },
+                '& .MuiDataGrid-row:hover': {
+                    backgroundColor: mode === 'light' ? '#e0e7ff' : '#1f2937',
+                },
+                '& .MuiDataGrid-row.Mui-selected': {
+                    backgroundColor: mode === 'light' ? '#c7d2fe' : '#334155',
+                    '&:hover': {
+                        backgroundColor: mode === 'light' ? '#baccff' : '#2c3a4a',
+                    },
+                },
                 ...props.sx,
             }}
         />

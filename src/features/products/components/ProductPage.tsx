@@ -14,7 +14,7 @@ import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { productAPI } from "../api/productAPI";
 import { useProductDetailAndCategories } from "../hooks/useProductDetailAndCategories";
-import { StyledDialogContent } from "../../../shared/components/global/StyledDialogContent";
+import { styledTable } from "../../../shared/components/global/StyleTable";
 
 export type ProductFormValues = {
     name: string;
@@ -108,7 +108,7 @@ export const EditProductDialog = ({
             }}
         >
             <DialogTitle>商品編集</DialogTitle>
-            <StyledDialogContent>
+            <DialogContent>
                 <Controller
                     name="name"
                     control={control}
@@ -187,7 +187,7 @@ export const EditProductDialog = ({
                         </TextField>
                     )}
                 />
-            </StyledDialogContent>
+            </DialogContent>
             <DialogActions>
                 <Button
                     variant="contained"
@@ -390,7 +390,11 @@ const ProductPage = () => {
                         </Card>
 
                         <TableContainer component={Paper} sx={{ mb: 2, backgroundColor: colors.primary[400] }}>
-                            <Table>
+                            <Table
+                                sx={{
+                                    ...styledTable(theme.palette.mode),
+                                }}
+                            >
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>仕入先</TableCell>
@@ -445,7 +449,12 @@ const ProductPage = () => {
                         </Stack>
 
                         <TableContainer component={Paper} sx={{ mb: 2, backgroundColor: colors.primary[400] }}>
-                            <Table size="small">
+                            <Table
+                                sx={{
+                                    ...styledTable(theme.palette.mode),
+                                }}
+                                size="small"
+                            >
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>倉庫</TableCell>
@@ -475,7 +484,12 @@ const ProductPage = () => {
                             </Table>
                         </TableContainer>
                         <TableContainer component={Paper} sx={{ backgroundColor: colors.primary[400] }}>
-                            <Table size="small">
+                            <Table
+                                sx={{
+                                    ...styledTable(theme.palette.mode),
+                                }}
+                                size="small"
+                            >
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>日付</TableCell>

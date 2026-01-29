@@ -6,7 +6,7 @@ import { useSnackbar } from '../../../shared/hooks/useSnackbar';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Header from '../../../pages/Header';
 import CustomSnackbar from '../../../shared/components/global/CustomSnackbar';
-import { type GridColDef } from '@mui/x-data-grid';
+import {  type GridColDef } from '@mui/x-data-grid';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import CheckIcon from '@mui/icons-material/Check';
 import { ReceiveFormDialog } from '../../purchases/components/ReceiveForm';
@@ -228,7 +228,7 @@ const DeliverForm = () => {
                         pageSizeOptions={[5]}
                         disableRowSelectionOnClick
                         autoHeight
-                        
+                        mode={theme.palette.mode}
                     />
                 )}
                 {/* 受領フォームダイアログ */}

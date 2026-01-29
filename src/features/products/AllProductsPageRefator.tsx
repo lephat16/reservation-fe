@@ -20,7 +20,10 @@ import { DeleteConfirmDialog } from "./components/ProductPage";
 import { productAPI } from "./api/productAPI";
 import { useStockWithSupplier } from "../stocks/hooks/useStockWithSupplier";
 import { styledSelect } from "../../shared/styles/styledSelect";
-
+import { styledTable } from "../../shared/components/global/StyleTable";
+import AddCardIcon from '@mui/icons-material/AddCard';
+import ProductForm from "./components/ProductForm";
+import type { ProductFormData } from "./types/product";
 
 type StockInfo = {
     stockId: number;
@@ -88,7 +91,8 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
     const { row, onDelete } = props;
 
     const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
+    // const colors = tokens(theme.palette.mode);
+
     const [open, setOpen] = useState(false);
 
     const navigate = useNavigate();
@@ -145,20 +149,39 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                 </TableCell>
             </TableRow>
 
-            <TableRow
-                sx={{
-                    backgroundColor: colors.primary[800],
-                }}
-            >
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
+            <TableRow>
+                <TableCell
+                    style={{
+                        padding: 0,
+                    }}
+                    colSpan={7}
+                >
                     <Collapse in={open} timeout="auto" unmountOnExit>
-                        <Box sx={{ margin: 1 }}>
-                            <Typography fontSize={10} gutterBottom component="div">
+                        <Box sx={{ mt: 1 }}>
+                            <Typography fontSize={10} gutterBottom component="div" textAlign="center">
                                 商品は、異なる仕入先がそれぞれ異なるSKUを提供するため、複数のSKUを持つことがあります。
                             </Typography>
-                            <Table size="small" aria-label="purchases">
-                                <TableHead>
+                            <Table
+                                size="small"
+                                aria-label="purchases"
+                                sx={{
+                                    '& .MuiTableHead-root': {
+                                        backgroundColor: theme.palette.mode === 'light' ? '#eaeff5' : '#4a6ba0',
+                                        color: theme.palette.mode === 'light' ? '#000' : '#fff',
+
+                                    },
+                                }}>
+                                <TableHead
+                                    sx={{
+                                        '& .MuiTableRow-root': {
+                                            '&:hover': {
+                                                backgroundColor: theme.palette.mode === 'light' ? '#d1e3f1' : '#3c4a6b',
+                                            },
+                                        },
+                                    }}
+                                >
                                     <TableRow>
+
                                         <TableCell>SKU</TableCell>
                                         <TableCell>仕入先</TableCell>
                                         <TableCell>在庫数</TableCell>
@@ -211,17 +234,26 @@ const AllProductsPageRefator = () => {
     const [order, setOrder] = useState<Order>('asc');
     const [orderBy, setOrderBy] = useState<'code' | 'name' | 'qty'>('code');
 
+    const [openAddProductForm, setOpenAddProductForm] = useState(false);
     const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
 
     const { isLoading, error, data } = useStockWithSupplier();
 
+    const addMutation = useMutation({
+        mutationFn: async (data: ProductFormData) => productAPI.createProduct(data),
+        onSuccess: () => {
+            showSnackbar(SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
+            queryClient.invalidateQueries({ queryKey: ["products-and-categories"] });
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
+        }
+    })
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => productAPI.deleteProduct(id),
         onSuccess: () => {
             showSnackbar(SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
-
             queryClient.invalidateQueries({ queryKey: ["products-and-categories"] });
-
         },
         onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
@@ -355,14 +387,28 @@ const AllProductsPageRefator = () => {
 
     return (
         <Box m={3}>
-            {isLoading ? (
-                <Skeleton variant="text" width="80%" height={40} />
-            ) : (
-                <Header
-                    title="商品一覧"
-                    subtitle="商品情報の一覧表示"
-                />
-            )}
+            <Box display="flex" justifyContent="space-between">
+                {isLoading ? (
+                    <Skeleton variant="text" width="80%" height={40} />
+                ) : (
+                    <Header
+                        title="商品一覧"
+                        subtitle="商品情報の一覧表示"
+                    />
+                )}
+                <Box mt={4}>
+                    <Tooltip title="追加">
+                        <IconButton
+                            color="success"
+                            aria-label="追加"
+                            onClick={() => {
+                                setOpenAddProductForm(true)
+                            }}>
+                            <AddCardIcon fontSize="large" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
             <Box
                 mt={1}
                 minHeight="75vh"
@@ -540,7 +586,12 @@ const AllProductsPageRefator = () => {
                 ) : (
                     <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }} gap={4} >
                         <TableContainer component={Paper} sx={{ height: "100%", minWidth: 650 }}>
-                            <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
+                            <Table
+                                sx={{
+                                    tableLayout: "fixed",
+                                    ...styledTable(theme.palette.mode),
+                                }}
+                            >
                                 <colgroup>
                                     <col style={{ width: "6%" }} />
                                     <col style={{ width: "15%" }} />
@@ -551,13 +602,7 @@ const AllProductsPageRefator = () => {
                                     <col style={{ width: "10%" }} />
                                 </colgroup>
                                 <TableHead>
-                                    <TableRow
-                                        sx={{
-                                            fontWeight: "bold",
-                                            backgroundColor: colors.blueAccent[700],
-                                            color: colors.grey[100]
-                                        }}
-                                    >
+                                    <TableRow>
                                         <TableCell />
                                         <TableCell
                                             sortDirection={orderBy === 'code' ? order : false}
@@ -672,6 +717,16 @@ const AllProductsPageRefator = () => {
                     }}
                     isDeleting={deleteMutation.isPending}
                 />
+                {openAddProductForm && (
+                    <ProductForm
+                        open
+                        onClose={() => setOpenAddProductForm(false)}
+                        onSubmit={(data) => {
+                            addMutation.mutate(data)
+                        }}
+                        categories={data?.categories ?? []}
+                    />
+                )}
             </Box>
         </Box >
     )

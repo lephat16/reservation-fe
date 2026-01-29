@@ -15,14 +15,13 @@ import { useEffect, useState } from "react";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
-import { type GridColDef } from '@mui/x-data-grid'
 import { jaJP } from "@mui/x-data-grid/locales";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { purchaseAPI } from "../api/purchaseAPI";
 import { stockAPI } from "../../stocks/api/stockAPI";
-import { StyledDialogContent } from "../../../shared/components/global/StyledDialogContent";
 import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid";
+import type { GridColDef } from "@mui/x-data-grid";
 
 // 購入確認ダイアログ
 interface ReceiveConfirmDialogProps {
@@ -207,7 +206,7 @@ export const ReceiveFormDialog = ({
                 }}
             >
                 <DialogTitle fontSize={20} textAlign="center">{title}</DialogTitle>
-                <StyledDialogContent>
+                <DialogContent>
                     {/* 商品名フィールド（読み取り専用） */}
                     <Controller
                         name="productName"
@@ -282,7 +281,7 @@ export const ReceiveFormDialog = ({
                             />
                         )}
                     />
-                </StyledDialogContent>
+                </DialogContent>
                 {/* アクションボタン */}
                 <DialogActions>
                     <Button variant="contained" color="warning" onClick={onClose}>
@@ -552,6 +551,7 @@ const ReceiveForm = () => {
                         pageSizeOptions={[5]}
                         disableRowSelectionOnClick
                         autoHeight
+                        mode={theme.palette.mode}
                     />
                 )}
                 {/* 受領フォームダイアログ */}

@@ -1,11 +1,10 @@
-import { Box, Button, Dialog, DialogTitle, MenuItem, Stack, TextField, useTheme } from "@mui/material";
+import { Box, Button, Dialog, DialogContent, DialogTitle, MenuItem, Stack, TextField, useTheme } from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import { Controller, useForm } from "react-hook-form";
 import * as yup from 'yup';
 import { yupResolver } from "@hookform/resolvers/yup";
 import type { WarehouseFormData } from "../types/stock";
 import { useEffect } from "react";
-import { StyledDialogContent } from "../../../shared/components/global/StyledDialogContent";
 
 
 
@@ -79,7 +78,7 @@ const WarehouseForm = ({
             }}
         >
             <DialogTitle fontSize={20} textAlign="center">倉庫を作成</DialogTitle>
-            <StyledDialogContent>
+            <DialogContent>
                 <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} mt={2}>
                     <Controller
                         name="name"
@@ -166,7 +165,7 @@ const WarehouseForm = ({
 
                     </Stack>
                 </Box>
-            </StyledDialogContent>
+            </DialogContent>
         </Dialog>
     )
 }

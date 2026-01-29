@@ -1,13 +1,15 @@
 import { api } from "../../../api/axiosClient";
-import type { ApiResponse} from "../../../shared";
-import type { ProductData, ProductDetailDataDTO } from "../types/product";
+import type { ApiResponse } from "../../../shared";
+import type { ProductData, ProductDetailDataDTO, ProductFormData } from "../types/product";
 
 
 export const productAPI = {
     getAllProducts: async (): Promise<ApiResponse<ProductData[]>> => {
         return (await api.get(`/products/info/all`));
     },
-    
+    createProduct: async (data: ProductFormData): Promise<ApiResponse<ProductDetailDataDTO>> => {
+        return (await api.post(`/products/add`, data));
+    },
     getProductInfoDetail: async (productId: number): Promise<ApiResponse<ProductDetailDataDTO>> => {
         return (await api.get(`/products/info-detail/${productId}`));
     },
@@ -26,8 +28,8 @@ export const productAPI = {
 }
 
 
-    
 
-    
-    
-    
+
+
+
+

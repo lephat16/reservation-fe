@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogTitle, Grid, Skeleton, Stack, TextField, Typography, useTheme } from "@mui/material"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Skeleton, Stack, TextField, Typography, useTheme } from "@mui/material"
 import Header from "../../../pages/Header";
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
@@ -13,7 +13,6 @@ import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { saleAPI } from "../api/saleAPI";
 import type { CategorySummariesData } from "../../categories/types/category";
 import { useCategorySummaries } from "../../categories/hooks/useCategorySummaries";
-import { StyledDialogContent } from "../../../shared/components/global/StyledDialogContent";
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
 
 export type SellRow = {
@@ -379,7 +378,7 @@ const CreateSellPage = () => {
             >
                 <DialogTitle>注文内容の確認 ({dialogMode === "save" ? "保存用" : "販売用"})</DialogTitle>
 
-                <StyledDialogContent dividers>
+                <DialogContent dividers>
 
                     <Typography variant="h6" mb={1}>
                         販売商品一覧
@@ -429,7 +428,7 @@ const CreateSellPage = () => {
                         onChange={(e) => setDescription(e.target.value)}
                         sx={descriptionTextField}
                     />
-                </StyledDialogContent>
+                </DialogContent>
 
                 <DialogActions>
                     <Button

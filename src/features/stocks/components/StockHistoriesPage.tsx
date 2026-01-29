@@ -217,7 +217,7 @@ const StockHistoriesPage = () => {
                             setSelectedRow(params.row);
                             setOpen(true);
                         }}
-                        
+                        mode={theme.palette.mode}
                     />
                 )}
                 <Dialog

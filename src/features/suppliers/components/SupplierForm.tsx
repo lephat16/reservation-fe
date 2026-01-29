@@ -1,11 +1,10 @@
-import { Box, Button, Dialog, DialogTitle, MenuItem, Stack, TextField, useTheme } from "@mui/material";
+import { Box, Button, Dialog, DialogContent, DialogTitle, MenuItem, Stack, TextField, useTheme } from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import * as yup from 'yup';
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import type { SupplierData } from "../types/supplier";
-import { StyledDialogContent } from "../../../shared/components/global/StyledDialogContent";
 
 type SupplierFormProps = {
     open: boolean;
@@ -105,7 +104,7 @@ const SupplierForm = ({
             }}
         >
             <DialogTitle fontSize={20} textAlign="center">仕入先の登録</DialogTitle>
-            <StyledDialogContent>
+            <DialogContent>
                 <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} mt={2}>
                     <Controller
                         name="name"
@@ -212,7 +211,7 @@ const SupplierForm = ({
 
                     </Stack>
                 </Box>
-            </StyledDialogContent>
+            </DialogContent>
         </Dialog>
     )
 }
