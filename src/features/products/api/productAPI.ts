@@ -1,5 +1,6 @@
 import { api } from "../../../api/axiosClient";
 import type { ApiResponse } from "../../../shared";
+import type { StockWithSupplierAndProduct } from "../../stocks/types/stock";
 import type { ProductData, ProductDetailDataDTO, ProductFormData } from "../types/product";
 
 
@@ -25,6 +26,11 @@ export const productAPI = {
     deleteProduct: async (productId: number): Promise<ApiResponse<ProductData>> => {
         return (await api.delete(`/products/delete/${productId}`)).data;
     },
+    getAllProductsWithInventoryOptional: async (): Promise<ApiResponse<StockWithSupplierAndProduct[]>> => {
+        return (await api.get(`/products/all/with-inventory-optional`));
+    },
+    
+    
 }
 
 

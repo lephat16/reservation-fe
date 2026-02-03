@@ -37,7 +37,7 @@ const SupplierForm = ({
                 "電話番号の形式が正しくありません。"
             )
             .min(10, "電話番号が短すぎます。")
-            .max(13, "電話番号が長すぎます。"),
+            .max(15, "電話番号が長すぎます。"),
 
         mail: yup
             .string()
@@ -100,10 +100,11 @@ const SupplierForm = ({
             maxWidth="sm"
             fullWidth
             slotProps={{
-                paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: 2, p: 2 } }
+                paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: 2, px: 2, pt: 2 } }
             }}
         >
-            <DialogTitle fontSize={20} textAlign="center">仕入先の登録</DialogTitle>
+            <DialogTitle fontSize={20} textAlign="center">
+                {supplier ? "仕入先情報編集" : "仕入先の登録"}</DialogTitle>
             <DialogContent>
                 <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} mt={2}>
                     <Controller
@@ -191,7 +192,7 @@ const SupplierForm = ({
                         />
 
                     </Stack>
-                    <Stack direction="row" gap={2} justifyContent="flex-end">
+                    <Stack mt={3} direction="row" gap={2} justifyContent="flex-end">
                         <Button
                             type="submit"
                             variant="contained"

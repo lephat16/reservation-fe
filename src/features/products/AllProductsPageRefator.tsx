@@ -16,7 +16,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
-import { DeleteConfirmDialog } from "./components/ProductPage";
+import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
 import { productAPI } from "./api/productAPI";
 import { useStockWithSupplier } from "../stocks/hooks/useStockWithSupplier";
 import { styledSelect } from "../../shared/styles/styledSelect";
@@ -104,6 +104,10 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                         aria-label="expand row"
                         size="small"
                         onClick={() => setOpen(!open)}
+                        disabled={
+                            !row.supplierProduct ||
+                            row.supplierProduct.some(sp => !sp.supplierSku || !sp.supplierName)
+                        }
                     >
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
@@ -115,9 +119,9 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                 <TableCell>{row.product.categoryName}</TableCell>
                 <TableCell>
                     <Stack direction="row">
-                        <Tooltip title="削除">
+                        <Tooltip title="詳細">
                             <IconButton
-                                aria-label="delete"
+                                aria-label="see-more"
                                 size="small"
                                 sx={{
                                     '&:hover': {
@@ -129,9 +133,9 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                                 <VisibilityIcon fontSize="inherit" />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip title="編集">
+                        <Tooltip title="削除">
                             <IconButton
-                                aria-label="edit"
+                                aria-label="delete"
                                 size="small"
                                 sx={{
                                     '&:hover': {
@@ -189,21 +193,23 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {row.supplierProduct.map((supplierProduct) => (
-                                        <TableRow key={supplierProduct.supplierSku}>
-                                            <TableCell component="th" scope="row">
-                                                {supplierProduct.supplierSku}
-                                            </TableCell>
-                                            <TableCell>{supplierProduct.supplierName}</TableCell>
-                                            <TableCell>
-                                                {row.stockInfo
-                                                    .filter(stock => stock.sku === supplierProduct.supplierSku
-                                                    ).reduce((sum, s) => sum + s.quantity, 0)}
-                                            </TableCell>
-                                            <TableCell align="right">{supplierProduct.currentPrice}</TableCell>
+                                    {row.supplierProduct.map((supplierProduct) => {
+                                        const totalQuantity = row.stockInfo
+                                            .filter(stock => stock.sku === supplierProduct.supplierSku
+                                            ).reduce((sum, s) => sum + s.quantity, 0);
+                                        return (
+                                            <TableRow key={supplierProduct.supplierSku}>
+                                                <TableCell component="th" scope="row">
+                                                    {supplierProduct.supplierSku ?? '-'}
+                                                </TableCell>
+                                                <TableCell>{supplierProduct.supplierName ?? '-'}</TableCell>
+                                                <TableCell>{totalQuantity}</TableCell>
+                                                <TableCell align="right">{supplierProduct.currentPrice}</TableCell>
 
-                                        </TableRow>
-                                    ))}
+                                            </TableRow>
+                                        )
+                                    }
+                                    )}
                                 </TableBody>
                             </Table>
                         </Box>
@@ -241,9 +247,9 @@ const AllProductsPageRefator = () => {
 
     const addMutation = useMutation({
         mutationFn: async (data: ProductFormData) => productAPI.createProduct(data),
-        onSuccess: () => {
-            showSnackbar(SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["products-and-categories"] });
+        onSuccess: (response) => {
+            showSnackbar(response.message || SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
+            queryClient.invalidateQueries({ queryKey: ["stock-with-supplier"] });
         },
         onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
@@ -251,9 +257,10 @@ const AllProductsPageRefator = () => {
     })
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => productAPI.deleteProduct(id),
-        onSuccess: () => {
-            showSnackbar(SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["products-and-categories"] });
+        onSuccess: (response) => {
+            setOpenDeleteConfirm(false);
+            showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
+            queryClient.invalidateQueries({ queryKey: ["stock-with-supplier"] });
         },
         onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
@@ -315,15 +322,15 @@ const AllProductsPageRefator = () => {
                 );
             if (!exists) {
                 acc[productId].supplierProduct.push({
-                    currentPrice: stock.supplierProduct.currentPrice,
-                    id: stock.supplierProduct.id,
-                    leadTime: stock.supplierProduct.leadTime,
+                    currentPrice: stock.supplierProduct?.currentPrice ?? 0,
+                    id: stock.supplierProduct?.id ?? null,
+                    leadTime: stock.supplierProduct?.leadTime ?? null,
                     productId: Number(stock.product.id),
                     productName: stock.product.name,
-                    status: stock.supplierProduct.status,
-                    supplierId: stock.supplierProduct.supplierId,
-                    supplierName: stock.supplierProduct.supplierName,
-                    supplierSku: stock.supplierProduct.supplierSku,
+                    status: stock.supplierProduct?.status ?? null,
+                    supplierId: stock.supplierProduct?.supplierId ?? null,
+                    supplierName: stock.supplierProduct?.supplierName ?? null,
+                    supplierSku: stock.supplierProduct?.supplierSku ?? null,
                 });
             }
             return acc;

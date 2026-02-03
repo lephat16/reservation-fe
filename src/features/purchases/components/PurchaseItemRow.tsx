@@ -85,11 +85,13 @@ export const PurchaseItemRow = ({
                         }
                         sx={styledSelect}
                     >
-                        {productData?.map((p) => (
-                            <MenuItem key={p.id} value={p.id}>
-                                {p.product}
+                        {productData?.map((p) =>
+                        (
+                            <MenuItem key={p.id} value={p.id} disabled={p.status === "INACTIVE"}>
+                                {`${p.product}${p.status === "INACTIVE" ? "(停止中)" : ""}`}
                             </MenuItem>
-                        ))}
+                        )
+                        )}
 
                     </Select>
                 </FormControl>

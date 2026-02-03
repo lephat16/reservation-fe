@@ -10,6 +10,9 @@ export const purchaseAPI = {
     getPurchaseOrderById: async (poId: number): Promise<ApiResponse<PurchaseOrderData>> => {
         return (await api.get(`/transactions/purchase/${poId}`));
     },
+    getPurchaseOrderBySupplier: async (supplierId: number): Promise<ApiResponse<PurchaseOrderData[]>> => {
+        return (await api.get(`/transactions/purchase/by-supplier/${supplierId}`));
+    },
     createPurchaseOrder: async (purchaseData: PurchaseOrderItem): Promise<ApiResponse<PurchaseOrderData>> => {
         return (await api.post(`/transactions/purchase/add`, purchaseData));
     },

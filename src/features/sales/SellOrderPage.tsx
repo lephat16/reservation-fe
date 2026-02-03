@@ -8,7 +8,7 @@ import Header from "../../pages/Header";
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
-import { DeleteConfirmDialog } from "../products/components/ProductPage";
+import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
 import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
@@ -62,10 +62,10 @@ const SellOrderPage = () => {
 
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => saleAPI.deleteSellOrder(id),
-        onSuccess: () => {
+        onSuccess: (response) => {
             setOpenDeleteConfirm(false);
             setSelectedSellOrderId(0);
-            showSnackbar(SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
+            showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
 
         },

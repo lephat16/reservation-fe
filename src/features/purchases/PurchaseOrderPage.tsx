@@ -7,7 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { useState } from "react";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
-import { DeleteConfirmDialog } from "../products/components/ProductPage";
+import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";
@@ -59,10 +59,10 @@ const PurchaseOrderPage = () => {
 
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => purchaseAPI.deletePurchaseOrder(id),
-        onSuccess: () => {
+        onSuccess: (response) => {
             setOpenDeleteConfirm(false);
             setSelectedPurchaseOrderId(0);
-            showSnackbar(SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
+            showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
 
         },

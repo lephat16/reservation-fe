@@ -11,7 +11,7 @@ import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import type { AxiosError } from "axios";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
-import { DeleteConfirmDialog } from "../../products/components/ProductPage";
+import { DeleteConfirmDialog } from "../../../shared/components/DeleteConfirmDialog";
 import { purchaseAPI } from "../api/purchaseAPI";
 import { usePurchaseOrderDetail } from "../hooks/usePurchaseOrderDetail";
 import { useSumReceivedQtyByPoGroupByProduct } from "../../products/hooks/useSumReceivedQtyByPoGroupByProduct";
@@ -138,8 +138,8 @@ const PurchaseOrderDetailPage = () => {
 
     const deleteMutation = useMutation({
         mutationFn: async () => purchaseAPI.deletePurchaseOrder(Number(poId)),
-        onSuccess: () => {
-            showSnackbar(SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
+        onSuccess: (response) => {
+            showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["purchaseOrderDetail"] });
             setTimeout(() => {
                 navigate("/purchase-order");
@@ -151,8 +151,8 @@ const PurchaseOrderDetailPage = () => {
     });
     const submitMutation = useMutation({
         mutationFn: async () => purchaseAPI.placePurchaseOrder(Number(poId)),
-        onSuccess: () => {
-            showSnackbar(SNACKBAR_MESSAGES.ORDER.CREATE_SUCCESS, "success");
+        onSuccess: (response) => {
+            showSnackbar(response.message || SNACKBAR_MESSAGES.ORDER.CREATE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["purchaseOrderDetail"] });
             setTimeout(() => {
                 navigate("/purchase-order");

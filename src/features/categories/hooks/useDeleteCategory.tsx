@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { categoryAPI } from "../api/categoryAPI";
 import type { AxiosError } from "axios";
+import { SNACKBAR_MESSAGES } from "../../../constants/message";
 
 export const useDeleteCategory = (
     onSuccess: () => void,
@@ -9,8 +10,8 @@ export const useDeleteCategory = (
 
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => categoryAPI.deleteCategory(id),
-        onSuccess: () => {
-            showSnackbar("カテゴリーが削除されました", "success");
+        onSuccess: (response) => {
+            showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["category-summaries"] });
             onSuccess();
         },

@@ -12,7 +12,8 @@ import { StyledSelectTextField } from '../../../shared/components/global/StyledS
 type ProductFormProps = {
     open: boolean;
     onClose: () => void;
-    onSubmit: (data: ProductFormData) => void;
+    onSubmit?: (data: ProductFormData) => void;
+    onUpdate?: (data: FormData) => void;
     product?: ProductFormData;
     categories: CategoryData[];
 }
@@ -21,6 +22,7 @@ const ProductForm = ({
     open,
     onClose,
     onSubmit,
+    onUpdate,
     product,
     categories,
 }: ProductFormProps) => {
@@ -36,11 +38,14 @@ const ProductForm = ({
 
         productCode: yup.string()
             .required("商品コードは必須です")
-            .matches(/^[A-Za-z0-9]+$/, "商品コードは英数字のみを含むことができます"),
-
+            .matches(/^[A-Za-z0-9]+$/, "商品コードは英数字のみを含むことができます")
+            .max(10, "単位は5文字以内で入力してください")
+            .min(3, "単位は1文字以上で入力してください"),
         description: yup.string()
+            .trim()
             .required("説明は必須です")
-            .min(10, "説明は10文字以上でなければなりません"),
+            .min(5, "説明は5文字以上でなければなりません")
+            .max(500, "説明は500文字以内で入力してください"),
 
         status: yup.mixed<ProductStatus>()
             .oneOf(["ACTIVE", "INACTIVE"], "ステータスは「ACTIVE」または「INACTIVE」のいずれかでなければなりません")
@@ -48,8 +53,8 @@ const ProductForm = ({
 
         unit: yup.string()
             .required("単位は必須です")
-            .matches(/^[a-zA-Z]+$/, "単位は英字のみを含むことができます"),
-
+            .max(5, "単位は5文字以内で入力してください")
+            .min(1, "単位は1文字以上で入力してください"),
         categoryName: yup.string()
             .required("カテゴリ名は必須です")
             .min(3, "カテゴリ名は3文字以上でなければなりません"),
@@ -83,7 +88,13 @@ const ProductForm = ({
     }, [product, reset]);
 
     const handleFormSubmit = (data: ProductFormData) => {
-        onSubmit(data);
+        if (product) {
+            const formData = new FormData();
+            Object.entries(data).forEach(([key, value]) => {
+                formData.append(key, String(value));
+            });
+            onUpdate?.(formData);
+        } else onSubmit?.(data);
         onClose();
     }
     return (

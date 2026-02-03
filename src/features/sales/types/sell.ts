@@ -44,3 +44,13 @@ export interface SaleOrderData {
     details: SaleOrderDetailData[]
 }
 
+export interface WeeklySalesByProduct {
+    sodId: number,
+    productId: number,
+    month: string,
+    week: number,
+    weeklySales: number,
+    weeklyQty: number,
+    monthlySales: number,
+    monthlyQty: number
+}

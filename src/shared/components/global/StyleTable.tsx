@@ -10,7 +10,7 @@ export const styledTable = (mode: "light" | "dark") => ({
         color: mode === 'light' ? '#000' : '#fff',
         padding: '8px 16px',
     },
-    '& .MuiTableHead-root': {
+    '& .MuiTableHead-root .MuiTableCell-root' : {
         backgroundColor: mode === 'light' ? '#eaeff5' : '#1e293b',
         color: mode === 'light' ? '#000' : '#fff',
     },

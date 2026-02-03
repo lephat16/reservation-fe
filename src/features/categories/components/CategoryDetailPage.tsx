@@ -30,7 +30,7 @@ import ErrorState from "../../../shared/components/messages/ErrorState";
 import { useInfoCategory } from "../hooks/useInfoCategory";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { DeleteConfirmDialog } from "../../products/components/ProductPage";
+import { DeleteConfirmDialog } from "../../../shared/components/DeleteConfirmDialog";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import { useDeleteCategory } from "../hooks/useDeleteCategory";
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
@@ -73,12 +73,12 @@ function ProductRow({ product }: ProductRowProps) {
                     {product.suppliers.length} 件
                 </TableCell>
 
-                <TableCell align="right">{totalStock}</TableCell>
+                <TableCell sx={{ borderBottom: 'none' }} align="right">{totalStock}</TableCell>
             </TableRow>
 
             {/* EXPAND ROW */}
             <TableRow >
-                <TableCell colSpan={4} style={{padding:0}} >
+                <TableCell colSpan={4} style={{ padding: 0 }} >
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box display="flex" gap={1}>
 
@@ -107,24 +107,30 @@ function ProductRow({ product }: ProductRowProps) {
 
                             {/* STOCK TABLE */}
                             {(product.stocks && product.stocks.length > 0) ? (
-                                    <Table size="small">
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell align="center">倉庫</TableCell>
-                                                <TableCell align="center">在庫数</TableCell>
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell align="center">倉庫</TableCell>
+                                            <TableCell align="center">在庫数</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {product.stocks.map((st, idx) => (
+                                            <TableRow key={idx}>
+                                                <TableCell align="center">{st.warehouse}</TableCell>
+                                                <TableCell align="center">{st.quantity}</TableCell>
                                             </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {product.stocks.map((st, idx) => (
-                                                <TableRow key={idx}>
-                                                    <TableCell align="center">{st.warehouse}</TableCell>
-                                                    <TableCell align="center">{st.quantity}</TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                        ))}
+                                    </TableBody>
+                                </Table>
                             ) : (
                                 <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell align="center">倉庫</TableCell>
+                                            <TableCell align="center">在庫数</TableCell>
+                                        </TableRow>
+                                    </TableHead>
                                     <TableBody>
                                         <TableRow>
                                             <TableCell colSpan={2} align="center">
@@ -162,8 +168,8 @@ const CategoryDetailPage = () => {
         mutationFn: async ({ id, data }: { id: number; data: FormData }) => {
             return categoryAPI.updateCategory(id, data);
         },
-        onSuccess: () => {
-            showSnackbar(SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success");
+        onSuccess: (response) => {
+            showSnackbar(response.message ||SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["category"] });
         },
         onError: (error: AxiosError<{ message: string }>) => {
@@ -242,17 +248,7 @@ const CategoryDetailPage = () => {
                                         >
                                             {data.categoryInfo.name}
                                         </Typography>
-                                        <Typography
-                                            variant="subtitle2"
-                                            component="div"
-                                            sx={{
-                                                color: data.categoryInfo.status === 'ACTIVE' ? 'success.main' : 'error.main',
-                                                fontWeight: 'medium',
-                                                mb: 1
-                                            }}
-                                        >
-                                            {data.categoryInfo.status}
-                                        </Typography>
+
 
                                         <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} mt={1}>
                                             <Chip

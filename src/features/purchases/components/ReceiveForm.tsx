@@ -374,8 +374,8 @@ const ReceiveForm = () => {
         mutationFn: async (data: { receiveItem: ReceiveStockItem[], poId: number }) => {
             return stockAPI.receiveStock(data.receiveItem, data.poId);
         },
-        onSuccess: () => {
-            showSnackbar(SNACKBAR_MESSAGES.ORDER.RECEIVE_SUCCESS, "success");
+        onSuccess: (response) => {
+            showSnackbar(response.message || SNACKBAR_MESSAGES.ORDER.RECEIVE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["purchaseOrderDetail"] });
             setTimeout(() => {
                 navigate(`/purchase-order/${poId}`);

@@ -14,7 +14,7 @@ import NewLabelIcon from '@mui/icons-material/NewLabel';
 import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
-import { DeleteConfirmDialog } from "../products/components/ProductPage";
+import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
 import { categoryAPI } from "./api/categoryAPI";
 import { useCategorySummaries } from "./hooks/useCategorySummaries";
 import CategoryForm from "./components/CategoryForm";
@@ -116,8 +116,8 @@ const CategoriesPage = () => {
             const resCategory = await categoryAPI.addCategory(data);
             return resCategory;
         },
-        onSuccess: () => {
-            showSnackbar(SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
+        onSuccess: (response) => {
+            showSnackbar(response.message || SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["category-summaries"] });
         },
         onError: (error: AxiosError<{ message: string }>) => {

@@ -23,7 +23,7 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import Battery20Icon from '@mui/icons-material/Battery20';
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
 import { PieChart } from '@mui/x-charts/PieChart';
-import { DeleteConfirmDialog } from "../products/components/ProductPage";
+import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
 import WarehouseForm from "./components/WarehouseForm";
 import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";

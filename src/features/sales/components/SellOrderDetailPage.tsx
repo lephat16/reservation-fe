@@ -8,7 +8,7 @@ import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import Header from "../../../pages/Header";
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import * as yup from "yup";
-import { DeleteConfirmDialog } from "../../products/components/ProductPage";
+import { DeleteConfirmDialog } from "../../../shared/components/DeleteConfirmDialog";
 import { SubmitConfirmDialog } from "../../purchases/components/PurchaseOrderDetailPage";
 import type { AxiosError } from "axios";
 import ErrorState from "../../../shared/components/messages/ErrorState";
@@ -77,8 +77,8 @@ const SellOrderDetailPage = () => {
 
     const deleteMutation = useMutation({
         mutationFn: async () => saleAPI.deleteSellOrder(Number(soId)),
-        onSuccess: () => {
-            showSnackbar(SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
+        onSuccess: (response) => {
+            showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["sellOrderDetail"] });
             setTimeout(() => {
                 navigate("/sell-order");

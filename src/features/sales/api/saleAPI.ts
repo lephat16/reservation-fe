@@ -1,6 +1,6 @@
 import { api } from "../../../api/axiosClient";
 import type { ApiResponse } from "../../../shared";
-import type { SaleOrderData, SellOrderItem } from "../types/sell";
+import type { SaleOrderData, SellOrderItem, WeeklySalesByProduct } from "../types/sell";
 
 export const saleAPI = {
     getSaleOrders: async (): Promise<ApiResponse<SaleOrderData[]>> => {
@@ -24,7 +24,9 @@ export const saleAPI = {
     deleteSellOrder: async (orderId: number): Promise<ApiResponse<void>> => {
         return (await api.delete(`/transactions/sales/delete/${orderId}`));
     },
-
+    getWeeklySalesByProduct: async (productId: number): Promise<ApiResponse<WeeklySalesByProduct[]>> => {
+        return (await api.get(`/transactions/sales-order/${productId}/weekly-sales`));
+    },
 }
 
 

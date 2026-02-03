@@ -203,12 +203,7 @@ const Sidebar = () => {
                             icon={<PersonOutlinedIcon />}
 
                         />
-                        <Item
-                            title="仕入先商品"
-                            to="/"
-                            icon={<MapsHomeWorkIcon />}
-
-                        />
+                       
 
                         <Typography
                             variant="h6"

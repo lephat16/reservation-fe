@@ -16,12 +16,14 @@ export interface SupplierProductData {
     price: number;
     stock?: number;
     leadTime?: number;
-    status?: string;
+    status?: "ACTIVE" | "INACTIVE";
+    priceHistories?: PriceHistoriesData[];
 }
 
 
 export interface SupplierProductWithCategoryData {
     categoryName?: string;
+    categoryId?: number;
     supplierName?: string;
     supplierId?: string;
     products: SupplierProductData[];
@@ -49,4 +51,13 @@ export interface SupplierDataWithSku {
     supplierName: string;
     price: number;
     sku?: string;
+}
+
+export interface PriceHistoriesData {
+    id: number,
+    supplierProductId: number,
+    price: number,
+    effectiveDate: string,
+    note: string,
+    createdAt: string
 }
