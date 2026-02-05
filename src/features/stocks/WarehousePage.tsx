@@ -31,6 +31,7 @@ import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { stockAPI } from "./api/stockAPI";
 import { useWarehouses } from "./hooks/useWarehouses";
 import { useWarehouseWithTotalQty } from "./hooks/useWarehouseWithTotalQty";
+import { useScreen } from "../../shared/components/global/ScreenContext";
 
 
 interface TablePaginationActionsProps {
@@ -107,6 +108,8 @@ const WarehousePage = () => {
 
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
     const queryClient = useQueryClient();
+
+    const { isSM } = useScreen();
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -253,7 +256,7 @@ const WarehousePage = () => {
             {isLoadingWH ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
-                <Header
+                !isSM && <Header
                     title={`倉庫(${dataWH?.length ?? 0})`}
                     subtitle="倉庫の詳細情報を表示"
                 />

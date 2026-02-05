@@ -23,6 +23,7 @@ import MovingIcon from '@mui/icons-material/Moving';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { useWeeklySalesByProduct } from "../hooks/useWeeklySalesByProduct";
 import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
+import { useScreen } from "../../../shared/components/global/ScreenContext";
 
 const ProductPage = () => {
     const theme = useTheme();
@@ -35,6 +36,7 @@ const ProductPage = () => {
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
 
+    const { isSM } = useScreen();
     const { productId } = useParams<{ productId: string }>();
 
     const { isLoading, error, data } = useProductDetailAndCategories(Number(productId));
@@ -163,7 +165,7 @@ const ProductPage = () => {
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
-                <Header
+                !isSM && <Header
                     title="商品情報"
                     subtitle={productDetail?.product?.productName ?? "―"}
                 />

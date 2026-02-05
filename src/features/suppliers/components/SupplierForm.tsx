@@ -199,7 +199,6 @@ const SupplierForm = ({
                             color="success"
                             disabled={isSubmitting}
                         >
-                            {/* {`${supplier ? "編集" : "登録"}`} */}
                             {isSubmitting ? "送信中..." : supplier ? "編集" : "登録"}
                         </Button>
                         <Button

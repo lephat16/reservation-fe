@@ -1,6 +1,5 @@
 import { Box, Chip, IconButton, Skeleton, Tooltip, useTheme } from "@mui/material";
 import Header from "../../pages/Header";
-import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { SupplierData } from "./types/supplier";
 import { GridActionsCell, GridActionsCellItem, type GridColDef, type GridRenderCellParams, type GridRowId } from '@mui/x-data-grid-pro';
@@ -21,6 +20,7 @@ import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { supplierAPI } from "./api/supplierAPI";
 import { useAllSuppliers } from "./hooks/useAllSuppliers";
 import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
+import { useScreen } from "../../shared/components/global/ScreenContext";
 
 
 interface ActionHandlers {
@@ -113,8 +113,7 @@ const columns: GridColDef<SupplierData>[] = [
 const AllSupplierPage = () => {
 
     const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
-
+    const { isSM } = useScreen();
     const queryClient = useQueryClient();
 
     const navigate = useNavigate();
@@ -179,7 +178,7 @@ const AllSupplierPage = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    <Header
+                    !isSM && <Header
                         title={`仕入先一覧`}
                         subtitle={`全ての仕入先情報を表示`}
                     />

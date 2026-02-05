@@ -37,7 +37,7 @@ const WarehouseForm = ({
 
     const { control, handleSubmit, formState: { errors }, reset } = useForm<WarehouseFormData>({
         resolver: yupResolver(schema),
-        defaultValues: warehouse || {
+        defaultValues: {
             name: '',
             location: '',
             stockLimit: 0,
@@ -48,13 +48,6 @@ const WarehouseForm = ({
     useEffect(() => {
         if (warehouse) {
             reset(warehouse);
-        } else {
-            reset({
-                name: '',
-                location: '',
-                stockLimit: 0,
-                status: 'ACTIVE',
-            }); 
         }
     }, [warehouse, reset]);
 

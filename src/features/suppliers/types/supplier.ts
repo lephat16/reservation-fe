@@ -61,3 +61,22 @@ export interface PriceHistoriesData {
     note: string,
     createdAt: string
 }
+export interface SupplierProducWithPriceHistory {
+    id: number,
+    supplierId: number,
+    supplierName: string,
+    productId?: number,
+    productName: string,
+    supplierSku: string,
+    currentPrice: number,
+    leadTime: number,
+    status: "ACTIVE" | "INACTIVE",
+    priceHistories: PriceHistoriesData[],
+}
+
+export type SupplierProductFormType = Pick<
+    SupplierProducWithPriceHistory,
+    "supplierSku" | "currentPrice" | "leadTime" | "status" | "productId"
+> & {
+    note?: string,
+};

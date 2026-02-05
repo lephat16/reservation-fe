@@ -22,6 +22,7 @@ import { purchaseAPI } from "../api/purchaseAPI";
 import { stockAPI } from "../../stocks/api/stockAPI";
 import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid";
 import type { GridColDef } from "@mui/x-data-grid";
+import { useScreen } from "../../../shared/components/global/ScreenContext";
 
 // 購入確認ダイアログ
 interface ReceiveConfirmDialogProps {
@@ -324,6 +325,7 @@ const ReceiveForm = () => {
     const colors = tokens(theme.palette.mode);
     const { poId } = useParams<{ poId: string }>(); // URLパラメータから発注IDを取得
 
+    const { isSM } = useScreen();
     const queryClient = useQueryClient();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
@@ -438,7 +440,7 @@ const ReceiveForm = () => {
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
-                <Header
+                !isSM && <Header
                     title={`注文番号: ${data?.purchaseOrder?.id ?? ""} | 仕入先: ${data?.purchaseOrder?.supplierName ?? ""}`}
                     subtitle={`ステータス: ${data?.purchaseOrder?.status ?? ""}`}
                 />

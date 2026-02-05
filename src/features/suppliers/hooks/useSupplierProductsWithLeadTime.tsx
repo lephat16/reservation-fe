@@ -6,7 +6,7 @@ import { supplierAPI } from "../api/supplierAPI";
 
 export const useSupplierProductsWithLeadTime = (selectedSupplier: SupplierData | null) => {
     return useQuery<SupplierProductData[]>({
-        queryKey: ["supplierProducts", selectedSupplier?.id],
+        queryKey: ["supplier-products", selectedSupplier?.id],
         queryFn: async () => {
             const resProducts = await supplierAPI.getSupplierProductsWithLeadTime(Number(selectedSupplier?.id));
             return resProducts.data?.[0]?.products || [];

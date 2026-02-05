@@ -15,6 +15,7 @@ import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { saleAPI } from "../api/saleAPI";
 import { useSaleOrderDetail } from "../hooks/useSaleOrderDetail";
+import { useScreen } from "../../../shared/components/global/ScreenContext";
 
 const descriptionSchema = yup.object({
     description: yup
@@ -29,6 +30,7 @@ const SellOrderDetailPage = () => {
     const colors = tokens(theme.palette.mode);
     const { soId } = useParams<{ soId: string }>();
 
+    const { isSM } = useScreen();
     const [details, setDetails] = useState<SaleOrderDetailData[]>([]);
     const [description, setDescription] = useState<string>("");
     const [descriptionError, setDescriptionError] = useState<string | null>(null);
@@ -106,7 +108,7 @@ const SellOrderDetailPage = () => {
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
-                <Header
+                !isSM && <Header
                     title={`注文番号: ${data?.id ?? ""}`}
                     subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${data?.createdAt ?? ""}`}
                 />

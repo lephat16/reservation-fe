@@ -15,6 +15,7 @@ import { DeleteConfirmDialog } from "../../../shared/components/DeleteConfirmDia
 import { purchaseAPI } from "../api/purchaseAPI";
 import { usePurchaseOrderDetail } from "../hooks/usePurchaseOrderDetail";
 import { useSumReceivedQtyByPoGroupByProduct } from "../../products/hooks/useSumReceivedQtyByPoGroupByProduct";
+import { useScreen } from "../../../shared/components/global/ScreenContext";
 
 const descriptionSchema = yup.object({
     description: yup
@@ -91,17 +92,14 @@ const PurchaseOrderDetailPage = () => {
     const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
     const [openSubmitConfirm, setOpenSubmitConfirm] = useState(false);
 
+    const { isSM } = useScreen();
     const queryClient = useQueryClient();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
 
-
-
     const { isLoading, error, data } = usePurchaseOrderDetail(Number(poId));
     const { isLoading: isLoadingReceivedQty, error: errorReceivedQty, data: dataReceivedQty } =
         useSumReceivedQtyByPoGroupByProduct(Number(poId), data);
-
-
 
     useEffect(() => {
         if (data?.details) {
@@ -177,7 +175,7 @@ const PurchaseOrderDetailPage = () => {
             {(isLoading || isLoadingReceivedQty) ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
-                <Header
+                !isSM && <Header
                     title={`注文番号: ${data?.id ?? ""} | 仕入先: ${data?.supplierName ?? ""}`}
                     subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${data?.createdAt ?? ""}`}
                 />

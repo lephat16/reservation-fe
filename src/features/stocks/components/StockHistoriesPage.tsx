@@ -11,6 +11,7 @@ import { useMemo, useState } from "react";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { stockAPI } from "../api/stockAPI";
 import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid";
+import { useScreen } from "../../../shared/components/global/ScreenContext";
 
 type StockHistoryItem = {
     stockId: number;
@@ -54,6 +55,7 @@ const StockHistoriesPage = () => {
     const colors = tokens(theme.palette.mode);
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
+    const { isSM } = useScreen();
     const { snackbar, closeSnackbar } = useSnackbar();
 
     const [selectedRow, setSelectedRow] = useState<StockHistoryGroupRow | null>(null);
@@ -187,7 +189,7 @@ const StockHistoriesPage = () => {
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
-                <Header
+                !isSM && <Header
                     title="在庫取引"
                     subtitle="各取引の詳細情報を表示"
                 />
@@ -203,7 +205,7 @@ const StockHistoriesPage = () => {
 
                 {/* エラー表示 */}
                 {(error) && (
-                    <ErrorState/>
+                    <ErrorState />
                 )}
 
                 {isLoading ? (

@@ -1,4 +1,4 @@
-import {  GridActionsCell, GridActionsCellItem, type GridColDef, type GridRenderCellParams, type GridRowId } from "@mui/x-data-grid";
+import { GridActionsCell, GridActionsCellItem, type GridColDef, type GridRenderCellParams, type GridRowId } from "@mui/x-data-grid";
 import type { CategorySummariesData } from "./types/category";
 import { Box, Chip, IconButton, Skeleton, Tooltip, useTheme } from "@mui/material";
 import Header from "../../pages/Header";
@@ -20,6 +20,7 @@ import { useCategorySummaries } from "./hooks/useCategorySummaries";
 import CategoryForm from "./components/CategoryForm";
 import { useDeleteCategory } from "./hooks/useDeleteCategory";
 import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
+import { useScreen } from "../../shared/components/global/ScreenContext";
 
 interface ActionHandlers {
     deleteCategory: (id: GridRowId) => void;
@@ -97,7 +98,7 @@ const columns: GridColDef<CategorySummariesData>[] = [
 const CategoriesPage = () => {
 
     const theme = useTheme();
-
+    const { isSM } = useScreen();
     const navigate = useNavigate();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
 
@@ -155,7 +156,7 @@ const CategoriesPage = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    <Header
+                    !isSM && <Header
                         title="カテゴリ一覧"
                         subtitle="カテゴリ情報の一覧表示"
                     />

@@ -1,4 +1,4 @@
-import { alpha, Box, Checkbox, Collapse, FormControl, IconButton, InputBase, InputLabel, ListItemText, MenuItem, OutlinedInput, Paper, Select, Skeleton, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar, Tooltip, Typography, useTheme, type SelectChangeEvent } from "@mui/material"
+import { alpha, Box, Button, Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Drawer, FormControl, IconButton, InputBase, InputLabel, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, MenuItem, OutlinedInput, Paper, Select, Skeleton, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar, Tooltip, Typography, useTheme, type SelectChangeEvent } from "@mui/material"
 import Header from "../../pages/Header"
 import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +13,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useNavigate } from "react-router-dom";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import CloseIcon from '@mui/icons-material/Close';
 import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
@@ -24,6 +26,7 @@ import { styledTable } from "../../shared/components/global/StyleTable";
 import AddCardIcon from '@mui/icons-material/AddCard';
 import ProductForm from "./components/ProductForm";
 import type { ProductFormData } from "./types/product";
+import { useScreen } from "../../shared/components/global/ScreenContext";
 
 type StockInfo = {
     stockId: number;
@@ -89,9 +92,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockData) => void; }) {
 
     const { row, onDelete } = props;
-
-    const theme = useTheme();
-    // const colors = tokens(theme.palette.mode);
+    const { isMD, isSM } = useScreen();
 
     const [open, setOpen] = useState(false);
 
@@ -99,7 +100,7 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
     return (
         <Fragment>
             <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
-                <TableCell>
+                {!isMD && <TableCell>
                     <IconButton
                         aria-label="expand row"
                         size="small"
@@ -111,12 +112,12 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                     >
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
-                </TableCell>
+                </TableCell>}
                 <TableCell>{row.product.productCode}</TableCell>
-                <TableCell>{row.product.name}</TableCell>
+                {!isMD && <TableCell>{row.product.name}</TableCell>}
                 <TableCell>{row.product.status}</TableCell>
                 <TableCell>{row.totalQuantity}</TableCell>
-                <TableCell>{row.product.categoryName}</TableCell>
+                {!isMD && <TableCell>{row.product.categoryName}</TableCell>}
                 <TableCell>
                     <Stack direction="row">
                         <Tooltip title="詳細">
@@ -158,32 +159,23 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                     style={{
                         padding: 0,
                     }}
-                    colSpan={7}
+                    colSpan={isMD ? 4 : 7}
                 >
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ mt: 1 }}>
-                            <Typography fontSize={10} gutterBottom component="div" textAlign="center">
+                            <Typography
+                                fontSize={10}
+                                gutterBottom
+                                component="div"
+                                textAlign="center"
+                            >
                                 商品は、異なる仕入先がそれぞれ異なるSKUを提供するため、複数のSKUを持つことがあります。
                             </Typography>
                             <Table
                                 size="small"
                                 aria-label="purchases"
-                                sx={{
-                                    '& .MuiTableHead-root': {
-                                        backgroundColor: theme.palette.mode === 'light' ? '#eaeff5' : '#4a6ba0',
-                                        color: theme.palette.mode === 'light' ? '#000' : '#fff',
-
-                                    },
-                                }}>
-                                <TableHead
-                                    sx={{
-                                        '& .MuiTableRow-root': {
-                                            '&:hover': {
-                                                backgroundColor: theme.palette.mode === 'light' ? '#d1e3f1' : '#3c4a6b',
-                                            },
-                                        },
-                                    }}
-                                >
+                            >
+                                <TableHead>
                                     <TableRow>
 
                                         <TableCell>SKU</TableCell>
@@ -224,11 +216,17 @@ const AllProductsPageRefator = () => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+    const { isMD, isSM } = useScreen();
+
     const [categoryNames, setCategoryNames] = useState<string[]>([]);
     const [selectedQty, setSelectedQty] = useState<number | "">("");
     const [selectedStatus, setSelectedStatus] = useState<Status>("");
     const [selectedProduct, setSelectedProduct] = useState<ProductStockData | null>(null);
     const [searchText, setSearchText] = useState<string>("");
+
+    const [tempCategoryNames, setTempCategoryNames] = useState<string[]>([]);
+    const [tempQty, setTempQty] = useState<number | "">("");
+    const [tempStatus, setTempStatus] = useState<Status>("");
 
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
 
@@ -242,8 +240,10 @@ const AllProductsPageRefator = () => {
 
     const [openAddProductForm, setOpenAddProductForm] = useState(false);
     const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+    const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
 
     const { isLoading, error, data } = useStockWithSupplier();
+
 
     const addMutation = useMutation({
         mutationFn: async (data: ProductFormData) => productAPI.createProduct(data),
@@ -281,7 +281,6 @@ const AllProductsPageRefator = () => {
         setPage(0);
     };
 
-
     const handleChangeCategories = (event: SelectChangeEvent<typeof categoryNames>) => {
         const {
             target: { value },
@@ -294,6 +293,13 @@ const AllProductsPageRefator = () => {
             return;
         }
         setCategoryNames(values.filter(v => v !== ""));
+    };
+
+    const handleOpenDrawer = () => {
+        setTempCategoryNames(categoryNames);
+        setTempQty(selectedQty);
+        setTempStatus(selectedStatus);
+        setOpenFilterDrawer(true);
     };
 
     const inventoryByProduct: InventoryByProduct[] = Object.values(
@@ -336,7 +342,6 @@ const AllProductsPageRefator = () => {
             return acc;
         }, {} as Record<string, InventoryByProduct>)
     );
-
 
     const filterdInventoryBySearch = inventoryByProduct.filter(item => {
         if (searchText) {
@@ -398,7 +403,7 @@ const AllProductsPageRefator = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    <Header
+                    !isSM && <Header
                         title="商品一覧"
                         subtitle="商品情報の一覧表示"
                     />
@@ -437,141 +442,150 @@ const AllProductsPageRefator = () => {
                     <Skeleton variant="text" width="80%" height={80} />
                 ) : (
                     <Stack direction="row" justifyContent="space-between" >
-                        <Stack direction="row" gap={1}>
-                            <FormControl sx={{ m: 1, width: 150, ml: 0 }}>
-                                <InputLabel
-                                    id="multiple-categories-label"
-                                    sx={{
-                                        color: colors.grey[100],
-                                        '&.Mui-focused': {
-                                            color: colors.grey[200],
-                                        },
-                                    }}
-                                >カテゴリー</InputLabel>
-                                <Select
-                                    labelId="multiple-categories-label"
-                                    id="multiple-categories"
-                                    multiple
-                                    value={categoryNames}
-                                    onChange={handleChangeCategories}
-                                    input={<OutlinedInput label="カテゴリー" />}
-                                    renderValue={(selected) => selected.join(', ')}
-                                    sx={styledSelect}
-                                    MenuProps={{
-                                        PaperProps: {
-                                            sx: {
-                                                backgroundColor: colors.blueAccent[800],
-                                                color: colors.grey[100],
-                                                minWidth: 200,
-                                                boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                            }
-                                        }
-                                    }}
+                        {isMD ? (
+                            <IconButton
+                                color="primary"
+                                onClick={handleOpenDrawer}
+                                aria-label="フィルター"
+                            >
+                                <FilterListIcon />
+                            </IconButton>
+                        ) : (
 
-                                >
-                                    <MenuItem value="__CLEAR__">
-                                        <em>未選択</em>
-                                    </MenuItem>
-                                    {data?.categories.map((cat) => (
-                                        <MenuItem
-                                            key={cat.id}
-                                            value={cat.name}
-                                        >
-                                            <Checkbox
-                                                checked={categoryNames.includes(cat.name)}
-                                                sx={{
-                                                    '&.Mui-checked': {
-                                                        color: colors.grey[200],
-                                                    },
-                                                }}
-                                            />
-                                            <ListItemText primary={cat.name} />
+                            <Stack direction="row" gap={1}>
+                                <FormControl sx={{ m: 1, ml: 0, width: { lg: 150, xs: 120 } }}>
+                                    <InputLabel
+                                        id="multiple-categories-label"
+                                        sx={{
+                                            color: colors.grey[100],
+                                            '&.Mui-focused': {
+                                                color: colors.grey[200],
+                                            },
+                                        }}
+                                    >カテゴリー</InputLabel>
+                                    <Select
+                                        labelId="multiple-categories-label"
+                                        id="multiple-categories"
+                                        multiple
+                                        value={categoryNames}
+                                        onChange={handleChangeCategories}
+                                        input={<OutlinedInput label="カテゴリー" />}
+                                        renderValue={(selected) => selected.join(', ')}
+                                        sx={styledSelect}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    backgroundColor: colors.blueAccent[800],
+                                                    color: colors.grey[100],
+                                                    minWidth: 200,
+                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <MenuItem value="__CLEAR__">
+                                            <em>未選択</em>
                                         </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                            <FormControl sx={{ m: 1, width: 150 }}>
-                                <InputLabel
-                                    id="multiple-qty-label"
-                                    sx={{
-                                        color: colors.grey[100],
-                                        '&.Mui-focused': {
-                                            color: colors.grey[200],
-                                        },
-                                    }}
-                                >在庫数</InputLabel>
-                                <Select
-                                    labelId="multiple-qty-label"
-                                    id="multiple-qty"
-                                    value={selectedQty}
-                                    onChange={(e) => {
-                                        const value = e.target.value ? e.target.value : "";
-                                        if (value === "") {
-                                            setSelectedQty(value);
-                                        } else setSelectedQty(Number(value));
-                                    }}
-                                    input={<OutlinedInput label="在庫数" />}
-                                    sx={styledSelect}
-                                    MenuProps={{
-                                        PaperProps: {
-                                            sx: {
-                                                backgroundColor: colors.blueAccent[800],
-                                                color: colors.grey[100],
-                                                minWidth: 200,
-                                                boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                        {data?.categories.map((cat) => (
+                                            <MenuItem
+                                                key={cat.id}
+                                                value={cat.name}
+                                            >
+                                                <Checkbox
+                                                    checked={categoryNames.includes(cat.name)}
+                                                    sx={{
+                                                        '&.Mui-checked': {
+                                                            color: colors.grey[200],
+                                                        },
+                                                    }}
+                                                />
+                                                <ListItemText primary={cat.name} />
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
+                                    <InputLabel
+                                        id="multiple-qty-label"
+                                        sx={{
+                                            color: colors.grey[100],
+                                            '&.Mui-focused': {
+                                                color: colors.grey[200],
+                                            },
+                                        }}
+                                    >在庫数</InputLabel>
+                                    <Select
+                                        labelId="multiple-qty-label"
+                                        id="multiple-qty"
+                                        value={selectedQty}
+                                        onChange={(e) => {
+                                            const value = e.target.value ? e.target.value : "";
+                                            if (value === "") {
+                                                setSelectedQty(value);
+                                            } else setSelectedQty(Number(value));
+                                        }}
+                                        input={<OutlinedInput label="在庫数" />}
+                                        sx={styledSelect}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    backgroundColor: colors.blueAccent[800],
+                                                    color: colors.grey[100],
+                                                    minWidth: 200,
+                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                                }
                                             }
-                                        }
-                                    }}
-
-                                >
-                                    <MenuItem value={0}>
-                                        <em>未選択</em>
-                                    </MenuItem>
-                                    <MenuItem value={5}>5以上</MenuItem>
-                                    <MenuItem value={10}>10以上</MenuItem>
-                                    <MenuItem value={20}>20以上</MenuItem>
-                                </Select>
-                            </FormControl>
-                            <FormControl sx={{ m: 1, width: 150 }}>
-                                <InputLabel
-                                    id="multiple-qty-label"
-                                    sx={{
-                                        color: colors.grey[100],
-                                        '&.Mui-focused': {
-                                            color: colors.grey[200],
-                                        },
-                                    }}
-                                >ステータス</InputLabel>
-                                <Select
-                                    labelId="multiple-qty-label"
-                                    id="multiple-qty"
-                                    value={selectedStatus}
-                                    onChange={(e) => {
-                                        const value = e.target.value ? e.target.value : "";
-                                        setSelectedStatus(value);
-                                    }}
-                                    input={<OutlinedInput label="ステータス" />}
-                                    sx={styledSelect}
-                                    MenuProps={{
-                                        PaperProps: {
-                                            sx: {
-                                                backgroundColor: colors.blueAccent[800],
-                                                color: colors.grey[100],
-                                                minWidth: 200,
-                                                boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                        }}
+                                    >
+                                        <MenuItem value={0}>
+                                            <em>未選択</em>
+                                        </MenuItem>
+                                        <MenuItem value={5}>5以上</MenuItem>
+                                        <MenuItem value={10}>10以上</MenuItem>
+                                        <MenuItem value={20}>20以上</MenuItem>
+                                    </Select>
+                                </FormControl>
+                                <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
+                                    <InputLabel
+                                        id="multiple-qty-label"
+                                        sx={{
+                                            color: colors.grey[100],
+                                            '&.Mui-focused': {
+                                                color: colors.grey[200],
+                                            },
+                                        }}
+                                    >ステータス</InputLabel>
+                                    <Select
+                                        labelId="multiple-qty-label"
+                                        id="multiple-qty"
+                                        value={selectedStatus}
+                                        onChange={(e) => {
+                                            const value = e.target.value ? e.target.value : "";
+                                            setSelectedStatus(value);
+                                        }}
+                                        input={<OutlinedInput label="ステータス" />}
+                                        sx={styledSelect}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    backgroundColor: colors.blueAccent[800],
+                                                    color: colors.grey[100],
+                                                    minWidth: 200,
+                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                                }
                                             }
-                                        }
-                                    }}
+                                        }}
+                                    >
+                                        <MenuItem value={0}>
+                                            <em>未選択</em>
+                                        </MenuItem>
+                                        <MenuItem value="ACTIVE">ACTIVE</MenuItem>
+                                        <MenuItem value="INACTIVE">INACTIVE</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Stack>
+                        )}
 
-                                >
-                                    <MenuItem value={0}>
-                                        <em>未選択</em>
-                                    </MenuItem>
-                                    <MenuItem value="ACTIVE">ACTIVE</MenuItem>
-                                    <MenuItem value="INACTIVE">INACTIVE</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Stack>
                         <Toolbar sx={{ pr: "0 !important" }}>
                             <Search>
                                 <SearchIconWrapper>
@@ -584,134 +598,283 @@ const AllProductsPageRefator = () => {
                                     onChange={(e) => setSearchText(e.target.value)}
                                 />
                             </Search>
-
                         </Toolbar>
+                        <Drawer
+                            anchor="left"
+                            open={openFilterDrawer}
+                            onClose={() => setOpenFilterDrawer(false)}
+
+                            slotProps={{
+                                paper: {
+                                    style: {
+                                        width: '80vw',
+                                        backgroundColor: colors.primary[400]
+                                    }
+                                }
+                            }}
+                        >
+                            <Box p={2} display="flex" flexDirection="column" height="100%">
+                                <Box display="flex" justifyContent="space-between" alignItems="center">
+                                    <Typography variant="h6">フィルター</Typography>
+                                    <IconButton onClick={() => setOpenFilterDrawer(false)}>
+                                        <CloseIcon />
+                                    </IconButton>
+                                </Box>
+                                <Divider sx={{ my: 1 }} />
+
+                                {/* Filter Options */}
+                                <FormControl sx={{ mt: 2 }}>
+                                    <InputLabel
+                                        sx={{
+                                            color: colors.grey[100],
+                                            '&.Mui-focused': {
+                                                color: colors.grey[200],
+                                            },
+                                        }}
+                                    >
+                                        カテゴリー
+                                    </InputLabel>
+                                    <Select
+                                        multiple
+                                        value={tempCategoryNames}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setTempCategoryNames(typeof value === 'string' ? value.split(',') : value);
+                                        }}
+                                        input={<OutlinedInput label="カテゴリー" />}
+                                        renderValue={(selected) => selected.join(', ')}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    backgroundColor: colors.primary[600],
+                                                    color: colors.grey[100],
+                                                    minWidth: 200,
+                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        {data?.categories.map(cat => (
+                                            <MenuItem key={cat.id} value={cat.name}>
+                                                <Checkbox checked={tempCategoryNames.includes(cat.name)} />
+                                                <ListItemText primary={cat.name} />
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+
+                                <FormControl sx={{ mt: 2 }}>
+                                    <InputLabel
+                                        sx={{
+                                            color: colors.grey[100],
+                                            '&.Mui-focused': {
+                                                color: colors.grey[200],
+                                            },
+                                        }}
+                                    >
+                                        在庫数
+                                    </InputLabel>
+                                    <Select
+                                        value={tempQty}
+                                        input={<OutlinedInput label="在庫数" />}
+                                        onChange={(e) => setTempQty(Number(e.target.value))}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    backgroundColor: colors.primary[600],
+                                                    color: colors.grey[100],
+                                                    minWidth: 200,
+                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <MenuItem value={0}><em>未選択</em></MenuItem>
+                                        <MenuItem value={5}>5以上</MenuItem>
+                                        <MenuItem value={10}>10以上</MenuItem>
+                                        <MenuItem value={20}>20以上</MenuItem>
+                                    </Select>
+                                </FormControl>
+
+                                <FormControl sx={{ mt: 2 }}>
+                                    <InputLabel
+                                        sx={{
+                                            color: colors.grey[100],
+                                            '&.Mui-focused': {
+                                                color: colors.grey[200],
+                                            },
+                                        }}
+                                    >
+                                        ステータス
+                                    </InputLabel>
+                                    <Select
+                                        value={tempStatus}
+                                        onChange={(e) => {
+                                            const value = e.target.value ? e.target.value : ""
+                                            setTempStatus(value)
+                                        }}
+                                        input={<OutlinedInput label="ステータス" />}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    backgroundColor: colors.primary[600],
+                                                    color: colors.grey[100],
+                                                    minWidth: 200,
+                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <MenuItem value={0}><em>未選択</em></MenuItem>
+                                        <MenuItem value="ACTIVE">ACTIVE</MenuItem>
+                                        <MenuItem value="INACTIVE">INACTIVE</MenuItem>
+                                    </Select>
+                                </FormControl>
+
+                                <Box mt="auto" display="flex" justifyContent="space-between" py={2}>
+                                    <Button variant="outlined" onClick={() => setOpenFilterDrawer(false)}>キャンセル</Button>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => {
+                                            setCategoryNames(tempCategoryNames);
+                                            setSelectedQty(tempQty);
+                                            setSelectedStatus(tempStatus as Status);
+                                            setOpenFilterDrawer(false);
+                                        }}
+                                    >
+                                        適用
+                                    </Button>
+                                </Box>
+                            </Box>
+                        </Drawer>
                     </Stack>
                 )}
-                {isLoading ? (
-                    <Skeleton variant="rectangular" height={400} />
-                ) : (
-                    <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }} gap={4} >
-                        <TableContainer component={Paper} sx={{ height: "100%", minWidth: 650 }}>
-                            <Table
-                                sx={{
-                                    tableLayout: "fixed",
-                                    ...styledTable(theme.palette.mode),
-                                }}
-                            >
-                                <colgroup>
-                                    <col style={{ width: "6%" }} />
-                                    <col style={{ width: "15%" }} />
-                                    <col style={{ width: "30%" }} />
-                                    <col style={{ width: "15%" }} />
-                                    <col style={{ width: "15%" }} />
-                                    <col style={{ width: "15%" }} />
-                                    <col style={{ width: "10%" }} />
-                                </colgroup>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell />
-                                        <TableCell
-                                            sortDirection={orderBy === 'code' ? order : false}
-                                        >
-                                            <TableSortLabel
-                                                active={orderBy === 'code'}
-                                                direction={orderBy === 'code' ? order : 'asc'}
-                                                onClick={() => {
-                                                    const isAsc = orderBy === 'code' && order === 'asc';
-                                                    setOrder(isAsc ? 'desc' : 'asc');
-                                                    setOrderBy('code');
-                                                }}
-                                            >
-
-                                                コード
-                                            </TableSortLabel>
-                                        </TableCell>
-                                        <TableCell sortDirection={orderBy === 'name' ? order : false}>
-                                            <TableSortLabel
-                                                active={orderBy === 'name'}
-                                                direction={orderBy === 'name' ? order : 'asc'}
-                                                onClick={() => {
-                                                    const isAsc = orderBy === 'name' && order === 'asc';
-                                                    setOrder(isAsc ? 'desc' : 'asc');
-                                                    setOrderBy('name')
-                                                }}
-                                            >
-                                                商品名
-                                            </TableSortLabel>
-                                        </TableCell>
-                                        <TableCell>ステータス</TableCell>
-                                        <TableCell sortDirection={orderBy === 'qty' ? order : false}>
-                                            <TableSortLabel
-                                                active={orderBy === 'qty'}
-                                                direction={orderBy === 'qty' ? order : 'asc'}
-                                                onClick={() => {
-                                                    const isAsc = orderBy === 'qty' && order === 'asc';
-                                                    setOrder(isAsc ? 'desc' : 'asc');
-                                                    setOrderBy('qty');
-                                                }}
-                                            >
-                                                在庫数
-                                            </TableSortLabel>
-                                        </TableCell>
-                                        <TableCell>カテゴリー</TableCell>
-                                        <TableCell></TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {sortedFilteredInventories
-                                        .slice(
-                                            page * rowsPerPage,
-                                            rowsPerPage > 0 ? page * rowsPerPage + rowsPerPage : sortedFilteredInventories.length
-                                        ).map(row => (<Row
-                                            key={row.product.id}
-                                            row={row}
-                                            onDelete={(product: ProductStockData) => {
-                                                setOpenDeleteConfirm(true);
-                                                setSelectedProduct(product);
-                                            }}
-                                        />))
-                                    }
-                                    {emptyRows > 0 && Array.from(Array(emptyRows)).map((_, index) => (
-                                        <TableRow key={`empty-${index}`} style={{ height: 53 }}>
-                                            <TableCell colSpan={7} />
-                                        </TableRow>
-                                    ))}
-                                    {filteredInventories.length === 0 && (
+                {
+                    isLoading ? (
+                        <Skeleton variant="rectangular" height={400} />
+                    ) : (
+                        <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }} gap={4} >
+                            <TableContainer component={Paper} sx={{ height: "100%", minWidth: { xs: 308, md: 600 } }}>
+                                <Table
+                                    sx={{
+                                        tableLayout: "fixed",
+                                        ...styledTable(theme.palette.mode),
+                                    }}
+                                >
+                                    <colgroup>
+                                        {!isMD && <col style={{ width: "6%" }} />}
+                                        <col style={{ width: "28%" }} />
+                                        {!isMD && <col style={{ width: "30%" }} />}
+                                        <col style={{ width: "30%" }} />
+                                        <col style={{ width: "20%" }} />
+                                        {!isMD && <col style={{ width: "15%" }} />}
+                                        <col style={{ width: "22%" }} />
+                                    </colgroup>
+                                    <TableHead>
                                         <TableRow>
-                                            <TableCell colSpan={7} align="center">
-                                                No data available
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                                <TableFooter>
-                                    <TableRow>
-                                        <TablePagination
-                                            rowsPerPageOptions={[5, 10,]}
-                                            colSpan={7}
-                                            count={filteredInventories.length}
-                                            rowsPerPage={rowsPerPage}
-                                            page={page}
-                                            slotProps={{
-                                                select: {
-                                                    inputProps: {
-                                                        'aria-label': 'rows per page',
-                                                    },
-                                                    native: true,
-                                                },
-                                            }}
-                                            onPageChange={handleChangePage}
-                                            onRowsPerPageChange={handleChangeRowsPerPage}
-                                            ActionsComponent={TablePaginationActions}
+                                            {!isMD && <TableCell />}
+                                            <TableCell
+                                                sortDirection={orderBy === 'code' ? order : false}
+                                            >
+                                                <TableSortLabel
+                                                    active={orderBy === 'code'}
+                                                    direction={orderBy === 'code' ? order : 'asc'}
+                                                    onClick={() => {
+                                                        const isAsc = orderBy === 'code' && order === 'asc';
+                                                        setOrder(isAsc ? 'desc' : 'asc');
+                                                        setOrderBy('code');
+                                                    }}
+                                                >
 
-                                        />
-                                    </TableRow>
-                                </TableFooter>
-                            </Table>
-                        </TableContainer>
-                    </Box>
-                )}
+                                                    コード
+                                                </TableSortLabel>
+                                            </TableCell>
+                                            {!isMD && <TableCell sortDirection={orderBy === 'name' ? order : false}>
+                                                <TableSortLabel
+                                                    active={orderBy === 'name'}
+                                                    direction={orderBy === 'name' ? order : 'asc'}
+                                                    onClick={() => {
+                                                        const isAsc = orderBy === 'name' && order === 'asc';
+                                                        setOrder(isAsc ? 'desc' : 'asc');
+                                                        setOrderBy('name')
+                                                    }}
+                                                >
+                                                    商品名
+                                                </TableSortLabel>
+                                            </TableCell>}
+                                            <TableCell>ステータス</TableCell>
+                                            <TableCell sortDirection={orderBy === 'qty' ? order : false}>
+                                                <TableSortLabel
+                                                    active={orderBy === 'qty'}
+                                                    direction={orderBy === 'qty' ? order : 'asc'}
+                                                    onClick={() => {
+                                                        const isAsc = orderBy === 'qty' && order === 'asc';
+                                                        setOrder(isAsc ? 'desc' : 'asc');
+                                                        setOrderBy('qty');
+                                                    }}
+                                                >
+                                                    在庫数
+                                                </TableSortLabel>
+                                            </TableCell>
+                                            {!isMD && <TableCell>カテゴリー</TableCell>}
+                                            <TableCell></TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {sortedFilteredInventories
+                                            .slice(
+                                                page * rowsPerPage,
+                                                rowsPerPage > 0 ? page * rowsPerPage + rowsPerPage : sortedFilteredInventories.length
+                                            ).map(row => (<Row
+                                                key={row.product.id}
+                                                row={row}
+                                                onDelete={(product: ProductStockData) => {
+                                                    setOpenDeleteConfirm(true);
+                                                    setSelectedProduct(product);
+                                                }}
+                                            />))
+                                        }
+                                        {emptyRows > 0 && Array.from(Array(emptyRows)).map((_, index) => (
+                                            <TableRow key={`empty-${index}`} style={{ height: 53 }}>
+                                                <TableCell colSpan={isMD ? 4 : 7} />
+                                            </TableRow>
+                                        ))}
+                                        {filteredInventories.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={isMD ? 4 : 7} align="center">
+                                                    No data available
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                    {!isSM && <TableFooter>
+                                        <TableRow>
+                                            <TablePagination
+                                                rowsPerPageOptions={[5, 10,]}
+                                                colSpan={isMD ? 4 : 7}
+                                                count={filteredInventories.length}
+                                                rowsPerPage={rowsPerPage}
+                                                page={page}
+                                                slotProps={{
+                                                    select: {
+                                                        inputProps: {
+                                                            'aria-label': 'rows per page',
+                                                        },
+                                                        native: true,
+                                                    },
+                                                }}
+                                                onPageChange={handleChangePage}
+                                                onRowsPerPageChange={handleChangeRowsPerPage}
+                                                ActionsComponent={TablePaginationActions}
+
+                                            />
+                                        </TableRow>
+                                    </TableFooter>}
+                                </Table>
+                            </TableContainer>
+                        </Box>
+                    )
+                }
                 <DeleteConfirmDialog
                     open={openDeleteConfirm}
                     onClose={() => setOpenDeleteConfirm(false)}
@@ -724,17 +887,19 @@ const AllProductsPageRefator = () => {
                     }}
                     isDeleting={deleteMutation.isPending}
                 />
-                {openAddProductForm && (
-                    <ProductForm
-                        open
-                        onClose={() => setOpenAddProductForm(false)}
-                        onSubmit={(data) => {
-                            addMutation.mutate(data)
-                        }}
-                        categories={data?.categories ?? []}
-                    />
-                )}
-            </Box>
+                {
+                    openAddProductForm && (
+                        <ProductForm
+                            open
+                            onClose={() => setOpenAddProductForm(false)}
+                            onSubmit={(data) => {
+                                addMutation.mutate(data)
+                            }}
+                            categories={data?.categories ?? []}
+                        />
+                    )
+                }
+            </Box >
         </Box >
     )
 }

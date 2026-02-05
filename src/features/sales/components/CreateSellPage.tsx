@@ -14,6 +14,7 @@ import { saleAPI } from "../api/saleAPI";
 import type { CategorySummariesData } from "../../categories/types/category";
 import { useCategorySummaries } from "../../categories/hooks/useCategorySummaries";
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
+import { useScreen } from "../../../shared/components/global/ScreenContext";
 
 export type SellRow = {
     category: CategorySummariesData | null
@@ -60,6 +61,7 @@ const CreateSellPage = () => {
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const [customerName, setCustomerName] = useState<string>("");
 
+    const { isSM } = useScreen();
     const [errorsByRow, setErrorsByRow] = useState<Record<number, Record<string, string>>>({});
 
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
@@ -271,7 +273,7 @@ const CreateSellPage = () => {
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
-                <Header
+                !isSM && <Header
                     title="新規販売注文作成"
                     subtitle="新しい規販注文の詳細を入力してください"
                 />

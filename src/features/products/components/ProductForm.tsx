@@ -62,7 +62,7 @@ const ProductForm = ({
 
     const { control, handleSubmit, formState: { errors }, reset } = useForm<ProductFormData>({
         resolver: yupResolver(schema),
-        defaultValues: product || {
+        defaultValues: {
             name: '',
             productCode: '',
             description: '',
@@ -75,15 +75,6 @@ const ProductForm = ({
     useEffect(() => {
         if (product) {
             reset(product);
-        } else {
-            reset({
-                name: '',
-                productCode: '',
-                description: '',
-                status: 'INACTIVE',
-                unit: '',
-                categoryName: '',
-            });
         }
     }, [product, reset]);
 

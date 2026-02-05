@@ -15,6 +15,7 @@ import { useSupplierProductsWithLeadTime } from '../../suppliers/hooks/useSuppli
 import { PurchaseItemRow } from './PurchaseItemRow';
 import { PurchaseConfirmDialog } from './PurchaseConfirmDialog';
 import { styledSelect } from '../../../shared/styles/styledSelect';
+import { useScreen } from '../../../shared/components/global/ScreenContext';
 
 export type DialogMode = "save" | "purchase";
 
@@ -22,7 +23,7 @@ const CreatePurchasePage = () => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-
+    const { isSM } = useScreen();
     const location = useLocation();
     const { preselectedSupplierId, preselectedSku } = location.state || {};
     // ステート管理
@@ -227,7 +228,7 @@ const CreatePurchasePage = () => {
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
-                <Header
+                !isSM && <Header
                     title="新規注文作成"
                     subtitle="新しい注文の詳細を入力してください"
                 />

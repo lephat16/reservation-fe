@@ -52,7 +52,7 @@ const CategoryForm = ({
 
     const { control, handleSubmit, formState: { errors }, reset } = useForm<CategoryFormData>({
         resolver: yupResolver(schema) as Resolver<CategoryFormData>,
-        defaultValues: category || {
+        defaultValues: {
             name: '',
             status: 'ACTIVE',
             description: '',
@@ -63,13 +63,6 @@ const CategoryForm = ({
     useEffect(() => {
         if (category) {
             reset(category);
-        } else {
-            reset({
-                name: '',
-                status: 'ACTIVE',
-                description: '',
-                imageUrl: null,
-            });
         }
     }, [category, reset]);
 

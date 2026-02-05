@@ -3,9 +3,10 @@ import { TextField } from "@mui/material";
 
 interface StyledSelectTextFieldProps extends React.ComponentProps<typeof TextField> {
     bgColor: string;
+    readOnly?: boolean
 }
 
-export const StyledSelectTextField: React.FC<StyledSelectTextFieldProps> = ({ bgColor, ...rest }) => {
+export const StyledSelectTextField: React.FC<StyledSelectTextFieldProps> = ({ bgColor, readOnly, ...rest }) => {
     return (
         <TextField
             {...rest}
@@ -19,6 +20,9 @@ export const StyledSelectTextField: React.FC<StyledSelectTextFieldProps> = ({ bg
                         },
                     },
                 },
+                input: {
+                    readOnly: readOnly
+                }
             }}
         >
             {rest.children}

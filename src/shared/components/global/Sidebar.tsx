@@ -1,25 +1,25 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import ApiService from '../../api/ApiService'
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
     Sidebar as ProSidebar,
     Menu,
     MenuItem,
     sidebarClasses,
 } from "react-pro-sidebar";
-import { Box, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, IconButton, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import CategoryIcon from '@mui/icons-material/Category';
 import BallotIcon from '@mui/icons-material/Ballot';
-import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
 import SellIcon from '@mui/icons-material/Sell';
 import StoreIcon from '@mui/icons-material/Store';
 import HistoryIcon from '@mui/icons-material/History';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { useScreen } from './ScreenContext';
 
 /* 共通メニューアイテム */
 const Item = ({
@@ -35,6 +35,7 @@ const Item = ({
 }) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+
 
     const location = useLocation();
 
@@ -58,7 +59,10 @@ const Item = ({
     );
 };
 
-const Sidebar = () => {
+type SidebarProps = {
+    onClose?: () => void;
+}
+const Sidebar = ({ onClose }: SidebarProps) => {
     // const isAuth = ApiService.isAuthenticated();
     // const isAdmin = ApiService.isAdmin();
 
@@ -71,7 +75,12 @@ const Sidebar = () => {
     };
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const { isSM, isMD } = useScreen();
+    const [isCollapsed, setIsCollapsed] = useState(isMD);
+
+    useEffect(() => {
+        setIsCollapsed(isMD);
+    }, [isMD]);
 
 
     return (
@@ -105,11 +114,23 @@ const Sidebar = () => {
                                 },
                             };
                         },
+                        icon: ({ active }) => ({
+                            color: isSM && active ? "#6870fa" : undefined,
+                            "&:hover": {
+                                color: isSM ? "#868dfb" : undefined,
+                            },
+                        }),
                     }}
                 >
                     {/* ロゴ & メニュー切り替え */}
                     <MenuItem
-                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        onClick={() => {
+                            if (isSM) {
+                                onClose?.();
+                                return;
+                            }
+                            setIsCollapsed(!isCollapsed);
+                        }}
                         icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
                         style={{
                             margin: "10px 0 20px 0",
@@ -168,7 +189,7 @@ const Sidebar = () => {
                         <Typography
                             variant="h6"
                             color={colors.grey[300]}
-                            sx={{ m: "15px 0 5px 20px" }}
+                            sx={{ m: "15px 10px 5px 10px" }}
                         >
                             商品管理
                         </Typography>
@@ -193,7 +214,7 @@ const Sidebar = () => {
                         <Typography
                             variant="h6"
                             color={colors.grey[300]}
-                            sx={{ m: "15px 0 5px 20px" }}
+                            sx={{ m: "15px 10px  5px 15px" }}
                         >
                             仕入先
                         </Typography>
@@ -203,12 +224,12 @@ const Sidebar = () => {
                             icon={<PersonOutlinedIcon />}
 
                         />
-                       
+
 
                         <Typography
                             variant="h6"
                             color={colors.grey[300]}
-                            sx={{ m: "15px 0 5px 20px" }}
+                            sx={{ m: "15px 10px  5px 10px" }}
                         >
                             取引管理
                         </Typography>
@@ -234,7 +255,7 @@ const Sidebar = () => {
                         <Typography
                             variant="h6"
                             color={colors.grey[300]}
-                            sx={{ m: "15px 0 5px 20px" }}
+                            sx={{ m: "15px 10px  5px 10px" }}
                         >
                             ユーザー
                         </Typography>

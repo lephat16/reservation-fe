@@ -38,7 +38,6 @@ const SupplierDetailCard: React.FC<SupplierDetailCardProps> = ({
       <Typography variant="body2" color="text.secondary">
         携帯電話: {supplier.contactInfo}
       </Typography>
-      {/* <Typography>カテゴリ: {product.categoryName}</Typography> */}
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} mt={1}>
         <Chip
           label={supplier.supplierStatus === "ACTIVE" ? "稼働中" : "停止中"}

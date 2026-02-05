@@ -14,6 +14,7 @@ import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { saleAPI } from "./api/saleAPI";
 import { useSaleOrders } from "./hooks/useSaleOrders";
+import { useScreen } from "../../shared/components/global/ScreenContext";
 
 
 const renderStatusChip = (status: string) => {
@@ -39,7 +40,7 @@ const SellOrderPage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
-    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+    const { isMD, isSM } = useScreen();
     const navigate = useNavigate();
 
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
@@ -51,13 +52,13 @@ const SellOrderPage = () => {
     const { isLoading, error, data } = useSaleOrders();
 
     const columns = [
-        { key: "id", label: "ID", width: isMobile ? "10%" : "5%" },
-        { key: "customerName", label: "顧客", width: isMobile ? "35%" : "15%", truncate: true },
-        { key: "status", label: "ステータス", width: isMobile ? "30%" : "10%", align: "center", truncate: true },
+        { key: "id", label: "ID", width: isMD ? "10%" : "5%" },
+        { key: "customerName", label: "顧客", width: isMD ? "35%" : "15%", truncate: true },
+        { key: "status", label: "ステータス", width: isMD ? "30%" : "10%", align: "center", truncate: true },
         { key: "userName", label: "ユーザー", width: "15%", align: "center", truncate: true, hideOnMobile: true },
-        { key: "total", label: isMobile ? "合計" : "合計金額", width: isMobile ? "30%" : "10%", align: "right", truncate: true },
+        { key: "total", label: isMD ? "合計" : "合計金額", width: isMD ? "30%" : "10%", align: "right", truncate: true },
         { key: "createdAt", label: "作成日", width: "15%", align: "center", truncate: true, hideOnMobile: true },
-        { key: "action", label: "操作", width: isMobile ? "35%" : "10%", align: "center" },
+        { key: "action", label: "操作", width: isMD ? "35%" : "10%", align: "center" },
     ];
 
     const deleteMutation = useMutation({
@@ -84,7 +85,7 @@ const SellOrderPage = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    <Header title="販売一覧:" subtitle="販売情報の一覧表示" />
+                    !isSM && <Header title="販売一覧:" subtitle="販売情報の一覧表示" />
                 )}
                 <Box mt={4}>
                     <Button
@@ -126,7 +127,7 @@ const SellOrderPage = () => {
                         <Table stickyHeader sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
                             <colgroup>
                                 {columns.map(
-                                    (col) => (!isMobile || !col.hideOnMobile ? <col key={col.key} style={{ width: col.width }} /> : null)
+                                    (col) => (!isMD || !col.hideOnMobile ? <col key={col.key} style={{ width: col.width }} /> : null)
                                 )}
                             </colgroup>
 
@@ -143,7 +144,7 @@ const SellOrderPage = () => {
                                 >
                                     {columns.map(
                                         (col) =>
-                                            !isMobile || !col.hideOnMobile ? (
+                                            !isMD || !col.hideOnMobile ? (
                                                 <TableCell key={col.key} sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}>
                                                     {col.label}
                                                 </TableCell>
@@ -157,7 +158,7 @@ const SellOrderPage = () => {
                                     data.map((order) => (
                                         <TableRow key={order.id}>
                                             {columns.map((col) => {
-                                                if (isMobile && col.hideOnMobile) return null;
+                                                if (isMD && col.hideOnMobile) return null;
 
                                                 let content;
                                                 switch (col.key) {
@@ -180,7 +181,7 @@ const SellOrderPage = () => {
                                                                 >
                                                                     <InfoIcon />
                                                                 </IconButton>
-                                                                {!isMobile && (
+                                                                {!isMD && (
                                                                     <IconButton
                                                                         aria-label="delete"
                                                                         sx={{
@@ -215,7 +216,7 @@ const SellOrderPage = () => {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={isMobile ? 4 : 7} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                                        <TableCell colSpan={isMD ? 4 : 7} align="center" sx={{ py: 4, color: "text.secondary" }}>
                                             該当する商品がありません
                                         </TableCell>
                                     </TableRow>

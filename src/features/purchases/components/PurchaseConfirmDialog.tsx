@@ -48,7 +48,7 @@ export const PurchaseConfirmDialog = ({
                 }
             }}
         >
-            <DialogTitle>
+            <DialogTitle textAlign="center" variant="h4" fontWeight="bold">
                 注文内容の確認 ({dialogMode === "save" ? "保存用" : "購入用"})
             </DialogTitle>
 
