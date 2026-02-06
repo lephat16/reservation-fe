@@ -4,7 +4,7 @@ import PaidIcon from '@mui/icons-material/Paid';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import { tokens } from "../../../shared/theme";
 import type { PurchaseOrderData } from "../../purchases/types/purchase";
-import { useScreen } from "../../../shared/components/global/ScreenContext";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 type SupplierStatCardProps = {
     purchaseOrder: PurchaseOrderData[]
 }

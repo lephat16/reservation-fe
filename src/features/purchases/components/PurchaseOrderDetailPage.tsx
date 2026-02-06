@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography, useTheme } from "@mui/material";
 import Header from "../../../pages/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import type { PurchaseOrderData, PurchaseOrderDetailData } from "../types/purchase";
@@ -15,7 +15,8 @@ import { DeleteConfirmDialog } from "../../../shared/components/DeleteConfirmDia
 import { purchaseAPI } from "../api/purchaseAPI";
 import { usePurchaseOrderDetail } from "../hooks/usePurchaseOrderDetail";
 import { useSumReceivedQtyByPoGroupByProduct } from "../../products/hooks/useSumReceivedQtyByPoGroupByProduct";
-import { useScreen } from "../../../shared/components/global/ScreenContext";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
+import { useUser } from "../../../shared/hooks/UserContext";
 
 const descriptionSchema = yup.object({
     description: yup
@@ -84,6 +85,8 @@ const PurchaseOrderDetailPage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const { poId } = useParams<{ poId: string }>();
+
+    const { isAdmin, isStaff, isWarehouse } = useUser();
 
     const [details, setDetails] = useState<PurchaseOrderDetailData[]>([]);
     const [description, setDescription] = useState<string>("");
@@ -307,7 +310,7 @@ const PurchaseOrderDetailPage = () => {
                 spacing={2}
             >
 
-                {data?.status === 'NEW' && (isEditing ? (
+                {(data?.status === 'NEW' && !isWarehouse) && (isEditing ? (
                     <Button variant="contained" color="success" onClick={() => handleSave()}>
                         保存
                     </Button>
@@ -317,20 +320,30 @@ const PurchaseOrderDetailPage = () => {
                     </Button>
 
                 ))}
-
-                <Button variant="contained" color="error" onClick={() => setOpenDeleteConfirm(true)}>
-                    削除
-                </Button>
-
+                <Tooltip title={isWarehouse ? "管理者またはスタッフのみ削除可能" : ""} arrow>
+                    <span>
+                        <Button disabled={isWarehouse} variant="contained" color="error" onClick={() => setOpenDeleteConfirm(true)}>
+                            削除
+                        </Button>
+                    </span>
+                </Tooltip>
                 {data?.status === 'NEW' && (
-                    <Button variant="contained" color="info" onClick={() => setOpenSubmitConfirm(true)}>
-                        注文
-                    </Button>
+                    <Tooltip title={isWarehouse ? "管理者またはスタッフのみ注文可能" : ""} arrow>
+                        <span>
+                            <Button disabled={isWarehouse} variant="contained" color="info" onClick={() => setOpenSubmitConfirm(true)}>
+                                注文
+                            </Button>
+                        </span>
+                    </Tooltip>
                 )}
                 {(data?.status === 'PENDING' || data?.status === 'PROCESSING') && (
-                    <Button variant="contained" color="info" onClick={() => navigate(`/purchase-order/${poId}/receive`)}>
-                        受領
-                    </Button>
+                    <Tooltip title={isStaff ? "管理者または倉庫管理者のみ受領可能" : ""} arrow>
+                        <span>
+                            <Button disabled={isStaff} variant="contained" color="info" onClick={() => navigate(`/purchase-order/${poId}/receive`)}>
+                                受領
+                            </Button>
+                        </span>
+                    </Tooltip>
                 )}
             </Stack>
 

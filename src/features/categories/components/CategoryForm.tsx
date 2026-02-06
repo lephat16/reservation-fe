@@ -82,7 +82,6 @@ const CategoryForm = ({
         }
         onSubmit(formData);
         onClose();
-        console.log(formData);
     }
     return (
         <Dialog

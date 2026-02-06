@@ -11,6 +11,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { StyledSelectTextField } from '../../../shared/components/global/StyledSelectTextField'
 import CommentIcon from '@mui/icons-material/Comment';
 import type { ProductData } from '../../products/types/product'
+import { useNavigate } from 'react-router-dom'
 
 
 type SupplierProductFormProps = {
@@ -35,6 +36,8 @@ const SupplierProductForm = ({
     const [isEdit, setIsEdit] = useState(false);
     const [openNoteForm, setOpenNoteForm] = useState(false)
 
+    const navigate = useNavigate();
+
     const schema = useMemo(() => yup.object({
         supplierSku: yup
             .string()
@@ -58,7 +61,7 @@ const SupplierProductForm = ({
         note: yup
             .string()
             .nullable()
-            .max(50, 'ノートパソコンートは50文字以内で入力してください'),
+            .max(50, '備考は50文字以内で入力してください'),
         productId: !supplierProduct
             ? yup.number().typeError("商品IDは必須です")
                 .required("商品IDは必須です")
@@ -84,9 +87,7 @@ const SupplierProductForm = ({
 
 
     const handleFormSubmit = (data: SupplierProductFormType) => {
-        console.log(!data.productId)
         onSubmit(data);
-        console.log(data)
         setIsEdit(false);
         setOpenNoteForm(false);
         onClose();
@@ -158,6 +159,10 @@ const SupplierProductForm = ({
                                         value={field.value || ""}
                                         onChange={(e) => {
                                             const val = e.target.value;
+                                            if (val === "CREATE_NEW") {
+                                                navigate("/");
+                                                return;
+                                            }
                                             field.onChange(val ? Number(val) : undefined);
                                         }}
                                         error={!!errors.productId}
@@ -165,17 +170,19 @@ const SupplierProductForm = ({
                                         bgColor={colors.blueAccent[900]}
                                         sx={{ flex: 1 }}
                                     >
-                                        {products && products.length > 0 ? (
-                                            products.map(p => (
-                                                <MenuItem key={p.id} value={p.id}>
-                                                    {p.productName}
-                                                </MenuItem>
-                                            ))
-                                        ) : (
-                                            <MenuItem value="" disabled>
-                                                商品を選択してください
+                                        {products?.map(p => (
+                                            <MenuItem key={p.id} value={p.id}>
+                                                {p.productName}
                                             </MenuItem>
-                                        )}
+                                        ))}
+
+                                        <Divider />
+
+                                        <MenuItem value="CREATE_NEW">
+                                            <Typography variant="body2" color="primary">
+                                                こちらをクリックして新規作成
+                                            </Typography>
+                                        </MenuItem>
 
                                     </StyledSelectTextField>
                                 )}
@@ -321,43 +328,47 @@ const SupplierProductForm = ({
                         )}
                     />}
                 </Box>
-                <Divider>
-                    <Typography variant="h6" textAlign="center">
-                        価格履歴
-                    </Typography>
-                </Divider>
-                <TableContainer
-                    component={Paper}
-                    sx={{
-                        maxHeight: 300,
-                        mt: 1
-                    }}
-                >
-                    <Table
-                        size="small"
-                        stickyHeader
-                        sx={{
-                            ...styledTable(theme.palette.mode)
-                        }}
-                    >
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>日付</TableCell>
-                                <TableCell>価格</TableCell>
-                                <TableCell>備考</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {(supplierProduct?.priceHistories ?? []).map((ph) => (
-                                <TableRow key={ph.id}>
-                                    <TableCell>{ph.effectiveDate}</TableCell>
-                                    <TableCell>{ph.price.toLocaleString()}</TableCell>
-                                    <TableCell>{ph.note || "-"}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                {supplierProduct && (
+                    <>
+                        <Divider>
+                            <Typography variant="h6" textAlign="center">
+                                価格履歴
+                            </Typography>
+                        </Divider>
+                        <TableContainer
+                            component={Paper}
+                            sx={{
+                                maxHeight: 300,
+                                mt: 1
+                            }}
+                        >
+                            <Table
+                                size="small"
+                                stickyHeader
+                                sx={{
+                                    ...styledTable(theme.palette.mode)
+                                }}
+                            >
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>日付</TableCell>
+                                        <TableCell>価格</TableCell>
+                                        <TableCell>備考</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {(supplierProduct?.priceHistories ?? []).map((ph) => (
+                                        <TableRow key={ph.id}>
+                                            <TableCell>{ph.effectiveDate}</TableCell>
+                                            <TableCell>{ph.price.toLocaleString()}</TableCell>
+                                            <TableCell>{ph.note || "-"}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </>
+                )}
             </DialogContent>
             <DialogActions>
                 {supplierProduct ? (
@@ -367,11 +378,7 @@ const SupplierProductForm = ({
                                 variant="contained"
                                 color="success"
                                 disabled={isSubmitting}
-                                // onClick={() => handleSubmit(handleFormSubmit, (errors) => {
-                                //     console.log("validation errors:", errors);
-                                // })()}
                                 onClick={() => handleSubmit(handleFormSubmit, (data) => {
-                                    console.log("data", data);
                                 })()}
                             >
                                 {isSubmitting ? "送信中..." : "確認"}

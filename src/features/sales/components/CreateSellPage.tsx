@@ -14,7 +14,7 @@ import { saleAPI } from "../api/saleAPI";
 import type { CategorySummariesData } from "../../categories/types/category";
 import { useCategorySummaries } from "../../categories/hooks/useCategorySummaries";
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
-import { useScreen } from "../../../shared/components/global/ScreenContext";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 
 export type SellRow = {
     category: CategorySummariesData | null

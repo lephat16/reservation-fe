@@ -180,7 +180,7 @@ export const PurchaseItemRow = ({
 
                     {/* メモ入力 */}
                     <TextField
-                        label="ノート"
+                        label="備考"
                         variant="outlined"
                         fullWidth
                         multiline

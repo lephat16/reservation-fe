@@ -20,7 +20,16 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
   const colorMode = useContext(ColorModeContext);
 
   return (
-    <Box display="flex" justifyContent="space-between" p={2}>
+    <Box
+      display="flex"
+      justifyContent="space-between"
+      p={2}
+      sx={{
+        position: "sticky", 
+        top: 0,
+        zIndex: 1100, 
+      }}
+    >
       {/* SEARCH BAR */}
       <Box
         sx={{

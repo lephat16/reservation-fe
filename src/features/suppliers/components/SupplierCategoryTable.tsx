@@ -13,7 +13,7 @@ import { supplierAPI } from "../api/supplierAPI";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import type { AxiosError } from "axios";
 import ErrorState from "../../../shared/components/messages/ErrorState";
-import { useScreen } from "../../../shared/components/global/ScreenContext";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 
 type SupplierCategoryTableProps = {
     categoryName: string | undefined;
@@ -43,7 +43,7 @@ const SupplierCategoryTable = ({ categoryName, products, supplierId, supplierSta
         onSuccess: (response) => {
             // 成功時の処理
             showSnackbar(response.message || SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success"); // スナックバー表示
-            queryClient.invalidateQueries({ queryKey: ["supplier", Number(supplierId)] });
+            queryClient.invalidateQueries({ queryKey: ["supplier-product-with-price-history", selectedSupplierProduct?.sku] });
         },
         onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
@@ -142,26 +142,28 @@ const SupplierCategoryTable = ({ categoryName, products, supplierId, supplierSta
                                     <TableCell>
                                         <Stack direction="row" justifyContent="center">
                                             <Tooltip title="注文">
-                                                <IconButton
-                                                    aria-label="see-more"
-                                                    size="medium"
-                                                    sx={{
-                                                        '&:hover': {
-                                                            color: colors.greenAccent[500],
-                                                        },
-                                                    }}
-                                                    onClick={() => {
-                                                        navigate("/purchase-order/create", {
-                                                            state: {
-                                                                preselectedSupplierId: supplierId,
-                                                                preselectedSku: p.sku,
-                                                            }
-                                                        });
-                                                    }}
-                                                    disabled={supplierStatus === "INACTIVE" || p.status === "INACTIVE"}
-                                                >
-                                                    <PostAddIcon fontSize="inherit" />
-                                                </IconButton>
+                                                <span>
+                                                    <IconButton
+                                                        aria-label="see-more"
+                                                        size="medium"
+                                                        sx={{
+                                                            '&:hover': {
+                                                                color: colors.greenAccent[500],
+                                                            },
+                                                        }}
+                                                        onClick={() => {
+                                                            navigate("/purchase-order/create", {
+                                                                state: {
+                                                                    preselectedSupplierId: supplierId,
+                                                                    preselectedSku: p.sku,
+                                                                }
+                                                            });
+                                                        }}
+                                                        disabled={supplierStatus === "INACTIVE" || p.status === "INACTIVE"}
+                                                    >
+                                                        <PostAddIcon fontSize="inherit" />
+                                                    </IconButton>
+                                                </span>
                                             </Tooltip>
                                             <Tooltip title="詳細">
                                                 <IconButton

@@ -50,7 +50,10 @@ export interface StockHistoriesWithDetailData {
     userName: string,
     price: number,
     participantName: string,
-    unit: string;
+    unit: string,
+    signedQty: number,
+    afterQty: number,
+    beforeQty: number,
 }
 
 export interface StockData {

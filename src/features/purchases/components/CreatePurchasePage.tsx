@@ -15,7 +15,7 @@ import { useSupplierProductsWithLeadTime } from '../../suppliers/hooks/useSuppli
 import { PurchaseItemRow } from './PurchaseItemRow';
 import { PurchaseConfirmDialog } from './PurchaseConfirmDialog';
 import { styledSelect } from '../../../shared/styles/styledSelect';
-import { useScreen } from '../../../shared/components/global/ScreenContext';
+import { useScreen } from '../../../shared/hooks/ScreenContext';
 
 export type DialogMode = "save" | "purchase";
 

@@ -20,7 +20,7 @@ import { useCategorySummaries } from "./hooks/useCategorySummaries";
 import CategoryForm from "./components/CategoryForm";
 import { useDeleteCategory } from "./hooks/useDeleteCategory";
 import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
-import { useScreen } from "../../shared/components/global/ScreenContext";
+import { useScreen } from "../../shared/hooks/ScreenContext";
 
 interface ActionHandlers {
     deleteCategory: (id: GridRowId) => void;

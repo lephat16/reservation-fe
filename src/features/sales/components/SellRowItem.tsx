@@ -292,7 +292,7 @@ const SellRowItem = ({
                             }}
                         />
                         <TextField
-                            label="ノート"
+                            label="備考"
                             variant="outlined"
                             fullWidth
                             multiline

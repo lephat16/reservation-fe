@@ -11,8 +11,8 @@ import { useMemo, useState } from "react";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { stockAPI } from "../api/stockAPI";
 import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid";
-import { useScreen } from "../../../shared/components/global/ScreenContext";
-
+import { useScreen } from "../../../shared/hooks/ScreenContext";
+// 在庫変動履歴
 type StockHistoryItem = {
     stockId: number;
     productName: string;

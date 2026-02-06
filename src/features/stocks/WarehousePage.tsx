@@ -31,7 +31,7 @@ import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { stockAPI } from "./api/stockAPI";
 import { useWarehouses } from "./hooks/useWarehouses";
 import { useWarehouseWithTotalQty } from "./hooks/useWarehouseWithTotalQty";
-import { useScreen } from "../../shared/components/global/ScreenContext";
+import { useScreen } from "../../shared/hooks/ScreenContext";
 
 
 interface TablePaginationActionsProps {

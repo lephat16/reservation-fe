@@ -20,7 +20,7 @@ import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { supplierAPI } from "./api/supplierAPI";
 import { useAllSuppliers } from "./hooks/useAllSuppliers";
 import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
-import { useScreen } from "../../shared/components/global/ScreenContext";
+import { useScreen } from "../../shared/hooks/ScreenContext";
 
 
 interface ActionHandlers {

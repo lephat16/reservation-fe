@@ -6,7 +6,7 @@ import { useSnackbar } from '../../../shared/hooks/useSnackbar';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Header from '../../../pages/Header';
 import CustomSnackbar from '../../../shared/components/global/CustomSnackbar';
-import {  type GridColDef } from '@mui/x-data-grid';
+import { type GridColDef } from '@mui/x-data-grid';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import CheckIcon from '@mui/icons-material/Check';
 import { ReceiveFormDialog } from '../../purchases/components/ReceiveForm';
@@ -20,6 +20,7 @@ import { stockAPI } from '../../stocks/api/stockAPI';
 import { useSaleOrderDetail } from '../hooks/useSaleOrderDetail';
 import { useInventoryHistoryBySaleOrder } from '../../stocks/hooks/useInventoryHistoryBySaleOrder';
 import { StyledDataGrid } from '../../../shared/components/global/StyledDataGrid';
+import { useUser } from '../../../shared/hooks/UserContext';
 
 const DeliverForm = () => {
 
@@ -27,6 +28,7 @@ const DeliverForm = () => {
     const colors = tokens(theme.palette.mode);
     const { soId } = useParams<{ soId: string }>();
 
+    const { isStaff } = useUser();
     const queryClient = useQueryClient();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
 
@@ -168,23 +170,24 @@ const DeliverForm = () => {
                                                         </IconButton>
                                                     </Tooltip>
                                                 ) : (
-                                                    <Tooltip title="出荷">
-                                                        <IconButton aria-label="出荷"
-                                                            size="small"
-                                                            onClick={() => {
-                                                                setSelectedProduct({
-                                                                    productName: detail.productName,
-                                                                    detailId: detail.id
-                                                                });
-                                                                setSelectedSku(detail.sku ?? null)
-                                                                setOpenDeliverForm(true);
-                                                                setSelectedRemains(remains);
-                                                            }}
-                                                        >
-                                                            <WarehouseIcon fontSize="small" />
-                                                        </IconButton>
+                                                    <Tooltip title={isStaff ? "管理者または倉庫管理者のみ出荷可能" : "出荷"}>
+                                                        <span>
+                                                            <IconButton aria-label="出荷"
+                                                                size="small"
+                                                                onClick={() => {
+                                                                    setSelectedProduct({
+                                                                        productName: detail.productName,
+                                                                        detailId: detail.id
+                                                                    });
+                                                                    setSelectedSku(detail.sku ?? null)
+                                                                    setOpenDeliverForm(true);
+                                                                    setSelectedRemains(remains);
+                                                                }}
+                                                            >
+                                                                <WarehouseIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </span>
                                                     </Tooltip>
-
                                                 )}
                                             </TableCell>
                                             <TableCell>{detail.productName}</TableCell>

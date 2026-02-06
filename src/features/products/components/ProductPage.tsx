@@ -23,7 +23,7 @@ import MovingIcon from '@mui/icons-material/Moving';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { useWeeklySalesByProduct } from "../hooks/useWeeklySalesByProduct";
 import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
-import { useScreen } from "../../../shared/components/global/ScreenContext";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 
 const ProductPage = () => {
     const theme = useTheme();

@@ -5,12 +5,13 @@ import { useForm } from "react-hook-form";
 import { useMutation } from '@tanstack/react-query';
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import type { LoginRequest } from "../types/auth"; 
+import type { LoginRequest } from "../types/auth";
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import '../styles/auth.css'
 import type { AxiosError } from "axios";
 import { authAPI } from "../api/authAPI";
+import { useUser } from "../../../shared/hooks/UserContext";
 
 // yupを使ったフォームバリデーションスキーマ
 const schema = yup.object({
@@ -33,8 +34,10 @@ const LoginPage = (): JSX.Element => {
     // スナックバー状態管理
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
 
+    const { refreshRole } = useUser();
+
     useEffect(() => {
-        const token = localStorage.getItem("token"); // Kiểm tra token
+        const token = localStorage.getItem("token");
         if (token) {
             navigate("/profile", { replace: true });
         }
@@ -55,6 +58,7 @@ const LoginPage = (): JSX.Element => {
             ApiService.saveToken(response.token);  // トークン保存
             ApiService.saveRole(response.role); // ロール情報保存
             ApiService.saveRefreshToken(response.refreshToken) // リフレッシュトークン保存
+            refreshRole();
             showSnackbar("ログインしました。", "success");
             setTimeout(() => navigate("/profile"), 500); // カテゴリページへ遷移
         },

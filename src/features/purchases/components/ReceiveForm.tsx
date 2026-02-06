@@ -22,7 +22,8 @@ import { purchaseAPI } from "../api/purchaseAPI";
 import { stockAPI } from "../../stocks/api/stockAPI";
 import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid";
 import type { GridColDef } from "@mui/x-data-grid";
-import { useScreen } from "../../../shared/components/global/ScreenContext";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
+import { useUser } from "../../../shared/hooks/UserContext";
 
 // 購入確認ダイアログ
 interface ReceiveConfirmDialogProps {
@@ -325,7 +326,10 @@ const ReceiveForm = () => {
     const colors = tokens(theme.palette.mode);
     const { poId } = useParams<{ poId: string }>(); // URLパラメータから発注IDを取得
 
+
+    const { isStaff } = useUser();
     const { isSM } = useScreen();
+
     const queryClient = useQueryClient();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
@@ -494,21 +498,24 @@ const ReceiveForm = () => {
                                                         </IconButton>
                                                     </Tooltip>
                                                 ) : (
-                                                    <Tooltip title="受領">
-                                                        <IconButton
-                                                            size="small"
-                                                            aria-label="受領"
-                                                            onClick={() => {
-                                                                setSelectedProduct({
-                                                                    productName: detail.productName,
-                                                                    detailId: detail.id
-                                                                });
-                                                                setOpenReceiveForm(true);
-                                                                setSelectedRemains(remains);
-                                                            }}
-                                                        >
-                                                            <WarehouseIcon fontSize="small" />
-                                                        </IconButton>
+                                                    <Tooltip title={isStaff ? "管理者または倉庫管理者のみ受領可能" : "受領"}>
+                                                        <span>
+                                                            <IconButton
+                                                                size="small"
+                                                                aria-label="受領"
+                                                                disabled={isStaff}
+                                                                onClick={() => {
+                                                                    setSelectedProduct({
+                                                                        productName: detail.productName,
+                                                                        detailId: detail.id
+                                                                    });
+                                                                    setOpenReceiveForm(true);
+                                                                    setSelectedRemains(remains);
+                                                                }}
+                                                            >
+                                                                <WarehouseIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </span>
                                                     </Tooltip>
                                                 )}
                                             </TableCell>

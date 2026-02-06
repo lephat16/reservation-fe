@@ -21,7 +21,7 @@ import SupplierStatCard from "./SupplierStatCard";
 import OrderBySupplierTable from "./OrderBySupplierTable";
 import SupplierCategoryTable from "./SupplierCategoryTable";
 import AddIcon from '@mui/icons-material/Add';
-import { useScreen } from "../../../shared/components/global/ScreenContext";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 import { styledSelect } from "../../../shared/styles/styledSelect";
 import { tokens } from "../../../shared/theme";
 import SupplierProductForm from "./SupplierProductForm";
@@ -169,7 +169,7 @@ const SupplierPage = () => {
 
                                     <SupplierStatCard purchaseOrder={dataPO} />
                                 </Box>
-                                {!isSM ? (
+                                {(!isSM && data.supplierProducts.length < 4) ? (
                                     <Stack
                                         direction="row"
                                         justifyContent="space-between"

@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from "@mui/material";
+import { Box, Button, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import { useNavigate, useParams } from "react-router-dom";
 import type { SaleOrderData, SaleOrderDetailData } from "../types/sell";
@@ -15,7 +15,8 @@ import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { saleAPI } from "../api/saleAPI";
 import { useSaleOrderDetail } from "../hooks/useSaleOrderDetail";
-import { useScreen } from "../../../shared/components/global/ScreenContext";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
+import { useUser } from "../../../shared/hooks/UserContext";
 
 const descriptionSchema = yup.object({
     description: yup
@@ -29,6 +30,9 @@ const SellOrderDetailPage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const { soId } = useParams<{ soId: string }>();
+
+
+    const { isStaff, isWarehouse } = useUser();
 
     const { isSM } = useScreen();
     const [details, setDetails] = useState<SaleOrderDetailData[]>([]);
@@ -237,7 +241,7 @@ const SellOrderDetailPage = () => {
                 spacing={2}
             >
 
-                {data?.status === 'NEW' && (isEditing ? (
+                {(data?.status === 'NEW' && !isWarehouse) && (isEditing ? (
                     <Button variant="contained" color="success" onClick={() => handleSave()}>
                         保存
                     </Button>
@@ -247,20 +251,30 @@ const SellOrderDetailPage = () => {
                     </Button>
 
                 ))}
-
-                <Button variant="contained" color="error" onClick={() => setOpenDeleteConfirm(true)}>
-                    削除
-                </Button>
-
+                <Tooltip title={isWarehouse ? "管理者またはスタッフのみ削除可能" : ""} arrow>
+                    <span>
+                        <Button disabled={isWarehouse} variant="contained" color="error" onClick={() => setOpenDeleteConfirm(true)}>
+                            削除
+                        </Button>
+                    </span>
+                </Tooltip>
                 {data?.status === 'NEW' && (
-                    <Button variant="contained" color="info" onClick={() => setOpenSubmitConfirm(true)}>
-                        受注
-                    </Button>
+                    <Tooltip title={isWarehouse ? "管理者またはスタッフのみ受注可能" : ""} arrow>
+                        <span>
+                            <Button disabled={isWarehouse} variant="contained" color="info" onClick={() => setOpenSubmitConfirm(true)}>
+                                受注
+                            </Button>
+                        </span>
+                    </Tooltip>
                 )}
                 {(data?.status === 'PENDING' || data?.status === 'PROCESSING') && (
-                    <Button variant="contained" color="info" onClick={() => navigate(`/sell-order/${soId}/deliver`)}>
-                        出荷
-                    </Button>
+                    <Tooltip title={isStaff ? "管理者またはスタッフのみ出荷可能" : ""} arrow>
+                        <span>
+                            <Button disabled={isStaff} variant="contained" color="info" onClick={() => navigate(`/sell-order/${soId}/deliver`)}>
+                                出荷
+                            </Button>
+                        </span>
+                    </Tooltip>
                 )}
             </Stack>
 

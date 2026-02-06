@@ -1,4 +1,4 @@
-import { Box, Button, Chip, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useMediaQuery, useTheme, type SxProps, type Theme } from "@mui/material";
+import { Box, Button, Chip, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, useTheme, type SxProps, type Theme } from "@mui/material";
 import { tokens } from "../../shared/theme";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
@@ -14,7 +14,8 @@ import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { saleAPI } from "./api/saleAPI";
 import { useSaleOrders } from "./hooks/useSaleOrders";
-import { useScreen } from "../../shared/components/global/ScreenContext";
+import { useScreen } from "../../shared/hooks/ScreenContext";
+import { useUser } from "../../shared/hooks/UserContext";
 
 
 const renderStatusChip = (status: string) => {
@@ -48,6 +49,7 @@ const SellOrderPage = () => {
     const [selectedSellOrderId, setSelectedSellOrderId] = useState(0);
 
     const queryClient = useQueryClient();
+    const { isAdmin, isStaff, isWarehouse } = useUser();
 
     const { isLoading, error, data } = useSaleOrders();
 
@@ -88,16 +90,16 @@ const SellOrderPage = () => {
                     !isSM && <Header title="販売一覧:" subtitle="販売情報の一覧表示" />
                 )}
                 <Box mt={4}>
-                    <Button
-                        variant="contained"
-                        color="success"
-                        onClick={() => navigate(`/sell-order/create`)}
-                    >
-                        新規販売注文
-                    </Button>
-
+                    {(isAdmin || isStaff) && (
+                        <Button
+                            variant="contained"
+                            color="success"
+                            onClick={() => navigate(`/sell-order/create`)}
+                        >
+                            新規販売注文
+                        </Button>
+                    )}
                 </Box>
-
             </Box>
 
             <Box height="75vh">
@@ -182,19 +184,24 @@ const SellOrderPage = () => {
                                                                     <InfoIcon />
                                                                 </IconButton>
                                                                 {!isMD && (
-                                                                    <IconButton
-                                                                        aria-label="delete"
-                                                                        sx={{
-                                                                            "&:hover": {
-                                                                                color: "red",
-                                                                                backgroundColor: "transparent",
-                                                                            },
-                                                                            transition: "color 0.2s ease",
-                                                                        }}
-                                                                        onClick={() => handleDelete(Number(order.id))}
-                                                                    >
-                                                                        <DeleteIcon />
-                                                                    </IconButton>
+                                                                    <Tooltip title={isWarehouse ? "管理者またはスタッフのみ削除可能" : "削除"}>
+                                                                        <span>
+                                                                            <IconButton
+                                                                                aria-label="delete"
+                                                                                sx={{
+                                                                                    "&:hover": {
+                                                                                        color: "red",
+                                                                                        backgroundColor: "transparent",
+                                                                                    },
+                                                                                    transition: "color 0.2s ease",
+                                                                                }}
+                                                                                disabled={isWarehouse}
+                                                                                onClick={() => handleDelete(Number(order.id))}
+                                                                            >
+                                                                                <DeleteIcon />
+                                                                            </IconButton>
+                                                                        </span>
+                                                                    </Tooltip>
                                                                 )}
                                                             </>
                                                         );
@@ -202,6 +209,20 @@ const SellOrderPage = () => {
                                                     case "total":
                                                         content = `¥${order.total.toLocaleString()}`;
                                                         break;
+                                                    case "createdAt":
+                                                        const createdAt = new Date(order.createdAt);
+                                                        content = createdAt.toLocaleDateString();
+
+                                                        return (
+                                                            <TableCell
+                                                                key={col.key}
+                                                                sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}
+                                                            >
+                                                                <Tooltip title={createdAt.toLocaleString()}>
+                                                                    <span>{content}</span>
+                                                                </Tooltip>
+                                                            </TableCell>
+                                                        );
                                                     default:
                                                         content = (order as any)[col.key];
                                                 }

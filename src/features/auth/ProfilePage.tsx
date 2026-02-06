@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { tokens } from "../../shared/theme";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { authAPI } from "./api/authAPI";
+import { useProfile } from "./hooks/useProfile";
 
 type UpdateUserPayload = {
     id: number;
@@ -25,27 +26,15 @@ const ProfilePage = () => {
     const [email, setEmail] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
 
-    const {
-        data: profileData,
-        isLoading: profileLoading,
-        error: profileError
-    } = useQuery<UserData>({
-        queryKey: ["profile"],
-        queryFn: async () => {
-            const profileRes = await authAPI.getLoggedInUser();
-            return profileRes.data;
-        }
-    });
-
-
+    const { data, isLoading, error } = useProfile();
 
     useEffect(() => {
-        if (profileData) {
-            setName(profileData.name);
-            setEmail(profileData.email);
-            setPhoneNumber(profileData.phoneNumber);
+        if (data) {
+            setName(data.name);
+            setEmail(data.email);
+            setPhoneNumber(data.phoneNumber);
         }
-    }, [profileData]);
+    }, [data]);
 
     const updateUserMutation = useMutation({
         mutationFn: (payload: UpdateUserPayload) =>
@@ -59,10 +48,10 @@ const ProfilePage = () => {
         },
     })
     const handleSave = async () => {
-        if (!profileData) return;
+        if (!data) return;
 
         updateUserMutation.mutate({
-            id: Number(profileData.id!),
+            id: Number(data.id!),
             data: {
                 name,
                 email,
@@ -92,10 +81,10 @@ const ProfilePage = () => {
             </Typography>
 
             {/* エラー表示 */}
-            {(profileError) && (
+            {(error) && (
                 <ErrorState />
             )}
-            {profileLoading ? (
+            {isLoading ? (
                 <>
                     <Skeleton animation="wave" variant="circular" width={40} height={40} />
                     <Skeleton
@@ -115,12 +104,12 @@ const ProfilePage = () => {
                     }}
                 >
                     <Box sx={{ px: { xs: 2, md: 6 } }}>
-                        {profileData && (
+                        {data && (
                             <ProfileCard
                                 name={name}
-                                userId={profileData.userId || ""}
+                                userId={data.userId || ""}
                                 email={email}
-                                role={profileData.role}
+                                role={data.role}
                                 phoneNumber={phoneNumber}
                                 onChangeName={setName}
                                 onChangeEmail={setEmail}

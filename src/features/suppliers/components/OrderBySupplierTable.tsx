@@ -4,7 +4,7 @@ import { tokens } from "../../../shared/theme";
 import { useState } from "react";
 import { styledTable } from "../../../shared/components/global/StyleTable";
 import InfoIcon from '@mui/icons-material/Info';
-import { useScreen } from "../../../shared/components/global/ScreenContext";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 
 type OrderBySupplierProps = {
     purchaseOrder: PurchaseOrderData[]
@@ -59,7 +59,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                             {!isMD && (
                                 <>
                                     <TableCell>ステータス</TableCell>
-                                    <TableCell>説明</TableCell>
+                                    <TableCell>備考</TableCell>
                                 </>
                             )}
                             <TableCell />
@@ -149,7 +149,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                                 key={index}
                                 direction="row"
                                 p={1}
-                                sx={{ borderTop: "1px solid", borderColor: colors.grey[700] }}
+                                sx={{ borderTop: "1px solid", borderColor: colors.grey[600] }}
                             >
                                 <Box flex={3}>{row.productName}</Box>
                                 <Box flex={1} textAlign="right">{row.qty}</Box>
@@ -157,6 +157,24 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                                 <Box flex={1} textAlign="right">{(row.qty * row.cost).toLocaleString()}</Box>
                             </Stack>
                         ))}
+                    </Box>
+                    <Box
+                        mt={2}
+                        p={1}
+                        border={1}
+                        borderRadius={1}
+                        sx={{
+                            borderColor: colors.grey[400],
+                            height: 80,          
+                            overflowY: 'auto',
+                        }}
+                    >
+                        <Typography variant="subtitle1" fontWeight="bold">
+                            備考
+                        </Typography>
+                        <Typography variant="body2">
+                            {selectedPO?.description}
+                        </Typography>
                     </Box>
                     <Typography variant="h6" mt={2} textAlign="right">
                         合計金額: <strong>
@@ -174,7 +192,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                         確認
                     </Button>
                 </DialogActions>
-            </Dialog>
+            </Dialog >
         </>
     )
 }

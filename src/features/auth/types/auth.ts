@@ -1,5 +1,11 @@
 
+export const ROLES = {
+    ADMIN: "ADMIN",
+    STAFF: "STAFF",
+    WAREHOUSE: "WAREHOUSE",
+} as const;
 
+export type Role = typeof ROLES[keyof typeof ROLES];
 
 export interface RegisterRequest {
     name: string;
@@ -22,7 +28,7 @@ export interface RegisterResponse {
 export interface LoginResponse {
     token: string;
     refreshToken: string;
-    role: string;
+    role: Role;
     expirationTime: string;
     status: string;
     message: string;
@@ -36,7 +42,7 @@ export interface UserData {
     name: string;
     email: string;
     phoneNumber: string;
-    role: "ADMIN" | "STAFF" |"WAREHOUSE";
+    role: "ADMIN" | "STAFF" | "WAREHOUSE";
     createdAt: string;
 }
 

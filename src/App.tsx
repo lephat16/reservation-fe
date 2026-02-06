@@ -20,11 +20,12 @@ import SellOrderPage from './features/sales/SellOrderPage'
 import SellOrderDetailPage from './features/sales/components/SellOrderDetailPage'
 import DeliverForm from './features/sales/components/DeliverForm'
 import CreateSellPage from './features/sales/components/CreateSellPage'
-import StockHistoriesPage from './features/stocks/components/StockHistoriesPage'
 import WarehousePage from './features/stocks/WarehousePage'
 import AllProductsPageRefator from './features/products/AllProductsPageRefator'
 import ErrorBoundary from './shared/components/global/ErrorBoundary'
-import { ScreenProvider } from './shared/components/global/ScreenContext'
+import { ScreenProvider } from './shared/hooks/ScreenContext'
+import { UserProvider } from './shared/hooks/UserContext'
+import StockMovementHistoryPage from './features/stocks/components/StockMovementHistoryPage'
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -35,36 +36,38 @@ function App() {
         <CssBaseline />
         <ErrorBoundary>
           <ScreenProvider>
-            <Router>
-              <Routes>
-                <Route path='/register' element={<RegisterPage />}></Route>
-                <Route path='/login' element={<LoginPage />}></Route>
-                <Route element={<MainLayout />}>
-                  <Route path='/category' element={<AdminRoute element={<CategoriesPage />} />}></Route>
-                  <Route path='/category/:categoryId' element={<AdminRoute element={<CategoryDetailPage />} />} />
-                  <Route path="/products/:productId" element={<AdminRoute element={<ProductPage />} />} />
-                  <Route path="/products" element={<AdminRoute element={<AllProductsPageRefator />} />} />
-                  <Route path="/suppliers" element={<AdminRoute element={<AllSupplierPage />} />} />
-                  <Route path="/suppliers/:supplierId" element={<AdminRoute element={<SupplierPage />} />} />
+            <UserProvider>
+              <Router>
+                <Routes>
+                  <Route path='/register' element={<RegisterPage />}></Route>
+                  <Route path='/login' element={<LoginPage />}></Route>
+                  <Route element={<MainLayout />}>
+                    <Route path='/category' element={<AdminRoute element={<CategoriesPage />} />}></Route>
+                    <Route path='/category/:categoryId' element={<AdminRoute element={<CategoryDetailPage />} />} />
+                    <Route path="/products/:productId" element={<AdminRoute element={<ProductPage />} />} />
+                    <Route path="/products" element={<AdminRoute element={<AllProductsPageRefator />} />} />
+                    <Route path="/suppliers" element={<AdminRoute element={<AllSupplierPage />} />} />
+                    <Route path="/suppliers/:supplierId" element={<AdminRoute element={<SupplierPage />} />} />
 
-                  <Route path="/purchase-order" element={<ProtectedRoute element={<PurchaseOrderPage />} />} />
-                  <Route path="/purchase-order/:poId/receive" element={<ProtectedRoute element={<ReceiveForm />} />} />
-                  <Route path="/purchase-order/:poId" element={<ProtectedRoute element={<PurchaseOrderDetailPage />} />} />
-                  <Route path="/purchase-order/create" element={<ProtectedRoute element={<CreatePurchasePage />} />} />
+                    <Route path="/purchase-order" element={<ProtectedRoute element={<PurchaseOrderPage />} />} />
+                    <Route path="/purchase-order/:poId/receive" element={<ProtectedRoute element={<ReceiveForm />} />} />
+                    <Route path="/purchase-order/:poId" element={<ProtectedRoute element={<PurchaseOrderDetailPage />} />} />
+                    <Route path="/purchase-order/create" element={<ProtectedRoute element={<CreatePurchasePage />} />} />
 
-                  <Route path="/sell-order" element={<ProtectedRoute element={<SellOrderPage />} />} />
-                  <Route path="/sell-order/:soId/deliver" element={<ProtectedRoute element={<DeliverForm />} />} />
-                  <Route path="/sell-order/:soId" element={<ProtectedRoute element={<SellOrderDetailPage />} />} />
-                  <Route path="/sell-order/create" element={<ProtectedRoute element={<CreateSellPage />} />} />
+                    <Route path="/sell-order" element={<ProtectedRoute element={<SellOrderPage />} />} />
+                    <Route path="/sell-order/:soId/deliver" element={<ProtectedRoute element={<DeliverForm />} />} />
+                    <Route path="/sell-order/:soId" element={<ProtectedRoute element={<SellOrderDetailPage />} />} />
+                    <Route path="/sell-order/create" element={<ProtectedRoute element={<CreateSellPage />} />} />
 
-                  <Route path="/stocks/history" element={<ProtectedRoute element={<StockHistoriesPage />} />} />
-                  <Route path="/warehouses" element={<ProtectedRoute element={<WarehousePage />} />} />
+                    <Route path="/stocks/history" element={<ProtectedRoute element={<StockMovementHistoryPage />} />} />
+                    <Route path="/warehouses" element={<ProtectedRoute element={<WarehousePage />} />} />
 
-                  <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
-                  {/* <Route path="/dashboard" element={<ProtectedRoute element={<DashboardPage />} />} /> */}
-                </Route>
-              </Routes>
-            </Router>
+                    <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
+                    {/* <Route path="/dashboard" element={<ProtectedRoute element={<DashboardPage />} />} /> */}
+                  </Route>
+                </Routes>
+              </Router>
+            </UserProvider>
           </ScreenProvider>
         </ErrorBoundary>
       </ThemeProvider>

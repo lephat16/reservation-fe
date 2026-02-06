@@ -26,7 +26,7 @@ import { styledTable } from "../../shared/components/global/StyleTable";
 import AddCardIcon from '@mui/icons-material/AddCard';
 import ProductForm from "./components/ProductForm";
 import type { ProductFormData } from "./types/product";
-import { useScreen } from "../../shared/components/global/ScreenContext";
+import { useScreen } from "../../shared/hooks/ScreenContext";
 
 type StockInfo = {
     stockId: number;
@@ -243,7 +243,6 @@ const AllProductsPageRefator = () => {
     const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
 
     const { isLoading, error, data } = useStockWithSupplier();
-
 
     const addMutation = useMutation({
         mutationFn: async (data: ProductFormData) => productAPI.createProduct(data),
