@@ -201,7 +201,6 @@ const StockMovementHistoryPage = () => {
                                 value={type}
                                 onChange={e => {
                                     setType(e.target.value as Type)
-                                    console.log(e.target.value)
                                 }}
                                 input={<OutlinedInput label="区分" />}
                                 sx={styledSelect}

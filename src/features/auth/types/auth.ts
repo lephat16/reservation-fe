@@ -22,12 +22,12 @@ export interface RegisterResponse {
 
 export interface LoginResponse {
     token: string;
-    refreshToken: string;
     role: Role;
     expirationTime: string;
     status: string;
     message: string;
     timestamp: string;
+    user?: UserData;
 }
 
 

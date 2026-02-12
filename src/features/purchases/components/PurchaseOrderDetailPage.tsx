@@ -16,8 +16,7 @@ import { purchaseAPI } from "../api/purchaseAPI";
 import { usePurchaseOrderDetail } from "../hooks/usePurchaseOrderDetail";
 import { useSumReceivedQtyByPoGroupByProduct } from "../../products/hooks/useSumReceivedQtyByPoGroupByProduct";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
-import type { RootState } from "../../auth/store";
-import { useSelector } from "react-redux";
+import useRoleFlags from "../../auth/hooks/useRoleFlags";
 
 const descriptionSchema = yup.object({
     description: yup
@@ -87,10 +86,7 @@ const PurchaseOrderDetailPage = () => {
     const colors = tokens(theme.palette.mode);
     const { poId } = useParams<{ poId: string }>();
 
-    const role = useSelector((state: RootState) => state.auth.role);
-    const isAdmin = role === "ADMIN";
-    const isStaff = role === "STAFF";
-    const isWarehouse = role === "WAREHOUSE";
+    const { isStaff, isWarehouse } = useRoleFlags();
 
     const [details, setDetails] = useState<PurchaseOrderDetailData[]>([]);
     const [description, setDescription] = useState<string>("");

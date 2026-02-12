@@ -25,10 +25,36 @@ import AllProductsPageRefator from './features/products/AllProductsPageRefator'
 import ErrorBoundary from './shared/components/global/ErrorBoundary'
 import { ScreenProvider } from './shared/hooks/ScreenContext'
 import StockMovementHistoryPage from './features/stocks/components/StockMovementHistoryPage'
+import { useDispatch } from "react-redux";
+import { useEffect, useState } from 'react'
+import { refreshAccessToken } from './api/axiosClient'
+import {  setToken, setUser } from './features/auth/store/authSlice'
+import { authAPI } from './features/auth/api/authAPI'
 
 function App() {
-  const [theme, colorMode] = useMode();
 
+  const [theme, colorMode] = useMode();
+  const dispatch = useDispatch();
+  const [loadingAuth, setLoadingAuth] = useState(true);
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const token = await refreshAccessToken();
+      if (token) {
+        dispatch(setToken(token));
+        try {
+          const profile = await authAPI.getLoggedInUser();
+          dispatch(setUser(profile.data));
+        } catch (err) {
+          console.error("Load profile failed", err);
+        }
+      }
+      setLoadingAuth(false);
+    };
+    initializeAuth();
+  }, [dispatch]);
+
+  if (loadingAuth) return <div>Loading...</div>;
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>

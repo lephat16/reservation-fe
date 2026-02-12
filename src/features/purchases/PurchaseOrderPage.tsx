@@ -15,8 +15,7 @@ import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { purchaseAPI } from "./api/purchaseAPI";
 import { usePurchaseOrders } from "./hooks/usePurchaseOrders";
 import { useScreen } from "../../shared/hooks/ScreenContext";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../features/auth/store";
+import useRoleFlags from "../auth/hooks/useRoleFlags";
 
 const renderStatusChip = (status: string) => {
     const colorMap: Record<string, "secondary" | "primary" | "success" | "warning" | "error"> = {
@@ -48,10 +47,7 @@ const PurchaseOrderPage = () => {
 
     const queryClient = useQueryClient();
 
-    const role = useSelector((state: RootState) => state.auth.role);
-    const isAdmin = role === "ADMIN";
-    const isStaff = role === "STAFF";
-    const isWarehouse = role === "WAREHOUSE";
+    const { isAdmin, isStaff, isWarehouse } = useRoleFlags();
 
     const { isLoading, error, data } = usePurchaseOrders();
 

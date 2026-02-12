@@ -6,7 +6,7 @@ import {
     MenuItem,
     sidebarClasses,
 } from "react-pro-sidebar";
-import { Box, IconButton, Skeleton, Typography, useTheme } from "@mui/material";
+import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
@@ -19,13 +19,13 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useScreen } from '../../hooks/ScreenContext';
-import { useProfile } from '../../../features/auth/hooks/useProfile';
-import ErrorState from '../messages/ErrorState';
+
 import { useQueryClient } from "@tanstack/react-query";
-import { useDispatch, } from "react-redux";
+import { useDispatch, useSelector, } from "react-redux";
 import { logout as logoutAction } from "../../../features/auth/store/authSlice";
 import { useAuth } from '../../hooks/useAuth';
 import { ROLES } from '../../../constants/role';
+import type { RootState } from '../../../features/auth/store';
 
 
 /* 共通メニューアイテム */
@@ -90,21 +90,13 @@ const Sidebar = ({ onClose }: SidebarProps) => {
     const [isCollapsed, setIsCollapsed] = useState(isMD);
 
     // プロフィール情報の取得
-    const { data, isLoading, error } = useProfile();
-
+    const { user } = useSelector((state: RootState) => state.auth);
     // スクリーンサイズが変更された時にサイドバーを折りたたむ/展開する
     useEffect(() => {
         setIsCollapsed(isMD);
     }, [isMD]);
 
 
-    isLoading && (
-        <Box sx={{ padding: 2 }}>
-            <Skeleton variant="text" width="80%" height={30} />
-            <Skeleton variant="text" width="60%" height={30} />
-        </Box>)
-
-    error && (<ErrorState />)
 
     if (!isAuthenticated) return null;
     return (
@@ -168,7 +160,7 @@ const Sidebar = ({ onClose }: SidebarProps) => {
                             ml="15px"
                         >
                             <Typography variant="h3" color={colors.grey[100]}>
-                                {data?.role}
+                                {user?.role}
                             </Typography>
                             <IconButton
                                 onClick={() => setIsCollapsed(!isCollapsed)}
@@ -198,10 +190,10 @@ const Sidebar = ({ onClose }: SidebarProps) => {
                                 fontWeight="bold"
                                 sx={{ m: "10px 0 0 0" }}
                             >
-                                {data?.name}
+                                {user?.name}
                             </Typography>
                             <Typography variant="h5" color={colors.greenAccent[500]}>
-                                {data?.role && ROLES[data.role].label}
+                                {user?.role && ROLES[user.role].label}
                             </Typography>
                         </Box>
                     </Box>

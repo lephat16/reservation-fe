@@ -1,15 +1,15 @@
 
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { Role } from '../types/auth';
+import type {  UserData } from '../types/auth';
 
 type AuthState = {
     accessToken: string | null;
-    role: Role | null;
+    user: UserData | null;
 };
 
 const initialState: AuthState = {
     accessToken: null,
-    role: null,
+    user: null,
 }
 
 const authSlice = createSlice({
@@ -19,15 +19,16 @@ const authSlice = createSlice({
         setToken: (state, action: PayloadAction<string | null>) => {
             state.accessToken = action.payload;
         },
-        setRole: (state, action: PayloadAction<Role | null>) => {
-            state.role = action.payload;
+        
+        setUser: (state, action: PayloadAction<UserData | null>) => {
+            state.user = action.payload;
         },
         logout: (state) => {
             state.accessToken = null;
-            state.role = null;
+            state.user = null;
         }
     }
 });
 
-export const { setToken, setRole, logout } = authSlice.actions;
+export const { setToken, setUser, logout } = authSlice.actions;
 export default authSlice.reducer;

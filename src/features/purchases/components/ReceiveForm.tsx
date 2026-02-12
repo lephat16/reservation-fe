@@ -23,8 +23,7 @@ import { stockAPI } from "../../stocks/api/stockAPI";
 import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid";
 import type { GridColDef } from "@mui/x-data-grid";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
-import type { RootState } from "../../auth/store";
-import { useSelector } from "react-redux";
+import useRoleFlags from "../../auth/hooks/useRoleFlags";
 
 // 購入確認ダイアログ
 interface ReceiveConfirmDialogProps {
@@ -328,8 +327,7 @@ const ReceiveForm = () => {
     const { poId } = useParams<{ poId: string }>(); // URLパラメータから発注IDを取得
 
     const { isSM } = useScreen();
-    const role = useSelector((state: RootState) => state.auth.role);
-    const isStaff = role === "STAFF";
+    const { isStaff } = useRoleFlags();
     const queryClient = useQueryClient();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
@@ -571,8 +569,6 @@ const ReceiveForm = () => {
                         onReceive={(receiveItem) => {
                             if (poId) {
                                 receiveMutation.mutate({ receiveItem, poId: Number(poId) });
-                            } else {
-                                console.error("");
                             }
                         }}
                         isPending={receiveMutation.isPending}

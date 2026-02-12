@@ -1,6 +1,5 @@
 
 import axios from "axios";
-import ApiService from "../shared/api/ApiService";
 import { store } from "../features/auth/store";
 import { setToken } from "../features/auth/store/authSlice";
 import { logout } from "../features/auth/store/authSlice";
@@ -9,11 +8,14 @@ import { logout } from "../features/auth/store/authSlice";
 // axiosインスタンスの作成（基本URLを環境変数から取得）
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
+    withCredentials: true,
 });
 // トークンのリフレッシュ状態を追跡
 let isRefreshing = false;
 // トークンリフレッシュ中に失敗したリクエストをキューに保存
 let failedQueue: any[] = [];
+
+let refreshPromise: Promise<string | null> | null = null;
 
 // キュー内のリクエストを処理する関数
 const processQueue = (error: any, token: string | null = null) => {
@@ -36,10 +38,7 @@ api.interceptors.request.use(
             config.url?.includes("/auth/login") ||
             config.url?.includes("/auth/register") ||
             config.url?.includes("/auth/refresh");
-        if (typeof token === "string" &&
-            token.trim() !== "" &&
-            !isAuthPath &&
-            config.headers) {
+        if (token && !isAuthPath && config.headers) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -53,7 +52,9 @@ api.interceptors.response.use(
     async (error) => {
         // 元のリクエストを取得
         const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 &&
+            !originalRequest._retry &&
+            !originalRequest.url?.includes("/auth/refresh")) {
 
             // もしすでにトークンのリフレッシュ処理が行われている場合
             if (isRefreshing) {
@@ -75,24 +76,23 @@ api.interceptors.response.use(
             // リフレッシュトークンがある場合
             originalRequest._retry = true;
             isRefreshing = true;
-            const refreshToken = ApiService.getRefreshToken(); // リフレッシュトークンを取得
-            if (!refreshToken) {
-                logout();
-                return Promise.reject(error);
+            if (!refreshPromise) {
+                refreshPromise = api
+                    .post("/auth/refresh")
+                    .then(res => res.data?.data?.token || null)
+                    .finally(() => {
+                        refreshPromise = null;
+                        isRefreshing = false;
+                    });
             }
+
             try {
                 // リフレッシュトークンを使って新しいアクセストークンを取得
-                const res = await api.post(`${import.meta.env.VITE_API_BASE_URL}/auth/refresh`, {
-                    refreshToken,
-                });
-                const newAccessToken = res.data.token; // 新しいアクセストークン
-                const newRefreshToken = res.data.refreshToken; // 新しいリフレッシュトークン
-                // ApiService.saveToken(newAccessToken);
+                const newAccessToken = await refreshPromise; // 新しいアクセストークン
+                if (!newAccessToken) throw new Error("No token");
                 store.dispatch(setToken(newAccessToken));
-                ApiService.saveRefreshToken(newRefreshToken);
 
                 // デフォルトのAuthorizationヘッダーを更新
-                // api.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
                 api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
 
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -113,3 +113,17 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+export const refreshAccessToken = async () => {
+    
+    if (!refreshPromise) {
+        refreshPromise = api
+            .post("/auth/refresh")
+            .then(res => res.data?.token || null)
+            .finally(() => {
+                refreshPromise = null;
+                isRefreshing = false;
+            });
+    }
+    return refreshPromise;
+}

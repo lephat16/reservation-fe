@@ -15,8 +15,7 @@ import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { saleAPI } from "./api/saleAPI";
 import { useSaleOrders } from "./hooks/useSaleOrders";
 import { useScreen } from "../../shared/hooks/ScreenContext";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../features/auth/store";
+import useRoleFlags from "../auth/hooks/useRoleFlags";
 
 const renderStatusChip = (status: string) => {
     const colorMap: Record<string, "secondary" | "primary" | "success" | "warning" | "error"> = {
@@ -49,11 +48,7 @@ const SellOrderPage = () => {
     const [selectedSellOrderId, setSelectedSellOrderId] = useState(0);
 
     const queryClient = useQueryClient();
-    const role = useSelector((state: RootState) => state.auth.role);
-
-    const isAdmin = role === "ADMIN";
-    const isStaff = role === "STAFF";
-    const isWarehouse = role === "WAREHOUSE";
+    const { isAdmin, isStaff, isWarehouse } = useRoleFlags();
     const { isLoading, error, data } = useSaleOrders();
 
     const columns = [
