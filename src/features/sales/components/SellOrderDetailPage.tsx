@@ -16,7 +16,8 @@ import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { saleAPI } from "../api/saleAPI";
 import { useSaleOrderDetail } from "../hooks/useSaleOrderDetail";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
-import { useUser } from "../../../shared/hooks/UserContext";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../auth/store";
 
 const descriptionSchema = yup.object({
     description: yup
@@ -31,8 +32,12 @@ const SellOrderDetailPage = () => {
     const colors = tokens(theme.palette.mode);
     const { soId } = useParams<{ soId: string }>();
 
+    const role = useSelector((state: RootState) => state.auth.role);
 
-    const { isStaff, isWarehouse } = useUser();
+    const isAdmin = role === "ADMIN";
+    const isStaff = role === "STAFF";
+    const isWarehouse = role === "WAREHOUSE";
+
 
     const { isSM } = useScreen();
     const [details, setDetails] = useState<SaleOrderDetailData[]>([]);

@@ -20,7 +20,8 @@ import { stockAPI } from '../../stocks/api/stockAPI';
 import { useSaleOrderDetail } from '../hooks/useSaleOrderDetail';
 import { useInventoryHistoryBySaleOrder } from '../../stocks/hooks/useInventoryHistoryBySaleOrder';
 import { StyledDataGrid } from '../../../shared/components/global/StyledDataGrid';
-import { useUser } from '../../../shared/hooks/UserContext';
+import { useSelector } from "react-redux";
+import type { RootState } from '../../auth/store';
 
 const DeliverForm = () => {
 
@@ -28,7 +29,9 @@ const DeliverForm = () => {
     const colors = tokens(theme.palette.mode);
     const { soId } = useParams<{ soId: string }>();
 
-    const { isStaff } = useUser();
+    const role = useSelector((state: RootState) => state.auth.role);
+    const isStaff = role === "STAFF";
+
     const queryClient = useQueryClient();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
 

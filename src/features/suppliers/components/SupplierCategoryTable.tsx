@@ -68,7 +68,7 @@ const SupplierCategoryTable = ({ categoryName, products, supplierId, supplierSta
                 >
                     <Table
                         sx={{
-                            ...styledTable(theme.palette.mode)
+                            ...styledTable(colors)
                         }}
                     >
                         <colgroup>

@@ -11,7 +11,8 @@ import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import '../styles/auth.css'
 import type { AxiosError } from "axios";
 import { authAPI } from "../api/authAPI";
-import { useUser } from "../../../shared/hooks/UserContext";
+import { useDispatch } from "react-redux";
+import { setToken, setRole } from "../store/authSlice";
 
 // yupを使ったフォームバリデーションスキーマ
 const schema = yup.object({
@@ -34,14 +35,16 @@ const LoginPage = (): JSX.Element => {
     // スナックバー状態管理
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
 
-    const { refreshRole } = useUser();
+    // const { refreshRole } = useUser();
 
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            navigate("/profile", { replace: true });
-        }
-    }, [navigate]);
+    const dispatch = useDispatch();
+
+    // useEffect(() => {
+    //     const token = localStorage.getItem("token");
+    //     if (token) {
+    //         navigate("/profile", { replace: true });
+    //     }
+    // }, [navigate]);
     // React Hook Form初期化
     const {
         register,
@@ -55,10 +58,12 @@ const LoginPage = (): JSX.Element => {
     const mutation = useMutation({
         mutationFn: loginApi,
         onSuccess: (response) => {
-            ApiService.saveToken(response.token);  // トークン保存
-            ApiService.saveRole(response.role); // ロール情報保存
+            // ApiService.saveToken(response.token);  // トークン保存
+            // ApiService.saveRole(response.role); // ロール情報保存
+            dispatch(setToken(response.token));
+            dispatch(setRole(response.role));
             ApiService.saveRefreshToken(response.refreshToken) // リフレッシュトークン保存
-            refreshRole();
+            // refreshRole();
             showSnackbar("ログインしました。", "success");
             setTimeout(() => navigate("/profile"), 500); // カテゴリページへ遷移
         },

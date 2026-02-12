@@ -1,6 +1,10 @@
 
 import axios from "axios";
 import ApiService from "../shared/api/ApiService";
+import { store } from "../features/auth/store";
+import { setToken } from "../features/auth/store/authSlice";
+import { logout } from "../features/auth/store/authSlice";
+
 
 // axiosインスタンスの作成（基本URLを環境変数から取得）
 export const api = axios.create({
@@ -26,9 +30,16 @@ const processQueue = (error: any, token: string | null = null) => {
 // リクエストインターセプター
 api.interceptors.request.use(
     (config) => {
-        const token = ApiService.getToken();
-        const isAuthPath = config.url?.includes("/auth/login") || config.url?.includes("/auth/register");
-        if (token && !isAuthPath && config.headers) {
+        // const token = ApiService.getToken();
+        const token = store.getState().auth.accessToken;
+        const isAuthPath =
+            config.url?.includes("/auth/login") ||
+            config.url?.includes("/auth/register") ||
+            config.url?.includes("/auth/refresh");
+        if (typeof token === "string" &&
+            token.trim() !== "" &&
+            !isAuthPath &&
+            config.headers) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -44,23 +55,21 @@ api.interceptors.response.use(
         const originalRequest = error.config;
         if (error.response?.status === 401 && !originalRequest._retry) {
 
-            if (ApiService.getToken() == null) {
-                ApiService.logout(); // トークンが無ければログアウト
-                return Promise.reject(error);
-            }
-
             // もしすでにトークンのリフレッシュ処理が行われている場合
             if (isRefreshing) {
                 // 新たなリクエストが来た場合、失敗したリクエストをキューに追加して後で処理する
                 return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject });
-                })
-                    .then((token) => {
-                        // トークンが取得できたら、元のリクエストに新しいトークンを設定
-                        originalRequest.headers.Authorization = `Bearer ${token}`;
-                        return api(originalRequest);
-                    })
-                    .catch((err) => Promise.reject(err));
+                    failedQueue.push({
+                        resolve: (token: string) => {
+                            originalRequest.headers = originalRequest.headers ?? {};
+                            // トークンが取得できたら、元のリクエストに新しいトークンを設定
+                            originalRequest.headers.Authorization = `Bearer ${token}`;
+                            resolve(api(originalRequest));
+                        },
+                        reject
+                    });
+                });
+
             }
 
             // リフレッシュトークンがある場合
@@ -68,21 +77,24 @@ api.interceptors.response.use(
             isRefreshing = true;
             const refreshToken = ApiService.getRefreshToken(); // リフレッシュトークンを取得
             if (!refreshToken) {
-                ApiService.logout();
+                logout();
                 return Promise.reject(error);
             }
             try {
                 // リフレッシュトークンを使って新しいアクセストークンを取得
-                const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/refresh`, {
+                const res = await api.post(`${import.meta.env.VITE_API_BASE_URL}/auth/refresh`, {
                     refreshToken,
                 });
                 const newAccessToken = res.data.token; // 新しいアクセストークン
                 const newRefreshToken = res.data.refreshToken; // 新しいリフレッシュトークン
-                ApiService.saveToken(newAccessToken);
+                // ApiService.saveToken(newAccessToken);
+                store.dispatch(setToken(newAccessToken));
                 ApiService.saveRefreshToken(newRefreshToken);
 
                 // デフォルトのAuthorizationヘッダーを更新
-                api.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
+                // api.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
+                api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
                 // キュー内のリクエストを処理
@@ -92,7 +104,7 @@ api.interceptors.response.use(
             } catch (err) {
                 // エラーが発生した場合、キュー内のリクエストをすべて拒否
                 processQueue(err, null);
-                ApiService.logout(); // ログアウト処理
+                logout() // ログアウト処理
                 return Promise.reject(err);
             } finally {
                 isRefreshing = false; // リフレッシュフラグをリセット

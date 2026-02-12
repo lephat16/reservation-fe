@@ -346,7 +346,7 @@ const SupplierProductForm = ({
                                 size="small"
                                 stickyHeader
                                 sx={{
-                                    ...styledTable(theme.palette.mode)
+                                    ...styledTable(colors)
                                 }}
                             >
                                 <TableHead>

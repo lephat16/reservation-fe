@@ -206,7 +206,7 @@ const ProductPage = () => {
                                 <TableContainer component={Paper} sx={{ mb: 2, backgroundColor: colors.primary[400] }}>
                                     <Table
                                         sx={{
-                                            ...styledTable(theme.palette.mode),
+                                            ...styledTable(colors),
                                             maxHeight: '15vh',
                                             overflowY: 'auto',
                                         }}
@@ -264,7 +264,7 @@ const ProductPage = () => {
                                 <TableContainer component={Paper} sx={{ mb: 2, backgroundColor: colors.primary[400] }}>
                                     <Table
                                         sx={{
-                                            ...styledTable(theme.palette.mode),
+                                            ...styledTable(colors),
                                             maxHeight: '15vh',
                                             overflowY: 'auto',
                                         }}
@@ -308,7 +308,7 @@ const ProductPage = () => {
                                 >
                                     <Table
                                         sx={{
-                                            ...styledTable(theme.palette.mode),
+                                            ...styledTable(colors),
                                         }}
                                         size="small"
                                         stickyHeader

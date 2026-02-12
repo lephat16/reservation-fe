@@ -1,5 +1,4 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import ApiService from '../../api/ApiService'
 import { useEffect, useState } from "react";
 import {
     Sidebar as ProSidebar,
@@ -23,8 +22,11 @@ import { useScreen } from '../../hooks/ScreenContext';
 import { useProfile } from '../../../features/auth/hooks/useProfile';
 import ErrorState from '../messages/ErrorState';
 import { useQueryClient } from "@tanstack/react-query";
-import { useUser } from '../../hooks/UserContext';
-import { ROLE_LABELS } from '../../../constants/role';
+import { useDispatch, } from "react-redux";
+import { logout as logoutAction } from "../../../features/auth/store/authSlice";
+import { useAuth } from '../../hooks/useAuth';
+import { ROLES } from '../../../constants/role';
+
 
 /* 共通メニューアイテム */
 const Item = ({
@@ -70,16 +72,16 @@ type SidebarProps = {
 }
 const Sidebar = ({ onClose }: SidebarProps) => {
 
-    const { isAdmin, isStaff, isWarehouse, isAuthenticated } = useUser();
 
+    const { isAuthenticated, canAccess } = useAuth();
     const queryClient = useQueryClient();
-    const navigate = useNavigate();
 
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
     /* ログアウト */
     const logout = async () => {
-        await ApiService.logout();
-        queryClient.removeQueries({ queryKey: ["profile"] });
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
+        dispatch(logoutAction());
+        queryClient.clear();
         navigate("/login", { replace: true });
     };
     const theme = useTheme();
@@ -104,7 +106,7 @@ const Sidebar = ({ onClose }: SidebarProps) => {
 
     error && (<ErrorState />)
 
-
+    if (!isAuthenticated) return null;
     return (
         isAuthenticated && <ProSidebar
             collapsed={isCollapsed}
@@ -199,14 +201,14 @@ const Sidebar = ({ onClose }: SidebarProps) => {
                                 {data?.name}
                             </Typography>
                             <Typography variant="h5" color={colors.greenAccent[500]}>
-                                {data?.role && ROLE_LABELS[data.role]}
+                                {data?.role && ROLES[data.role].label}
                             </Typography>
                         </Box>
                     </Box>
                 )}
                 {/* メニュー項目  */}
                 <Box paddingLeft={isCollapsed ? undefined : "10%"}>
-                    {isAdmin && (
+                    {canAccess(["ADMIN"]) && (
                         <>
                             <Typography
                                 variant="h6"
@@ -233,7 +235,7 @@ const Sidebar = ({ onClose }: SidebarProps) => {
                         </>
                     )}
 
-                    {isWarehouse && (
+                    {canAccess(["WAREHOUSE"]) && (
                         <>
                             <Typography
                                 variant="h6"
@@ -249,7 +251,7 @@ const Sidebar = ({ onClose }: SidebarProps) => {
                             />
                         </>
                     )}
-                    {isAdmin && (
+                    {canAccess(["ADMIN"]) && (
                         <>
                             <Typography
                                 variant="h6"
@@ -267,7 +269,7 @@ const Sidebar = ({ onClose }: SidebarProps) => {
                         </>
                     )}
 
-                    {(isAdmin || isStaff || isWarehouse) && (
+                    {canAccess(["ADMIN", "STAFF", "WAREHOUSE"]) && (
                         <>
                             <Typography
                                 variant="h6"

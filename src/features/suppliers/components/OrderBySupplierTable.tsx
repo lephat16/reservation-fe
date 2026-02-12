@@ -24,7 +24,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                 <Table
                     stickyHeader
                     sx={{
-                        ...styledTable(theme.palette.mode)
+                        ...styledTable(colors)
                     }}
                 >
                     <colgroup>

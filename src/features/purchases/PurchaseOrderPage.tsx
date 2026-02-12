@@ -15,7 +15,8 @@ import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { purchaseAPI } from "./api/purchaseAPI";
 import { usePurchaseOrders } from "./hooks/usePurchaseOrders";
 import { useScreen } from "../../shared/hooks/ScreenContext";
-import { useUser } from "../../shared/hooks/UserContext";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../features/auth/store";
 
 const renderStatusChip = (status: string) => {
     const colorMap: Record<string, "secondary" | "primary" | "success" | "warning" | "error"> = {
@@ -46,7 +47,11 @@ const PurchaseOrderPage = () => {
     const [selectedPurchaseOrderId, setSelectedPurchaseOrderId] = useState(0);
 
     const queryClient = useQueryClient();
-    const { isAdmin, isStaff, isWarehouse } = useUser();
+
+    const role = useSelector((state: RootState) => state.auth.role);
+    const isAdmin = role === "ADMIN";
+    const isStaff = role === "STAFF";
+    const isWarehouse = role === "WAREHOUSE";
 
     const { isLoading, error, data } = usePurchaseOrders();
 
@@ -211,14 +216,14 @@ const PurchaseOrderPage = () => {
                                                         break;
                                                     case "createdAt":
                                                         const createdAt = new Date(order.createdAt);
-                                                        content = createdAt.toLocaleDateString(); 
+                                                        content = createdAt.toLocaleDateString();
 
                                                         return (
                                                             <TableCell
                                                                 key={col.key}
                                                                 sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}
                                                             >
-                                                                <Tooltip title={createdAt.toLocaleString()}> 
+                                                                <Tooltip title={createdAt.toLocaleString()}>
                                                                     <span>{content}</span>
                                                                 </Tooltip>
                                                             </TableCell>

@@ -1,4 +1,4 @@
-import { alpha, Box, Button, Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Drawer, FormControl, IconButton, InputBase, InputLabel, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, MenuItem, OutlinedInput, Paper, Select, Skeleton, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar, Tooltip, Typography, useTheme, type SelectChangeEvent } from "@mui/material"
+import { alpha, Box, Button, Checkbox, Collapse, Divider, Drawer, FormControl, IconButton, InputBase, InputLabel, ListItemText, MenuItem, OutlinedInput, Paper, Select, Skeleton, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar, Tooltip, Typography, useTheme, type SelectChangeEvent } from "@mui/material"
 import Header from "../../pages/Header"
 import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,7 +7,6 @@ import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import { Fragment, useMemo, useState } from "react";
 import { TablePaginationActions } from "../stocks/WarehousePage";
 import type { ProductStockData, SupplierProductStockData } from "../stocks/types/stock";
-import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useNavigate } from "react-router-dom";
@@ -27,6 +26,7 @@ import AddCardIcon from '@mui/icons-material/AddCard';
 import ProductForm from "./components/ProductForm";
 import type { ProductFormData } from "./types/product";
 import { useScreen } from "../../shared/hooks/ScreenContext";
+import SearchBar from "../../shared/components/global/SearchBar";
 
 type StockInfo = {
     stockId: number;
@@ -48,51 +48,11 @@ type Order = 'asc' | 'desc';
 
 type Status = 'ACTIVE' | 'INACTIVE' | "";
 
-const Search = styled('div')(({ theme }) => ({
-    position: 'relative',
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    '&:hover': {
-        backgroundColor: alpha(theme.palette.common.white, 0.25),
-    },
-    marginLeft: 0,
-    width: '100%',
-    [theme.breakpoints.up('sm')]: {
-        marginLeft: theme.spacing(1),
-        width: 'auto',
-    },
-}));
 
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-    padding: theme.spacing(0, 2),
-    height: '100%',
-    position: 'absolute',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-    color: 'inherit',
-    width: '100%',
-    '& .MuiInputBase-input': {
-        padding: theme.spacing(1, 1, 1, 0),
-        // vertical padding + font size from searchIcon
-        paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-        transition: theme.transitions.create('width'),
-        [theme.breakpoints.up('sm')]: {
-            width: '12ch',
-            '&:focus': {
-                width: '20ch',
-            },
-        },
-    },
-}));
 function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockData) => void; }) {
 
     const { row, onDelete } = props;
-    const { isMD, isSM } = useScreen();
+    const { isMD, } = useScreen();
 
     const [open, setOpen] = useState(false);
 
@@ -267,7 +227,7 @@ const AllProductsPageRefator = () => {
     });
 
     const handleChangePage = (
-        event: React.MouseEvent<HTMLButtonElement> | null,
+        _: React.MouseEvent<HTMLButtonElement> | null,
         newPage: number,
     ) => {
         setPage(newPage);
@@ -546,7 +506,7 @@ const AllProductsPageRefator = () => {
                                 </FormControl>
                                 <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
                                     <InputLabel
-                                        id="multiple-qty-label"
+                                        id="multiple-status-label"
                                         sx={{
                                             color: colors.grey[100],
                                             '&.Mui-focused': {
@@ -555,8 +515,8 @@ const AllProductsPageRefator = () => {
                                         }}
                                     >ステータス</InputLabel>
                                     <Select
-                                        labelId="multiple-qty-label"
-                                        id="multiple-qty"
+                                        labelId="multiple-status-label"
+                                        id="multiple-status"
                                         value={selectedStatus}
                                         onChange={(e) => {
                                             const value = e.target.value ? e.target.value : "";
@@ -585,19 +545,12 @@ const AllProductsPageRefator = () => {
                             </Stack>
                         )}
 
-                        <Toolbar sx={{ pr: "0 !important" }}>
-                            <Search>
-                                <SearchIconWrapper>
-                                    <SearchIcon />
-                                </SearchIconWrapper>
-                                <StyledInputBase
-                                    placeholder="検索..."
-                                    inputProps={{ 'aria-label': 'search' }}
-                                    value={searchText}
-                                    onChange={(e) => setSearchText(e.target.value)}
-                                />
-                            </Search>
-                        </Toolbar>
+
+                        <SearchBar
+                            value={searchText}
+                            onChange={setSearchText}
+                            sx={{ pr: "0 !important" }}
+                        />
                         <Drawer
                             anchor="left"
                             open={openFilterDrawer}
@@ -757,7 +710,7 @@ const AllProductsPageRefator = () => {
                                 <Table
                                     sx={{
                                         tableLayout: "fixed",
-                                        ...styledTable(theme.palette.mode),
+                                        ...styledTable(colors),
                                     }}
                                 >
                                     <colgroup>

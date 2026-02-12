@@ -46,8 +46,7 @@ interface ProductRowProps {
 }
 
 function ProductRow({ product }: ProductRowProps) {
-    const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
+   
     const [open, setOpen] = useState(false);
 
     const totalStock =
@@ -80,7 +79,7 @@ function ProductRow({ product }: ProductRowProps) {
             <TableRow >
                 <TableCell colSpan={4} style={{ padding: 0 }} >
                     <Collapse in={open} timeout="auto" unmountOnExit>
-                        <Box display="flex" gap={1}>
+                        <Box display="flex" >
 
                             {/* SUPPLIERS TABLE */}
 
@@ -110,7 +109,7 @@ function ProductRow({ product }: ProductRowProps) {
                                 <Table size="small">
                                     <TableHead>
                                         <TableRow>
-                                            <TableCell align="center">倉庫</TableCell>
+                 x                           <TableCell align="center">倉庫</TableCell>
                                             <TableCell align="center">在庫数</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -331,7 +330,7 @@ const CategoryDetailPage = () => {
                                 <Table
                                     stickyHeader
                                     sx={{
-                                        ...styledTable(theme.palette.mode)
+                                        ...styledTable(colors)
                                     }}
                                 >
                                     <TableHead>

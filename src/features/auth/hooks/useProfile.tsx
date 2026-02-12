@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { UserData } from "../types/auth";
 import { authAPI } from "../api/authAPI";
-import ApiService from "../../../shared/api/ApiService";
 
 // ローカルストレージのキーとして"profile"を設定
 const LOCAL_STORAGE_KEY = "profile";
@@ -16,12 +15,7 @@ export const useProfile = () => {
     return useQuery<UserData, Error>({
         queryKey: ["profile"],
         queryFn: async () => {
-            const token = ApiService.getToken();
-            // トークンが無ければエラーをスロー
-            if (!token) {
-                throw new Error("Token not valid");
-            }
-            // APIからユーザー情報を取得
+            
             const profileRes = await authAPI.getLoggedInUser();
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(profileRes.data));
             return profileRes.data;

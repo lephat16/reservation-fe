@@ -1,11 +1,6 @@
+import { ROLES } from "../../../constants/role";
 
-export const ROLES = {
-    ADMIN: "ADMIN",
-    STAFF: "STAFF",
-    WAREHOUSE: "WAREHOUSE",
-} as const;
-
-export type Role = typeof ROLES[keyof typeof ROLES];
+export type Role = (typeof ROLES)[keyof typeof ROLES]["value"];
 
 export interface RegisterRequest {
     name: string;

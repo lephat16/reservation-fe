@@ -9,5 +9,6 @@ export const useCategorySummaries = () => {
             const categoriesData = await categoryAPI.getAllCategorySummaries();
             return categoriesData.data || [];
         },
+        refetchOnWindowFocus: true
     });
 };

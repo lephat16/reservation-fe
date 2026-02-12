@@ -23,7 +23,8 @@ import { stockAPI } from "../../stocks/api/stockAPI";
 import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid";
 import type { GridColDef } from "@mui/x-data-grid";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
-import { useUser } from "../../../shared/hooks/UserContext";
+import type { RootState } from "../../auth/store";
+import { useSelector } from "react-redux";
 
 // 購入確認ダイアログ
 interface ReceiveConfirmDialogProps {
@@ -326,10 +327,9 @@ const ReceiveForm = () => {
     const colors = tokens(theme.palette.mode);
     const { poId } = useParams<{ poId: string }>(); // URLパラメータから発注IDを取得
 
-
-    const { isStaff } = useUser();
     const { isSM } = useScreen();
-
+    const role = useSelector((state: RootState) => state.auth.role);
+    const isStaff = role === "STAFF";
     const queryClient = useQueryClient();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
