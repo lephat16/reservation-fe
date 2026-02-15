@@ -1,5 +1,17 @@
 import { useParams } from "react-router-dom";
-import { Box, Button, FormControl, IconButton, InputLabel, MenuItem, Select, Skeleton, Stack, Tooltip, useTheme, } from "@mui/material";
+import {
+    Box,
+    Button,
+    FormControl,
+    IconButton,
+    InputLabel,
+    MenuItem,
+    Select,
+    Skeleton,
+    Stack,
+    Tooltip,
+    useTheme,
+} from "@mui/material";
 import Header from "../../../pages/Header";
 import type { SupplierData, SupplierProductFormType } from "../types/supplier";
 import ErrorState from "../../../shared/components/messages/ErrorState";

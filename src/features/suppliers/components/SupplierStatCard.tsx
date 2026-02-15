@@ -1,10 +1,15 @@
-import { Box, Card, CardContent, Typography, useTheme } from "@mui/material";
+import {
+    Box,
+    Card,
+    CardContent,
+    Typography,
+    useTheme
+} from "@mui/material";
 import CreditScoreIcon from '@mui/icons-material/CreditScore';
 import PaidIcon from '@mui/icons-material/Paid';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import { tokens } from "../../../shared/theme";
 import type { PurchaseOrderData } from "../../purchases/types/purchase";
-import { useScreen } from "../../../shared/hooks/ScreenContext";
 type SupplierStatCardProps = {
     purchaseOrder: PurchaseOrderData[]
 }
@@ -12,7 +17,6 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    const isMD = useScreen();
 
     return (
         <Box

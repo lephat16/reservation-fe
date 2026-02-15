@@ -1,4 +1,28 @@
-import { Box, FormControl, InputLabel, MenuItem, OutlinedInput, Paper, Select, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TableSortLabel, Tooltip, useTheme } from "@mui/material";
+import {
+    Box,
+    Card,
+    CardContent,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    OutlinedInput,
+    Paper,
+    Select,
+    Skeleton,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableFooter,
+    TableHead,
+    TablePagination,
+    TableRow,
+    TableSortLabel,
+    Tooltip,
+    Typography,
+    useTheme
+} from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import type { StockHistoriesWithDetailData } from "../types/stock";
 import { useQuery } from "@tanstack/react-query";
@@ -12,8 +36,19 @@ import { styledTable } from "../../../shared/components/global/StyleTable";
 import type { TableCellProps } from "@mui/material";
 import { useMemo, useState } from "react";
 import SearchBar from "../../../shared/components/global/SearchBar";
-import { styledSelect } from "../../../shared/styles/styledSelect";
-import type { keyof } from "@mui/x-charts/internals";
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import isoWeek from "dayjs/plugin/isoWeek";
+import dayjs, { Dayjs } from "dayjs";
+import ArchiveIcon from '@mui/icons-material/Archive';
+import UnarchiveIcon from '@mui/icons-material/Unarchive';
+import MovingIcon from '@mui/icons-material/Moving';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import CategoryIcon from '@mui/icons-material/Category';
+import { BarChart } from '@mui/x-charts/BarChart';
+import _ from "lodash";
+import { LineChart, type AxisValueFormatterContext } from "@mui/x-charts";
 
 type Type = "IN" | "OUT" | "ALL";
 type Order = 'asc' | 'desc';
@@ -60,8 +95,8 @@ const StockMovementHistoryPage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
-    const { isMD, isSM } = useScreen();
+    const { snackbar, closeSnackbar } = useSnackbar();
+    const { isSM, isLG } = useScreen();
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -70,7 +105,10 @@ const StockMovementHistoryPage = () => {
     const [type, setType] = useState<Type>("ALL");
     const [minQty, setMinQty] = useState(0);
     const [order, setOrder] = useState<Order>('asc');
-    const [orderBy, setOrderBy] = useState<keyof StockRow>("date")
+    const [orderBy, setOrderBy] = useState<keyof StockRow>("date");
+
+    const [startDate, setStartDate] = useState<Dayjs | null>(null);
+    const [endDate, setEndDate] = useState<Dayjs | null>(null);
 
     const { isLoading, error, data } = useQuery<StockHistoriesWithDetailData[]>({
         queryKey: ["stock-histories-with-details"],
@@ -127,18 +165,19 @@ const StockMovementHistoryPage = () => {
         setOrderBy(key);
     }
 
-
-
     const filteredData = useMemo(() => {
         if (!data) return [];
         return data.map(mapToStockRow)
             .filter(row => {
-                return (!keyword || row.product.toLowerCase().includes(keyword.toLowerCase())) &&
-                    (type === "ALL" || row.type === type) &&
-                    (!minQty || row.qty >= Number(minQty))
+                const matchesKeyword = !keyword || row.product.toLowerCase().includes(keyword.toLowerCase());
+                const matchesType = type === "ALL" || row.type === type;
+                const matchesQty = !minQty || row.qty >= Number(minQty);
+                const matchesDate = (!startDate || dayjs(row.date).isAfter(startDate, "day")) &&
+                    (!endDate || dayjs(row.date).isBefore(endDate, "day"));
+                return matchesKeyword && matchesType && matchesQty && matchesDate;
             });
 
-    }, [data, keyword, type, minQty]);
+    }, [data, keyword, type, minQty, startDate, endDate]);
 
     const sortedData = useMemo(() => {
         return [...filteredData].sort((a, b) => {
@@ -154,16 +193,124 @@ const StockMovementHistoryPage = () => {
             return 0;
         })
     }, [filteredData, orderBy, order]);
-    
+
     const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) ?? [];
+
+    dayjs.extend(isoWeek);
+
+    const dataWithWeek = data?.map(row => ({
+        ...row,
+        week: dayjs(row.createdAt).isoWeek(),
+        year: dayjs(row.createdAt).year(),
+    }));
+
+    const weeklyTotals = _(dataWithWeek)
+        .groupBy(row => `${row.year}-W${row.week}`)
+        .map((rows, week) => {
+            const totalIn = rows.filter(r => r.type === "IN").reduce((sum, r) => sum + r.changeQty, 0);
+            const totalOut = rows.filter(r => r.type === "OUT").reduce((sum, r) => sum + r.changeQty, 0);
+            return { week, totalIn, totalOut };
+        })
+        .orderBy(['week'], ['asc'])
+        .value();
+
+    const currentWeek = dayjs().isoWeek();
+    const currentYear = dayjs().year();
+
+    const thisWeekKey = `${currentYear}-W${currentWeek}`;
+    const thisWeekData = weeklyTotals.find(w => w.week === thisWeekKey);
+
+    const past4WeeksData = weeklyTotals
+        .filter(w => {
+            const [year, weekStr] = w.week.split("-W").map(Number);
+            return (year === currentYear) && (weekStr < currentWeek) && (weekStr >= currentWeek - 4);
+        });
+    const avgInPast4Weeks = past4WeeksData.length
+        ? past4WeeksData.reduce((sum, w) => sum + w.totalIn, 0) / past4WeeksData.length
+        : 0;
+
+    const avgOutPast4Weeks = past4WeeksData.length
+        ? past4WeeksData.reduce((sum, w) => sum + w.totalOut, 0) / past4WeeksData.length
+        : 0;
+
+    const inPercentChange = thisWeekData && avgInPast4Weeks
+        ? ((thisWeekData.totalIn - avgInPast4Weeks) / avgInPast4Weeks) * 100
+        : 0;
+
+    const outPercentChange = thisWeekData && avgOutPast4Weeks
+        ? ((thisWeekData.totalOut - avgOutPast4Weeks) / avgOutPast4Weeks) * 100
+        : 0;
+
+    const totalQtyIn = data?.filter(row => row.type === "IN")
+        .reduce((sum, row) => sum + row.changeQty, 0);
+
+    const totalQtyOut = data?.filter(row => row.type === "OUT")
+        .reduce((sum, row) => sum + row.changeQty, 0);
+
+    const productTotals = data?.reduce((acc, row) => {
+        if (!acc[row.productName]) acc[row.productName] = { totalIn: 0, totalOut: 0, code: row.code };
+        if (row.type === "IN") acc[row.productName].totalIn += row.changeQty;
+        if (row.type === "OUT") acc[row.productName].totalOut += row.changeQty;
+        return acc;
+    }, {} as Record<string, { totalIn: number; totalOut: number; code: string }>);
+
+    const productsArray = Object.entries(productTotals || {}).map(([productName, totals]) => ({
+        productName,
+        ...totals
+    }));
+
+    const topInProduct = productsArray.reduce((prev, curr) =>
+        curr.totalIn > prev.totalIn ? curr : prev, { productName: "", totalIn: 0, totalOut: 0, code: "" });
+
+    const topOutProduct = productsArray.reduce((prev, curr) =>
+        curr.totalOut > prev.totalOut ? curr : prev, { productName: "", totalIn: 0, totalOut: 0, code: "" });
+
+    const warehouseTotals = _(data)
+        .groupBy('warehouseName')
+        .map((rows, warehouse) => {
+            const totalIn = rows.filter(r => r.type === "IN")
+                .reduce((sum, r) => sum + r.changeQty, 0);
+            const totalOut = rows.filter(r => r.type === "OUT")
+                .reduce((sum, r) => sum + r.changeQty, 0);
+            return { warehouse, totalIn, totalOut };
+        })
+        .value();
+
+    const monthlyProfit = _(data)
+        .groupBy(row => dayjs(row.createdAt).format('YYYY-MM'))
+        .map((rows, month) => {
+            const revenue = rows
+                .filter(r => r.type === 'OUT')
+                .reduce((sum, r) => sum + r.changeQty * r.price, 0);
+
+            const cost = rows
+                .filter(r => r.type === 'IN')
+                .reduce((sum, r) => sum + r.changeQty * r.price, 0);
+
+            return {
+                month,
+                revenue,
+                cost,
+                profit: revenue - cost
+            };
+        })
+        .orderBy(['month'], ['asc'])
+        .value();
+
+    const profitByMonthDataset = monthlyProfit.map(item => ({
+        date: dayjs(item.month, 'YYYY-MM').toDate(),
+        profit: item.profit
+    }));
+    profitByMonthDataset.forEach(d => console.log(d.date, d.date instanceof Date));
+
     return (
         <Box m={3}>
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
                 !isSM && <Header
-                    title="商品一覧"
-                    subtitle="商品情報の一覧表示"
+                    title="取引履歴"
+                    subtitle="取引情報の一覧表示"
                 />
             )}
             <Box
@@ -183,214 +330,644 @@ const StockMovementHistoryPage = () => {
                 {(error) && (
                     <ErrorState />
                 )}
-                <Box display="flex" justifyContent="space-between">
-                    <Stack direction="row">
-                        <FormControl sx={{ m: 1, ml: 0, width: { lg: 150, xs: 120 } }}>
-                            <InputLabel
-                                id="multiple-types-label"
+                <Box
+                    display="flex"
+                    gap={1}
+                    sx={{
+                        flexDirection: {
+                            xs: 'column',
+                            xl: 'row',
+                        }
+                    }}
+                >
+                    <Box flex={2}>
+                        <Box display="flex" gap={1}>
+                            <Card
                                 sx={{
+                                    backgroundColor: colors.primary[400],
                                     color: colors.grey[100],
-                                    '&.Mui-focused': {
-                                        color: colors.grey[200],
-                                    },
-                                }}
-                            >区分</InputLabel>
-                            <Select
-                                labelId="multiple-types-label"
-                                id="multiple-types"
-                                value={type}
-                                onChange={e => {
-                                    setType(e.target.value as Type)
-                                }}
-                                input={<OutlinedInput label="区分" />}
-                                sx={styledSelect}
-                                MenuProps={{
-                                    PaperProps: {
-                                        sx: {
-                                            backgroundColor: colors.blueAccent[800],
-                                            color: colors.grey[100],
-                                            minWidth: 200,
-                                            boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                        }
-                                    }
+                                    display: "flex",
+                                    width: 160
                                 }}
                             >
-                                <MenuItem value="ALL">
-                                    <em>全て</em>
-                                </MenuItem>
-                                <MenuItem value="IN">入庫</MenuItem>
-                                <MenuItem value="OUT">出庫</MenuItem>
-                            </Select>
-                        </FormControl>
-
-                        <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
-                            <InputLabel
-                                id="multiple-qty-label"
-                                sx={{
-                                    color: colors.grey[100],
-                                    '&.Mui-focused': {
-                                        color: colors.grey[200],
-                                    },
-                                }}
-                            >数量</InputLabel>
-                            <Select
-                                labelId="multiple-qty-label"
-                                id="multiple-qty"
-                                value={minQty}
-                                onChange={(e) => {
-                                    const value = e.target.value ? e.target.value : "";
-                                    if (value === null) {
-                                        setMinQty(value);
-                                    } else setMinQty(Number(value));
-                                }}
-                                input={<OutlinedInput label="数量" />}
-                                sx={styledSelect}
-                                MenuProps={{
-                                    PaperProps: {
-                                        sx: {
-                                            backgroundColor: colors.blueAccent[800],
-                                            color: colors.grey[100],
-                                            minWidth: 200,
-                                            boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                        }
-                                    }
-                                }}
-                            >
-                                <MenuItem value={0}>
-                                    <em>未選択</em>
-                                </MenuItem>
-                                <MenuItem value={5}>5以上</MenuItem>
-                                <MenuItem value={10}>10以上</MenuItem>
-                                <MenuItem value={20}>20以上</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Stack>
-                    <SearchBar
-                        value={keyword}
-                        onChange={setKeyword}
-                        sx={{ p: "0 !important" }}
-                    />
-                </Box>
-                {isLoading ? (
-                    <Skeleton variant="rectangular" height={400} />
-                ) : (
-                    <TableContainer
-                        component={Paper}
-                        sx={{
-                            maxHeight: "75vh",
-                            minWidth: { xs: 308, md: 600 },
-                        }}>
-                        <Table
-                            sx={{
-                                tableLayout: "fixed",
-                                ...styledTable(colors),
-                                "& .qty-in": {
-                                    color: theme.palette.success.main,
-                                    fontWeight: 600,
-                                },
-                                "& .qty-out": {
-                                    color: theme.palette.error.main,
-                                    fontWeight: 600,
-                                },
-                            }}
-                        >
-
-                            <TableHead>
-                                <TableRow>
-                                    {columns.map(col => (
-                                        (isMD && col.hideOnMobile) ? null : (
-                                            <TableCell
-                                                key={col.key}
-                                                align={col.align}
-                                                width={col.width}
-                                                sortDirection={orderBy === col.key ? order : false}
-                                            >
-                                                {col.sortable ? (
-                                                    <TableSortLabel
-                                                        active={orderBy === col.key}
-                                                        direction={orderBy === col.key ? order : "asc"}
-                                                        onClick={() => handleSort(col.key)}
+                                <Box
+                                    minWidth={140}
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                    }}
+                                    flexGrow={1}
+                                >
+                                    <CardContent
+                                        sx={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            flex: 1,
+                                            justifyContent: "space-between",
+                                            alignItems: "center"
+                                        }}
+                                    >
+                                        <Stack direction="row" gap={2} justifyContent="space-between">
+                                            <ArchiveIcon sx={{ fontSize: 50 }} color="info" />
+                                            <Stack direction="column">
+                                                <Stack direction="row" gap={1}>
+                                                    {inPercentChange >= 0 ? (
+                                                        <MovingIcon color="success" sx={{ fontSize: 24 }} />
+                                                    ) : (
+                                                        <TrendingDownIcon color="error" sx={{ fontSize: 24 }} />
+                                                    )}
+                                                    <Typography
+                                                        alignContent="center"
+                                                        variant="subtitle2"
+                                                        color={inPercentChange >= 0 ? 'success.main' : 'error.main'}
+                                                        sx={{ fontWeight: 'bold' }}
                                                     >
-                                                        {col.label}
-                                                    </TableSortLabel>
-                                                ) : (
-                                                    col.label
-                                                )}
-                                            </TableCell>
-                                        )
-                                    ))}
-                                </TableRow>
-                            </TableHead>
+                                                        {inPercentChange >= 0 ? `+${inPercentChange.toFixed(1)}%` : `${inPercentChange.toFixed(1)}%`}
+                                                    </Typography>
+                                                </Stack>
+                                                <Typography
+                                                    textAlign="center"
+                                                    sx={{
+                                                        fontWeight: 'bold',
+                                                        lineHeight: 1,
+                                                        fontSize: { xl: '0.2rem', xs: '0.6rem' }
+                                                    }}
+                                                >今週</Typography>
+                                                <Typography
+                                                    textAlign="center"
+                                                    sx={{
+                                                        fontWeight: 'bold',
+                                                        lineHeight: 1.2,
+                                                        fontSize: {
+                                                            xl: '0.4rem',
+                                                            xs: '1.2rem'
+                                                        },
+                                                    }}
+                                                >
+                                                    {thisWeekData?.totalIn || 0}
+                                                </Typography>
+                                            </Stack>
+                                        </Stack>
+                                        <Typography
+                                            component="div"
+                                            sx={{
+                                                fontSize: {
+                                                    xl: '1rem',
+                                                    xs: '2rem'
+                                                },
+                                                fontWeight: 'bold',
+                                            }}
+                                        >
+                                            {totalQtyIn}
+                                        </Typography>
+                                        <Typography
+                                            variant="subtitle1"
+                                            fontWeight={600}
+                                            color="success"
+                                        >
+                                            入庫合計
+                                        </Typography>
+                                    </CardContent>
+                                </Box>
+                            </Card>
+                            <Card
+                                sx={{
+                                    backgroundColor: colors.primary[400],
+                                    color: colors.grey[100],
+                                    display: "flex",
+                                    width: 160
+                                }}
+                            >
+                                <Box
+                                    minWidth={140}
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                    }}
+                                    flexGrow={1}
+                                >
+                                    <CardContent
+                                        sx={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            flex: 1,
+                                            justifyContent: "space-between",
+                                            alignItems: "center"
+                                        }}
+                                    >
+                                        <Stack direction="row" gap={2} justifyContent="space-between">
+                                            <UnarchiveIcon sx={{ fontSize: 50 }} color="info" />
+                                            <Stack direction="column">
+                                                <Stack direction="row" gap={1}>
+                                                    {outPercentChange >= 0 ? (
+                                                        <MovingIcon color="success" sx={{ fontSize: 24 }} />
+                                                    ) : (
+                                                        <TrendingDownIcon color="error" sx={{ fontSize: 24 }} />
+                                                    )}
+                                                    <Typography
+                                                        alignContent="center"
+                                                        variant="subtitle2"
+                                                        color={outPercentChange >= 0 ? 'success.main' : 'error.main'}
+                                                        sx={{ fontWeight: 'bold' }}
+                                                    >
+                                                        {outPercentChange >= 0 ? `+${outPercentChange.toFixed(1)}%` : `${outPercentChange.toFixed(1)}%`}
+                                                    </Typography>
+                                                </Stack>
+                                                <Typography
+                                                    textAlign="center"
+                                                    sx={{
+                                                        fontWeight: 'bold',
+                                                        lineHeight: 1,
+                                                        fontSize: { xl: '0.2rem', xs: '0.6rem' }
+                                                    }}
+                                                >今週</Typography>
+                                                <Typography
+                                                    textAlign="center"
+                                                    sx={{
+                                                        fontWeight: 'bold',
+                                                        lineHeight: 1.2,
+                                                        fontSize: {
+                                                            xl: '0.4rem',
+                                                            xs: '1.2rem'
+                                                        },
+                                                    }}
+                                                >
+                                                    {thisWeekData?.totalOut || 0}
+                                                </Typography>
 
-                            <TableBody>
-                                {paginatedData.length > 0 ? (
-                                    paginatedData.map(row => {
-                                        return (
-                                            <TableRow key={row.id} hover>
-                                                {columns.map(col =>
-                                                    (isMD && col.hideOnMobile) ? null : (
+                                            </Stack>
+                                        </Stack>
+                                        <Typography
+                                            component="div"
+                                            sx={{
+                                                fontSize: {
+                                                    xl: '1rem',
+                                                    xs: '2rem'
+                                                },
+                                                fontWeight: 'bold',
+                                            }}
+                                        >
+                                            {totalQtyOut}
+                                        </Typography>
+                                        <Typography
+                                            variant="subtitle1"
+                                            fontWeight={600}
+                                            color="success"
+                                        >
+                                            出庫合計
+                                        </Typography>
+                                    </CardContent>
+                                </Box>
+                            </Card>
+                            <Card
+                                sx={{
+                                    backgroundColor: colors.primary[400],
+                                    color: colors.grey[100],
+                                    display: "flex",
+                                    width: 160
+                                }}
+                            >
+                                <Box
+                                    minWidth={140}
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                    }}
+                                    flexGrow={1}
+                                >
+                                    <CardContent
+                                        sx={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            flex: 1,
+                                            justifyContent: "space-between",
+                                            alignItems: "center"
+                                        }}
+                                    >
+                                        <Stack direction="row" gap={2} justifyContent="space-between">
+                                            <CategoryIcon sx={{ fontSize: 50 }} color="info" />
+                                            <Tooltip
+                                                title={topInProduct.productName}
+                                                arrow
+                                                slotProps={{
+                                                    popper: {
+                                                        modifiers: [
+                                                            {
+                                                                name: 'offset',
+                                                                options: {
+                                                                    offset: [0, -20]
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }}
+                                            >
+                                                <Typography
+                                                    variant="h6"
+                                                    sx={{ fontWeight: 'bold', textAlign: 'center' }}
+                                                    color="warning"
+                                                    alignContent="center"
+                                                >
+                                                    {topInProduct.code}
+                                                </Typography>
+                                            </Tooltip>
+                                        </Stack>
+                                        <Typography
+                                            component="div"
+                                            sx={{
+                                                fontSize: {
+                                                    xl: '1rem',
+                                                    xs: '2rem'
+                                                },
+                                                fontWeight: 'bold',
+                                            }}
+                                        >
+                                            {topInProduct.totalIn}
+                                        </Typography>
+                                        <Typography
+                                            variant="subtitle1"
+                                            fontWeight={600}
+                                            color="success"
+                                        >
+                                            入庫最多商品
+                                        </Typography>
+                                    </CardContent>
+                                </Box>
+                            </Card>
+                            <Card
+                                sx={{
+                                    backgroundColor: colors.primary[400],
+                                    color: colors.grey[100],
+                                    display: "flex",
+                                    width: 160
+                                }}
+                            >
+                                <Box
+                                    minWidth={140}
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                    }}
+                                    flexGrow={1}
+                                >
+                                    <CardContent
+                                        sx={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            flex: 1,
+                                            justifyContent: "space-between",
+                                            alignItems: "center"
+                                        }}
+                                    >
+                                        <Stack direction="row" gap={2} justifyContent="space-between">
+                                            <CategoryIcon sx={{ fontSize: 50 }} color="info" />
+                                            <Tooltip
+                                                title={topInProduct.productName}
+                                                arrow
+                                                slotProps={{
+                                                    popper: {
+                                                        modifiers: [
+                                                            {
+                                                                name: 'offset',
+                                                                options: {
+                                                                    offset: [0, -20]
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }}
+                                            >
+                                                <Typography
+                                                    variant="h6"
+                                                    sx={{ fontWeight: 'bold', textAlign: 'center' }}
+                                                    color="warning"
+                                                    alignContent="center"
+                                                >
+                                                    {topOutProduct.code}
+                                                </Typography>
+                                            </Tooltip>
+                                        </Stack>
+                                        <Typography
+                                            component="div"
+                                            sx={{
+                                                fontSize: {
+                                                    xl: '1rem',
+                                                    xs: '2rem'
+                                                },
+                                                fontWeight: 'bold',
+                                            }}
+                                        >
+                                            {topOutProduct.totalOut}
+                                        </Typography>
+                                        <Typography
+                                            variant="subtitle1"
+                                            fontWeight={600}
+                                            color="success"
+                                        >
+                                            出庫最多商品
+                                        </Typography>
+                                    </CardContent>
+                                </Box>
+                            </Card>
+                        </Box>
+
+                        <Box display="flex" justifyContent="space-between" mt={1}>
+                            <Stack direction="row">
+                                <FormControl sx={{ m: 1, ml: 0, width: { lg: 150, xs: 120 } }}>
+                                    <InputLabel
+                                        id="multiple-types-label"
+                                        sx={{
+                                            color: colors.grey[100],
+                                            '&.Mui-focused': {
+                                                color: colors.grey[200],
+                                            },
+                                        }}
+                                    >区分</InputLabel>
+                                    <Select
+                                        labelId="multiple-types-label"
+                                        id="multiple-types"
+                                        value={type}
+                                        onChange={e => {
+                                            setType(e.target.value as Type)
+                                        }}
+                                        input={<OutlinedInput label="区分" />}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    backgroundColor: colors.blueAccent[800],
+                                                    color: colors.grey[100],
+                                                    minWidth: 200,
+                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <MenuItem value="ALL">
+                                            <em>全て</em>
+                                        </MenuItem>
+                                        <MenuItem value="IN">入庫</MenuItem>
+                                        <MenuItem value="OUT">出庫</MenuItem>
+                                    </Select>
+                                </FormControl>
+
+                                <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
+                                    <InputLabel
+                                        id="multiple-qty-label"
+                                        sx={{
+                                            color: colors.grey[100],
+                                            '&.Mui-focused': {
+                                                color: colors.grey[200],
+                                            },
+                                        }}
+                                    >数量</InputLabel>
+                                    <Select
+                                        labelId="multiple-qty-label"
+                                        id="multiple-qty"
+                                        value={minQty}
+                                        onChange={(e) => {
+                                            const value = e.target.value ? e.target.value : "";
+                                            if (value === null) {
+                                                setMinQty(value);
+                                            } else setMinQty(Number(value));
+                                        }}
+                                        input={<OutlinedInput label="数量" />}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    backgroundColor: colors.blueAccent[800],
+                                                    color: colors.grey[100],
+                                                    minWidth: 200,
+                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <MenuItem value={0}>
+                                            <em>未選択</em>
+                                        </MenuItem>
+                                        <MenuItem value={5}>5以上</MenuItem>
+                                        <MenuItem value={10}>10以上</MenuItem>
+                                        <MenuItem value={20}>20以上</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Stack>
+                            <Stack direction="row">
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DatePicker
+                                        label="開始日"
+                                        value={startDate}
+                                        onChange={(newValue) => setStartDate(newValue)}
+                                        sx={{ m: 1, maxWidth: 160, }}
+                                        slotProps={{
+                                            desktopPaper: {
+                                                style: {
+                                                    backgroundColor: colors.blueAccent[800],
+                                                },
+                                            }
+                                        }}
+                                    />
+                                    <DatePicker
+                                        label="終了日"
+                                        value={endDate}
+                                        onChange={(newValue) => setEndDate(newValue)}
+                                        sx={{ m: 1, maxWidth: 160 }}
+                                        slotProps={{
+                                            desktopPaper: {
+                                                style: {
+                                                    backgroundColor: colors.blueAccent[800],
+                                                },
+                                            }
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                            </Stack>
+
+                            <SearchBar
+                                value={keyword}
+                                onChange={setKeyword}
+                                sx={{ p: "0 !important" }}
+                            />
+                        </Box>
+                        {
+                            isLoading ? (
+                                <Skeleton variant="rectangular" height={400} />
+                            ) : (
+                                <TableContainer
+                                    component={Paper}
+                                    sx={{
+                                        maxHeight: "75vh",
+                                        minWidth: { xs: 308, lg: 600 },
+                                    }}>
+                                    <Table
+                                        sx={{
+                                            tableLayout: "fixed",
+                                            ...styledTable(colors),
+                                            "& .qty-in": {
+                                                color: theme.palette.success.main,
+                                                fontWeight: 600,
+                                            },
+                                            "& .qty-out": {
+                                                color: theme.palette.error.main,
+                                                fontWeight: 600,
+                                            },
+                                        }}
+                                    >
+                                        <TableHead>
+                                            <TableRow>
+                                                {columns.map(col => (
+                                                    (isLG && col.hideOnMobile) ? null : (
                                                         <TableCell
                                                             key={col.key}
                                                             align={col.align}
-                                                            className={
-                                                                col.key === "qty"
-                                                                    ? (row.type === "IN" ? "qty-in" : "qty-out")
-                                                                    : undefined
-                                                            }
+                                                            width={col.width}
+                                                            sortDirection={orderBy === col.key ? order : false}
                                                         >
-
-                                                            <Tooltip title={String(row[col.key])}>
-                                                                <Box
-                                                                    sx={{
-                                                                        overflow: "hidden",
-                                                                        textOverflow: "ellipsis",
-                                                                        whiteSpace: "nowrap",
-                                                                    }}
+                                                            {col.sortable ? (
+                                                                <TableSortLabel
+                                                                    active={orderBy === col.key}
+                                                                    direction={orderBy === col.key ? order : "asc"}
+                                                                    onClick={() => handleSort(col.key)}
                                                                 >
-                                                                    {row[col.key] === "type"
-                                                                        ? (row.type === "IN" ? "入庫" : "出庫")
-                                                                        : row[col.key]}
-                                                                </Box>
-                                                            </Tooltip>
+                                                                    {col.label}
+                                                                </TableSortLabel>
+                                                            ) : (
+                                                                col.label
+                                                            )}
                                                         </TableCell>
                                                     )
-                                                )}
+                                                ))}
                                             </TableRow>
-                                        )
-                                    })
-                                ) : (
-                                    <TableCell
-                                        colSpan={isMD ? 6 : 11}
-                                        align="center"
-                                        sx={{ py: 4, color: "text.secondary" }}>
-                                        該当するデータがありません
-                                    </TableCell>
-                                )}
+                                        </TableHead>
 
-                            </TableBody>
+                                        <TableBody>
+                                            {paginatedData.length > 0 ? (
+                                                paginatedData.map(row => {
+                                                    return (
+                                                        <TableRow key={row.id} hover>
+                                                            {columns.map(col =>
+                                                                (isLG && col.hideOnMobile) ? null : (
+                                                                    <TableCell
+                                                                        key={col.key}
+                                                                        align={col.align}
+                                                                        className={
+                                                                            col.key === "qty"
+                                                                                ? (row.type === "IN" ? "qty-in" : "qty-out")
+                                                                                : undefined
+                                                                        }
+                                                                    >
+                                                                        <Tooltip title={String(row[col.key])}>
+                                                                            <Box
+                                                                                sx={{
+                                                                                    overflow: "hidden",
+                                                                                    textOverflow: "ellipsis",
+                                                                                    whiteSpace: "nowrap",
+                                                                                }}
+                                                                            >
+                                                                                {row[col.key] === "type"
+                                                                                    ? (row.type === "IN" ? "入庫" : "出庫")
+                                                                                    : row[col.key]}
+                                                                            </Box>
+                                                                        </Tooltip>
+                                                                    </TableCell>
+                                                                )
+                                                            )}
+                                                        </TableRow>
+                                                    )
+                                                })
+                                            ) : (
+                                                <TableCell
+                                                    colSpan={isLG ? 6 : 11}
+                                                    align="center"
+                                                    sx={{ py: 4, color: "text.secondary" }}>
+                                                    該当するデータがありません
+                                                </TableCell>
+                                            )}
 
-                            <TableFooter>
-                                <TableRow>
-                                    <TablePagination
-                                        count={data?.length || 0}
-                                        page={page}
-                                        rowsPerPage={rowsPerPage}
-                                        onPageChange={(_, newPage) => setPage(newPage)}
-                                        onRowsPerPageChange={(e) => {
-                                            setRowsPerPage(parseInt(e.target.value, 10));
-                                            setPage(0);
-                                        }}
-                                        rowsPerPageOptions={[10, 20, 50]}
-                                        colSpan={isMD ? 6 : 11}
-                                    />
-                                </TableRow>
-                            </TableFooter>
+                                        </TableBody>
 
-                        </Table>
-                    </TableContainer>
-                )}
-            </Box>
-        </Box>
+                                        <TableFooter>
+                                            <TableRow>
+                                                <TablePagination
+                                                    count={data?.length || 0}
+                                                    page={page}
+                                                    rowsPerPage={rowsPerPage}
+                                                    onPageChange={(_, newPage) => setPage(newPage)}
+                                                    onRowsPerPageChange={(e) => {
+                                                        setRowsPerPage(parseInt(e.target.value, 10));
+                                                        setPage(0);
+                                                    }}
+                                                    rowsPerPageOptions={[10, 20, 50]}
+                                                    colSpan={isLG ? 6 : 11}
+                                                />
+                                            </TableRow>
+                                        </TableFooter>
+
+                                    </Table>
+                                </TableContainer>
+                            )
+                        }
+                    </Box>
+                    <Box flex={1}>
+                        <BarChart
+                            dataset={warehouseTotals.map(wh => ({
+                                warehouse: wh.warehouse,
+                                inQty: wh.totalIn,
+                                outQty: wh.totalOut
+                            }))}
+                            xAxis={[{ dataKey: 'warehouse' }]}
+                            yAxis={[
+                                {
+                                    label: "数量",
+                                    width: 60,
+                                }
+                            ]}
+                            series={[
+                                { dataKey: 'inQty', label: '入庫' },
+                                { dataKey: 'outQty', label: '出庫' },
+                            ]}
+                            height={300}
+                            spacing={0.3}
+                        />
+
+                        <LineChart
+                            dataset={profitByMonthDataset}
+                            xAxis={[
+                                {
+                                    dataKey: 'date',
+                                    scaleType: 'time',
+                                    // tickNumber: profitByMonthDataset.length,
+                                    valueFormatter: (date: Date, context) => {
+                                        if (context.location === 'tick') {
+                                            return date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short' });
+                                        }
+                                        return date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long' });
+                                    },
+                                }
+                            ]}
+                            yAxis={[
+                                {
+                                    id: 'profit-axis',
+                                    scaleType: 'linear',
+                                    valueFormatter: (val) => val.toLocaleString() + '円',
+                                    width: 100
+                                }
+                            ]}
+                            series={[
+                                {
+                                    type: 'line',
+                                    dataKey: 'profit',
+                                    label: '利益',
+                                    showMark: true,
+                                }
+                            ]}
+                            height={300}
+                            grid={{ vertical: true, horizontal: true }}
+                        />
+                    </Box>
+                </Box>
+
+            </Box >
+        </Box >
     )
 }
 

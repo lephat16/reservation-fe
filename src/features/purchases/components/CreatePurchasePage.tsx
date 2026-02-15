@@ -1,4 +1,16 @@
-import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, Skeleton, Stack, useTheme, type SelectChangeEvent } from '@mui/material';
+import {
+    Box,
+    Button,
+    FormControl,
+    Grid,
+    InputLabel,
+    MenuItem,
+    Select,
+    Skeleton,
+    Stack,
+    useTheme,
+    type SelectChangeEvent
+} from '@mui/material';
 import { tokens } from '../../../shared/theme';
 import type { SupplierData } from '../../suppliers/types/supplier';
 import Header from '../../../pages/Header';

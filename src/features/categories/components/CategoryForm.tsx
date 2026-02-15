@@ -112,7 +112,7 @@ const CategoryForm = ({
                                 variant="outlined"
                                 fullWidth
                                 error={!!errors.name}
-                                helperText={errors.name ? errors.name.message : ''}
+                                helperText={errors.name ? errors.name.message : ' '}
                                 sx={{ mb: 2 }}
                             />
                         )}
@@ -129,7 +129,7 @@ const CategoryForm = ({
                                 variant="outlined"
                                 fullWidth
                                 error={!!errors.status}
-                                helperText={errors.status ? errors.status.message : ''}
+                                helperText={errors.status ? errors.status.message : ' '}
                                 sx={{ mb: 2 }}
                             >
                                 <MenuItem value={"ACTIVE"}>ACTIVE</MenuItem>
@@ -160,7 +160,7 @@ const CategoryForm = ({
                                 multiline
                                 rows={4}
                                 error={!!errors.description}
-                                helperText={errors.description ? errors.description.message : ''}
+                                helperText={errors.description ? errors.description.message : ' '}
                                 sx={{ mb: 2 }}
                             />
                         )}

@@ -1,4 +1,24 @@
-import { Avatar, Box, FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, List, ListItem, ListItemAvatar, ListItemText, MenuItem, OutlinedInput, Select, Stack, TextField, Tooltip, Typography, useTheme } from "@mui/material";
+import {
+    Avatar,
+    Box,
+    FormControl,
+    FormHelperText,
+    IconButton,
+    InputAdornment,
+    InputLabel,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    MenuItem,
+    OutlinedInput,
+    Select,
+    Stack,
+    TextField,
+    Tooltip,
+    Typography,
+    useTheme
+} from "@mui/material";
 import useProductsByCategory from "../../products/hooks/useProductsByCategory";
 import type { CategorySummariesData } from "../../categories/types/category";
 import { tokens } from "../../../shared/theme";

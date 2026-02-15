@@ -1,4 +1,34 @@
-import { alpha, Box, Button, Checkbox, Collapse, Divider, Drawer, FormControl, IconButton, InputBase, InputLabel, ListItemText, MenuItem, OutlinedInput, Paper, Select, Skeleton, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar, Tooltip, Typography, useTheme, type SelectChangeEvent } from "@mui/material"
+import {
+    Box,
+    Button,
+    Checkbox,
+    Collapse,
+    Divider,
+    Drawer,
+    FormControl,
+    IconButton,
+    InputLabel,
+    ListItemText,
+    MenuItem,
+    OutlinedInput,
+    Paper,
+    Select,
+    Skeleton,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableFooter,
+    TableHead,
+    TablePagination,
+    TableRow,
+    TableSortLabel,
+    Tooltip,
+    Typography,
+    useTheme,
+    type SelectChangeEvent
+} from "@mui/material"
 import Header from "../../pages/Header"
 import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -52,13 +82,14 @@ type Status = 'ACTIVE' | 'INACTIVE' | "";
 function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockData) => void; }) {
 
     const { row, onDelete } = props;
-    const { isMD, } = useScreen();
+    const { isMD, } = useScreen(); // 画面サイズ判定
 
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(false); // Collapseの開閉状態
 
     const navigate = useNavigate();
     return (
         <Fragment>
+            {/* メイン行 */}
             <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
                 {!isMD && <TableCell>
                     <IconButton
@@ -113,7 +144,7 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                     </Stack>
                 </TableCell>
             </TableRow>
-
+            {/* Collapse行: 仕入先ごとのSKU在庫情報 */}
             <TableRow>
                 <TableCell
                     style={{
@@ -137,7 +168,6 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                             >
                                 <TableHead>
                                     <TableRow>
-
                                         <TableCell>SKU</TableCell>
                                         <TableCell>仕入先</TableCell>
                                         <TableCell>在庫数</TableCell>
@@ -176,25 +206,30 @@ const AllProductsPageRefator = () => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    const { isMD, isSM } = useScreen();
+    const { isMD, isSM } = useScreen();  // 画面サイズ判定
 
+    // フィルターや選択状態のstate
     const [categoryNames, setCategoryNames] = useState<string[]>([]);
     const [selectedQty, setSelectedQty] = useState<number | "">("");
     const [selectedStatus, setSelectedStatus] = useState<Status>("");
     const [selectedProduct, setSelectedProduct] = useState<ProductStockData | null>(null);
     const [searchText, setSearchText] = useState<string>("");
 
+    // フィルター用の一時state（Drawerでのキャンセル操作対応）
     const [tempCategoryNames, setTempCategoryNames] = useState<string[]>([]);
     const [tempQty, setTempQty] = useState<number | "">("");
     const [tempStatus, setTempStatus] = useState<Status>("");
 
+    // スナックバー表示用カスタムフック
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
 
     const queryClient = useQueryClient();
 
+    // ページネーション
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
+    // ソート用state
     const [order, setOrder] = useState<Order>('asc');
     const [orderBy, setOrderBy] = useState<'code' | 'name' | 'qty'>('code');
 
@@ -202,8 +237,10 @@ const AllProductsPageRefator = () => {
     const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
     const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
 
+    // 在庫データ取得
     const { isLoading, error, data } = useStockWithSupplier();
 
+    // 商品追加Mutation
     const addMutation = useMutation({
         mutationFn: async (data: ProductFormData) => productAPI.createProduct(data),
         onSuccess: (response) => {
@@ -214,6 +251,7 @@ const AllProductsPageRefator = () => {
             showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
         }
     })
+    // 商品削除Mutation
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => productAPI.deleteProduct(id),
         onSuccess: (response) => {
@@ -226,6 +264,7 @@ const AllProductsPageRefator = () => {
         }
     });
 
+    // ページ切り替え
     const handleChangePage = (
         _: React.MouseEvent<HTMLButtonElement> | null,
         newPage: number,
@@ -233,6 +272,7 @@ const AllProductsPageRefator = () => {
         setPage(newPage);
     };
 
+    // 行数変更
     const handleChangeRowsPerPage = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
@@ -240,6 +280,7 @@ const AllProductsPageRefator = () => {
         setPage(0);
     };
 
+    // カテゴリ選択変更
     const handleChangeCategories = (event: SelectChangeEvent<typeof categoryNames>) => {
         const {
             target: { value },
@@ -254,6 +295,7 @@ const AllProductsPageRefator = () => {
         setCategoryNames(values.filter(v => v !== ""));
     };
 
+    // フィルタDrawerを開く
     const handleOpenDrawer = () => {
         setTempCategoryNames(categoryNames);
         setTempQty(selectedQty);
@@ -261,6 +303,7 @@ const AllProductsPageRefator = () => {
         setOpenFilterDrawer(true);
     };
 
+    // データ整形: productIdごとにまとめる
     const inventoryByProduct: InventoryByProduct[] = Object.values(
         (data?.stockProducts ?? []).reduce((acc, stock) => {
             const productId = stock.product.id;
@@ -273,6 +316,7 @@ const AllProductsPageRefator = () => {
                     stockInfo: [],
                 };
             };
+            // 個別在庫情報を追加
             acc[productId].stockInfo.push({
                 stockId: stock.id,
                 warehouseName: stock.warehouseName,
@@ -280,11 +324,13 @@ const AllProductsPageRefator = () => {
                 reservedQty: stock.reservedQuantity,
                 sku: stock.sku
             });
+            // 合計数量更新
             acc[productId].totalQuantity += stock.quantity;
             const exists = acc[productId].supplierProduct
                 .some(existSupplierProduct =>
                     existSupplierProduct.supplierSku === stock.sku
                 );
+            // supplierProductの重複チェック
             if (!exists) {
                 acc[productId].supplierProduct.push({
                     currentPrice: stock.supplierProduct?.currentPrice ?? 0,
@@ -302,6 +348,7 @@ const AllProductsPageRefator = () => {
         }, {} as Record<string, InventoryByProduct>)
     );
 
+    // 検索フィルター
     const filterdInventoryBySearch = inventoryByProduct.filter(item => {
         if (searchText) {
             return (
@@ -310,10 +357,12 @@ const AllProductsPageRefator = () => {
         return true;
     });
 
+    // カテゴリフィルター
     const filteredInventoryByCategories = filterdInventoryBySearch.filter(item =>
         categoryNames.length === 0 || categoryNames.includes(item.product.categoryName)
     );
 
+    // 数量・ステータスフィルター
     const filteredInventoryByQtyAndStatus =
         filteredInventoryByCategories
             .filter(item => {
@@ -331,8 +380,10 @@ const AllProductsPageRefator = () => {
 
     const filteredInventories = filteredInventoryByQtyAndStatus
 
+    // ページネーション用の空行数
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, filteredInventories.length - page * rowsPerPage);
 
+    // ソート済みデータ
     const sortedFilteredInventories = useMemo(() => {
         return [...filteredInventories].sort((a, b) => {
             let valA, valB;

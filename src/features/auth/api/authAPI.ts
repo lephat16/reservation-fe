@@ -10,6 +10,9 @@ export const authAPI = {
     loginUser: async (loginUser: LoginRequest): Promise<LoginResponse> => {
         return (await api.post(`/auth/login`, loginUser)).data;
     },
+    logout: async (): Promise<void> => {
+        await api.post("/auth/logout");
+    },
     getAllUsers: async (): Promise<AllUserRespose> => {
         return (await api.get(`/users/all`)).data;
     },
@@ -26,7 +29,6 @@ export const authAPI = {
         return (await api.delete(`/users/delete/${userId}`)).data;
     },
 }
-    
 
-   
-    
+
+

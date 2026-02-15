@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { Box, Button, FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, OutlinedInput, Stack, TextField, Typography, styled, useTheme } from "@mui/material";
+import { Box, Button, FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, OutlinedInput, Stack, styled } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CancelIcon from '@mui/icons-material/Cancel';
 import ContentPasteGoIcon from '@mui/icons-material/ContentPasteGo';
-import { tokens } from "../../../shared/theme";
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -22,8 +21,6 @@ type FileInputProps = {
 };
 
 export default function FileInput({ value, onChange, error }: FileInputProps) {
-    const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
 
     const [preview, setPreview] = useState<string | null>(null);
     const [urlInput, setUrlInput] = useState("");
@@ -150,7 +147,9 @@ export default function FileInput({ value, onChange, error }: FileInputProps) {
                             </InputAdornment>
                         }
                     />
-                    {error && <FormHelperText>{error}</FormHelperText>}
+                    <FormHelperText>
+                        {error ?? " "}
+                    </FormHelperText>
                 </FormControl>
 
             </Box>

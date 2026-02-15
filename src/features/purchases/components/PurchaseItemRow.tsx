@@ -1,4 +1,17 @@
-import { Box, FormControl, IconButton, InputLabel, MenuItem, Select, Skeleton, Stack, TextField, Tooltip, Typography, useTheme } from "@mui/material";
+import {
+    Box,
+    FormControl,
+    IconButton,
+    InputLabel,
+    MenuItem,
+    Select,
+    Skeleton,
+    Stack,
+    TextField,
+    Tooltip,
+    Typography,
+    useTheme
+} from "@mui/material";
 import NumberField from "../../../shared/components/fields/NumberField";
 import type { SupplierData, SupplierProductData } from "../../suppliers/types/supplier";
 import { tokens } from "../../../shared/theme";

@@ -1,4 +1,23 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, useTheme } from "@mui/material";
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    Paper,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Tooltip,
+    Typography,
+    useTheme
+} from "@mui/material";
 import type { PurchaseOrderData } from "../../purchases/types/purchase";
 import { tokens } from "../../../shared/theme";
 import { useState } from "react";
@@ -165,7 +184,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                         borderRadius={1}
                         sx={{
                             borderColor: colors.grey[400],
-                            height: 80,          
+                            height: 80,
                             overflowY: 'auto',
                         }}
                     >

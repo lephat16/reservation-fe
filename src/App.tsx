@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-
 import RegisterPage from './features/auth/components/RegisterPage'
 import LoginPage from './features/auth/components/LoginPage'
 import { ProtectedRoute } from './shared/Security'
@@ -27,8 +26,7 @@ import { ScreenProvider } from './shared/hooks/ScreenContext'
 import StockMovementHistoryPage from './features/stocks/components/StockMovementHistoryPage'
 import { useDispatch } from "react-redux";
 import { useEffect, useState } from 'react'
-import { refreshAccessToken } from './api/axiosClient'
-import {  setToken, setUser } from './features/auth/store/authSlice'
+import { setUser } from './features/auth/store/authSlice'
 import { authAPI } from './features/auth/api/authAPI'
 
 function App() {
@@ -39,17 +37,14 @@ function App() {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = await refreshAccessToken();
-      if (token) {
-        dispatch(setToken(token));
-        try {
-          const profile = await authAPI.getLoggedInUser();
-          dispatch(setUser(profile.data));
-        } catch (err) {
-          console.error("Load profile failed", err);
-        }
+      try {
+        const profile = await authAPI.getLoggedInUser();
+        dispatch(setUser(profile.data));
+      } catch (err) {
+        dispatch(setUser(null));
+      } finally {
+        setLoadingAuth(false);
       }
-      setLoadingAuth(false);
     };
     initializeAuth();
   }, [dispatch]);
@@ -88,7 +83,6 @@ function App() {
                   <Route path="/warehouses" element={<ProtectedRoute element={<WarehousePage />} />} />
 
                   <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
-                  {/* <Route path="/dashboard" element={<ProtectedRoute element={<DashboardPage />} />} /> */}
                 </Route>
               </Routes>
             </Router>

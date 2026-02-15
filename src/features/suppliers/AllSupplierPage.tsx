@@ -1,8 +1,21 @@
-import { Box, Chip, IconButton, Skeleton, Tooltip, useTheme } from "@mui/material";
+import {
+    Box,
+    Chip,
+    IconButton,
+    Skeleton,
+    Tooltip,
+    useTheme
+} from "@mui/material";
 import Header from "../../pages/Header";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { SupplierData } from "./types/supplier";
-import { GridActionsCell, GridActionsCellItem, type GridColDef, type GridRenderCellParams, type GridRowId } from '@mui/x-data-grid-pro';
+import {
+    GridActionsCell,
+    GridActionsCellItem,
+    type GridColDef,
+    type GridRenderCellParams,
+    type GridRowId
+} from '@mui/x-data-grid-pro';
 import { createContext, useContext, useMemo, useState } from "react";
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';

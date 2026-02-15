@@ -1,5 +1,27 @@
 
-import { Box, Button, DialogActions, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, MenuItem, Paper, Radio, RadioGroup, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography, useTheme } from '@mui/material'
+import {
+    Box,
+    Button,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Divider,
+    IconButton,
+    InputAdornment,
+    MenuItem,
+    Paper,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    Tooltip,
+    Typography,
+    useTheme
+} from '@mui/material'
 import Dialog from '@mui/material/Dialog'
 import { styledTable } from '../../../shared/components/global/StyleTable'
 import type { SupplierProductFormType, SupplierProducWithPriceHistory } from '../types/supplier'
@@ -102,7 +124,7 @@ const SupplierProductForm = ({
                 }
                 onClose();
             }}
-            maxWidth="sm"
+            maxWidth="md"
             fullWidth
             slotProps={{
                 paper: {
@@ -166,7 +188,7 @@ const SupplierProductForm = ({
                                             field.onChange(val ? Number(val) : undefined);
                                         }}
                                         error={!!errors.productId}
-                                        helperText={errors.productId ? errors.productId.message : ''}
+                                        helperText={errors.productId ? errors.productId.message : ' '}
                                         bgColor={colors.blueAccent[900]}
                                         sx={{ flex: 1 }}
                                     >
@@ -215,7 +237,7 @@ const SupplierProductForm = ({
                                         }
                                     }}
                                     error={!!errors.leadTime}
-                                    helperText={errors.leadTime ? errors.leadTime.message : ''}
+                                    helperText={errors.leadTime ? errors.leadTime.message : ' '}
                                     sx={{ flex: 1 }}
                                 />
                             )}
@@ -244,7 +266,7 @@ const SupplierProductForm = ({
                                             }
                                         }}
                                         error={!!errors.supplierSku}
-                                        helperText={errors.supplierSku ? errors.supplierSku.message : ''}
+                                        helperText={errors.supplierSku ? errors.supplierSku.message : ' '}
                                     />
                                 )}
                             />
@@ -284,7 +306,7 @@ const SupplierProductForm = ({
                                             }
                                         }}
                                         error={!!errors.currentPrice}
-                                        helperText={errors.currentPrice ? errors.currentPrice.message : ''}
+                                        helperText={errors.currentPrice ? errors.currentPrice.message : ' '}
                                     />
                                 )}
                             />
@@ -301,7 +323,7 @@ const SupplierProductForm = ({
                                     variant="filled"
                                     {...field}
                                     error={!!errors.status}
-                                    helperText={errors.status ? errors.status.message : ''}
+                                    helperText={errors.status ? errors.status.message : ' '}
                                     bgColor={colors.blueAccent[900]}
                                     sx={{ flex: 1 }}
                                 >
@@ -323,7 +345,7 @@ const SupplierProductForm = ({
                                 variant="filled"
                                 fullWidth
                                 error={!!errors.note}
-                                helperText={errors.note ? errors.note.message : ''}
+                                helperText={errors.note ? errors.note.message : ' '}
                             />
                         )}
                     />}

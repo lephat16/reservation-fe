@@ -1,4 +1,14 @@
-import { Box, Button, Dialog, DialogContent, DialogTitle, MenuItem, Stack, TextField, useTheme } from "@mui/material";
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    MenuItem,
+    Stack,
+    TextField,
+    useTheme
+} from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import * as yup from 'yup';
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -37,7 +47,7 @@ const SupplierForm = ({
                 "電話番号の形式が正しくありません。"
             )
             .min(10, "電話番号が短すぎます。")
-            .max(15, "電話番号が長すぎます。"),
+            .max(16, "電話番号が長すぎます。"),
 
         mail: yup
             .string()
@@ -117,7 +127,7 @@ const SupplierForm = ({
                                 variant="outlined"
                                 fullWidth
                                 error={!!errors.name}
-                                helperText={errors.name ? errors.name.message : ''}
+                                helperText={errors.name ? errors.name.message : ' '}
                                 sx={{ mb: 2 }}
                             />
                         )}
@@ -133,7 +143,7 @@ const SupplierForm = ({
                                 variant="outlined"
                                 fullWidth
                                 error={!!errors.address}
-                                helperText={errors.address ? errors.address.message : ''}
+                                helperText={errors.address ? errors.address.message : ' '}
                                 sx={{ mb: 2 }}
                             />
                         )}
@@ -149,7 +159,7 @@ const SupplierForm = ({
                                 type="email"
                                 fullWidth
                                 error={!!errors.mail}
-                                helperText={errors.mail ? errors.mail.message : ''}
+                                helperText={errors.mail ? errors.mail.message : ' '}
                                 sx={{ mb: 2 }}
                             />
                         )}
@@ -166,7 +176,7 @@ const SupplierForm = ({
                                     fullWidth
                                     {...field}
                                     error={!!errors.supplierStatus}
-                                    helperText={errors.supplierStatus ? errors.supplierStatus.message : ''}
+                                    helperText={errors.supplierStatus ? errors.supplierStatus.message : ' '}
                                 >
                                     <MenuItem value={"ACTIVE"}>ACTIVE</MenuItem>
                                     <MenuItem value={"INACTIVE"}>INACTIVE</MenuItem>
@@ -186,7 +196,7 @@ const SupplierForm = ({
                                     type="tel"
                                     fullWidth
                                     error={!!errors.contactInfo}
-                                    helperText={errors.contactInfo ? errors.contactInfo.message : ''}
+                                    helperText={errors.contactInfo ? errors.contactInfo.message : ' '}
                                 />
                             )}
                         />

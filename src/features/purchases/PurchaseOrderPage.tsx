@@ -1,4 +1,21 @@
-import { Box, Button, Chip, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, useTheme, type SxProps, type Theme } from "@mui/material";
+import {
+    Box,
+    Button,
+    Chip,
+    IconButton,
+    Paper,
+    Skeleton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Tooltip,
+    useTheme,
+    type SxProps,
+    type Theme
+} from "@mui/material";
 import Header from "../../pages/Header";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { tokens } from "../../shared/theme";
@@ -17,6 +34,7 @@ import { usePurchaseOrders } from "./hooks/usePurchaseOrders";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import useRoleFlags from "../auth/hooks/useRoleFlags";
 
+// ステータスに応じたChipを表示する関数
 const renderStatusChip = (status: string) => {
     const colorMap: Record<string, "secondary" | "primary" | "success" | "warning" | "error"> = {
         NEW: "secondary",
@@ -25,9 +43,15 @@ const renderStatusChip = (status: string) => {
         COMPLETED: "success",
         CANCELLED: "error",
     };
-    return <Chip label={status} color={colorMap[status] || "primary"} />;
+    return <Chip 
+    label={status} 
+    color={colorMap[status] || "primary"} 
+    sx={{
+        width: 100
+    }}
+    />;
 };
-
+// テーブルセルのスタイル関数（右寄せや省略表示など）
 const cellStyle = (align?: "right" | "center", truncate?: boolean): SxProps<Theme> => ({
     textAlign: align,
     whiteSpace: truncate ? "nowrap" : "normal",
@@ -38,7 +62,8 @@ const cellStyle = (align?: "right" | "center", truncate?: boolean): SxProps<Them
 const PurchaseOrderPage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    const { isMD, isSM } = useScreen()
+    // 画面サイズに応じた表示制御
+    const { isMD, isSM } = useScreen();
     const navigate = useNavigate();
 
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
@@ -51,6 +76,7 @@ const PurchaseOrderPage = () => {
 
     const { isLoading, error, data } = usePurchaseOrders();
 
+    // テーブル列定義
     const columns = [
         { key: "id", label: "ID", width: isMD ? "10%" : "5%" },
         { key: "supplierName", label: "仕入先", width: isMD ? "35%" : "15%", truncate: true },
@@ -61,6 +87,7 @@ const PurchaseOrderPage = () => {
         { key: "action", label: "操作", width: isMD ? "35%" : "10%", align: "center" },
     ];
 
+    // 削除ミューテーション
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => purchaseAPI.deletePurchaseOrder(id),
         onSuccess: (response) => {
@@ -115,6 +142,7 @@ const PurchaseOrderPage = () => {
                 )}
 
                 {isLoading ? (
+                    // テーブル読み込みSkeleton
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
                     <TableContainer
@@ -247,6 +275,7 @@ const PurchaseOrderPage = () => {
                         </Table>
                     </TableContainer>
                 )}
+                {/* 削除確認ダイアログ */}
                 <DeleteConfirmDialog
                     open={openDeleteConfirm}
                     onClose={() => setOpenDeleteConfirm(false)}

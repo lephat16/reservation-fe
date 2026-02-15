@@ -26,6 +26,7 @@ import { logout as logoutAction } from "../../../features/auth/store/authSlice";
 import { useAuth } from '../../hooks/useAuth';
 import { ROLES } from '../../../constants/role';
 import type { RootState } from '../../../features/auth/store';
+import { authAPI } from '../../../features/auth/api/authAPI';
 
 
 /* 共通メニューアイテム */
@@ -51,11 +52,11 @@ const Item = ({
         }
     };
 
-    // 現在のパスと一致する場合はアクティブにする
-    const isActive = location.pathname === to;
+    // 前方一致でアクティブ判定
+    const isActive = to ? location.pathname.startsWith(to) : false;
+
     return (
         <MenuItem
-            // active={selected === title}
             active={isActive}
             style={{ color: colors.grey[100] }}
             onClick={handleClick}
@@ -79,7 +80,12 @@ const Sidebar = ({ onClose }: SidebarProps) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     /* ログアウト */
-    const logout = async () => {
+    const handleLogout = async () => {
+        try {
+            await authAPI.logout();
+        } catch (e) {
+        }
+
         dispatch(logoutAction());
         queryClient.clear();
         navigate("/login", { replace: true });
@@ -306,7 +312,7 @@ const Sidebar = ({ onClose }: SidebarProps) => {
                     />
                     <Item
                         title="ログアウト"
-                        onClick={logout}
+                        onClick={handleLogout}
                         icon={<LogoutIcon />}
 
                     />

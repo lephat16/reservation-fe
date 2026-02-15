@@ -14,7 +14,7 @@ export const styledTable = (
     backgroundColor: colors.primary[400],
     '& .MuiTableRow-root': {
         '&:hover': {
-            backgroundColor: options?.rowHoverBg ?? colors.primary[300],
+            backgroundColor: options?.rowHoverBg ?? colors.primary[800],
         },
     },
     '& .MuiTableCell-root': {
@@ -23,8 +23,11 @@ export const styledTable = (
         borderBottom: `1px solid ${colors.grey[700]}`,
     },
     '& .MuiTableHead-root .MuiTableCell-root': {
-        backgroundColor: options?.headerBg ?? colors.primary[500],
+        backgroundColor: options?.headerBg ?? colors.blueAccent[700],
         color: colors.grey[100],
         fontWeight: 600,
+    },
+    '& .MuiTablePagination-toolbar': {
+        minHeight: 40
     },
 });

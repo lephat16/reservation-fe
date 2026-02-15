@@ -117,7 +117,7 @@ const ProductForm = ({
                                 variant="outlined"
                                 fullWidth
                                 error={!!errors.name}
-                                helperText={errors.name ? errors.name.message : ''}
+                                helperText={errors.name ? errors.name.message : ' '}
                                 sx={{ mb: 2 }}
                             />
                         )}
@@ -135,7 +135,7 @@ const ProductForm = ({
                                     variant="outlined"
                                     fullWidth
                                     error={!!errors.productCode}
-                                    helperText={errors.productCode ? errors.productCode.message : ''}
+                                    helperText={errors.productCode ? errors.productCode.message : ' '}
                                     sx={{ mb: 2 }}
                                 />
                             )}
@@ -151,7 +151,7 @@ const ProductForm = ({
                                     variant="outlined"
                                     fullWidth
                                     error={!!errors.status}
-                                    helperText={errors.status ? errors.status.message : ''}
+                                    helperText={errors.status ? errors.status.message : ' '}
                                     sx={{ mb: 2 }}
                                     bgColor={colors.greenAccent[900]}
                                 >
@@ -174,7 +174,7 @@ const ProductForm = ({
                                     variant="outlined"
                                     fullWidth
                                     error={!!errors.categoryName}
-                                    helperText={errors.categoryName ? errors.categoryName.message : ''}
+                                    helperText={errors.categoryName ? errors.categoryName.message : ' '}
                                     sx={{ mb: 2 }}
                                     bgColor={colors.greenAccent[900]}
                                 >
@@ -201,7 +201,7 @@ const ProductForm = ({
                                     variant="outlined"
                                     fullWidth
                                     error={!!errors.unit}
-                                    helperText={errors.unit ? errors.unit.message : ''}
+                                    helperText={errors.unit ? errors.unit.message : ' '}
                                     sx={{ mb: 2 }}
                                 />
                             )}
@@ -219,7 +219,7 @@ const ProductForm = ({
                                 multiline
                                 rows={4}
                                 error={!!errors.description}
-                                helperText={errors.description ? errors.description.message : ''}
+                                helperText={errors.description ? errors.description.message : ' '}
                                 sx={{ mb: 2 }}
                             />
                         )}

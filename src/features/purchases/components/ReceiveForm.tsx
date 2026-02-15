@@ -1,4 +1,25 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, MenuItem, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography, useTheme } from "@mui/material";
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    MenuItem,
+    Paper,
+    Skeleton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    Tooltip,
+    Typography,
+    useTheme
+} from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import Header from "../../../pages/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -240,7 +261,7 @@ export const ReceiveFormDialog = ({
                                 margin="normal"
                                 {...field}
                                 error={!!errors.warehouses}
-                                helperText={errors.warehouses?.message}
+                                helperText={errors.warehouses ? errors.warehouses.message : ' '}
                             >
                                 {warehouses?.map((wh) => (
                                     <MenuItem key={wh.id} value={wh.id}>
@@ -262,7 +283,7 @@ export const ReceiveFormDialog = ({
                                 margin="normal"
                                 {...field}
                                 error={!!errors.quantity}
-                                helperText={errors.quantity?.message}
+                                helperText={errors.quantity ? errors.quantity.message : ' '}
                             />
                         )}
                     />
@@ -279,7 +300,7 @@ export const ReceiveFormDialog = ({
                                 margin="normal"
                                 {...field}
                                 error={!!errors.note}
-                                helperText={errors.note?.message}
+                                helperText={errors.note ? errors.note.message : ' '}
                             />
                         )}
                     />

@@ -1,4 +1,14 @@
-import { Box, Button, Dialog, DialogContent, DialogTitle, MenuItem, Stack, TextField, useTheme } from "@mui/material";
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    MenuItem,
+    Stack,
+    TextField,
+    useTheme
+} from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import { Controller, useForm } from "react-hook-form";
 import * as yup from 'yup';
@@ -83,7 +93,7 @@ const WarehouseForm = ({
                                 variant="outlined"
                                 fullWidth
                                 error={!!errors.name}
-                                helperText={errors.name ? errors.name.message : ''}
+                                helperText={errors.name ? errors.name.message : ' '}
                                 sx={{ mb: 2 }}
                             />
                         )}
@@ -99,7 +109,7 @@ const WarehouseForm = ({
                                 variant="outlined"
                                 fullWidth
                                 error={!!errors.location}
-                                helperText={errors.location ? errors.location.message : ''}
+                                helperText={errors.location ? errors.location.message : ' '}
                                 sx={{ mb: 2 }}
                             />
                         )}
@@ -117,7 +127,7 @@ const WarehouseForm = ({
                                     margin="normal"
                                     {...field}
                                     error={!!errors.status}
-                                    helperText={errors.status ? errors.status.message : ''}
+                                    helperText={errors.status ? errors.status.message : ' '}
                                 >
                                     <MenuItem value={"ACTIVE"}>ACTIVE</MenuItem>
                                     <MenuItem value={"INACTIVE"}>INACTIVE</MenuItem>
@@ -135,7 +145,7 @@ const WarehouseForm = ({
                                     margin="normal"
                                     {...field}
                                     error={!!errors.stockLimit}
-                                    helperText={errors.stockLimit ? errors.stockLimit.message : ''}
+                                    helperText={errors.stockLimit ? errors.stockLimit.message : ' '}
                                 />
                             )}
                         />

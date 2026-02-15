@@ -1,4 +1,25 @@
-import { Box, Button, Card, CardContent, Chip, IconButton, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Tooltip, Typography, useTheme } from "@mui/material"
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    IconButton,
+    Paper,
+    Skeleton,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableFooter,
+    TableHead,
+    TablePagination,
+    TableRow,
+    Tooltip,
+    Typography,
+    useTheme
+} from "@mui/material"
 import Header from "../../pages/Header"
 import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -218,7 +239,7 @@ const WarehousePage = () => {
     const stocks = selectedWarehouse?.stocks ?? [];
 
     const handleChangePage = (
-        event: React.MouseEvent<HTMLButtonElement> | null,
+        _: React.MouseEvent<HTMLButtonElement> | null,
         newPage: number,
     ) => {
         setPage(newPage);

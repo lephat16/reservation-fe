@@ -46,7 +46,7 @@ interface ProductRowProps {
 }
 
 function ProductRow({ product }: ProductRowProps) {
-   
+
     const [open, setOpen] = useState(false);
 
     const totalStock =
@@ -109,7 +109,7 @@ function ProductRow({ product }: ProductRowProps) {
                                 <Table size="small">
                                     <TableHead>
                                         <TableRow>
-                 x                           <TableCell align="center">倉庫</TableCell>
+                                            <TableCell align="center">倉庫</TableCell>
                                             <TableCell align="center">在庫数</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -168,7 +168,7 @@ const CategoryDetailPage = () => {
             return categoryAPI.updateCategory(id, data);
         },
         onSuccess: (response) => {
-            showSnackbar(response.message ||SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success");
+            showSnackbar(response.message || SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["category"] });
         },
         onError: (error: AxiosError<{ message: string }>) => {

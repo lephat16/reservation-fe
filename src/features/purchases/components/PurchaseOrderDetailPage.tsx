@@ -1,4 +1,24 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography, useTheme } from "@mui/material";
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Paper,
+    Skeleton,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    Tooltip,
+    Typography,
+    useTheme
+} from "@mui/material";
 import Header from "../../../pages/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import type { PurchaseOrderData, PurchaseOrderDetailData } from "../types/purchase";
@@ -18,6 +38,7 @@ import { useSumReceivedQtyByPoGroupByProduct } from "../../products/hooks/useSum
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import useRoleFlags from "../../auth/hooks/useRoleFlags";
 
+// Yupスキーマ（説明のバリデーション用）
 const descriptionSchema = yup.object({
     description: yup
         .string()
@@ -55,7 +76,9 @@ export const SubmitConfirmDialog = ({
                 paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: 2, p: 2 } }
             }}
         >
+            {/* Dialogタイトル */}
             <DialogTitle>確認</DialogTitle>
+            {/* Dialog本文 */}
             <DialogContent>
                 <Typography>
                     {targetName
@@ -63,6 +86,7 @@ export const SubmitConfirmDialog = ({
                         : "この商品を注文・受注してもよろしいですか？"}
                 </Typography>
             </DialogContent>
+            {/* Dialogのアクションボタン */}
             <DialogActions>
                 <Button variant="contained" color="warning" onClick={onClose}>
                     キャンセル
@@ -84,10 +108,11 @@ const PurchaseOrderDetailPage = () => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    const { poId } = useParams<{ poId: string }>();
+    const { poId } = useParams<{ poId: string }>(); // URLから注文IDを取得
 
-    const { isStaff, isWarehouse } = useRoleFlags();
+    const { isStaff, isWarehouse } = useRoleFlags(); // ユーザーの権限フラグ
 
+    // ローカルステート
     const [details, setDetails] = useState<PurchaseOrderDetailData[]>([]);
     const [description, setDescription] = useState<string>("");
     const [descriptionError, setDescriptionError] = useState<string | null>(null);
@@ -95,7 +120,7 @@ const PurchaseOrderDetailPage = () => {
     const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
     const [openSubmitConfirm, setOpenSubmitConfirm] = useState(false);
 
-    const { isSM } = useScreen();
+    const { isSM } = useScreen(); // 画面サイズ判定
     const queryClient = useQueryClient();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
@@ -104,6 +129,7 @@ const PurchaseOrderDetailPage = () => {
     const { isLoading: isLoadingReceivedQty, error: errorReceivedQty, data: dataReceivedQty } =
         useSumReceivedQtyByPoGroupByProduct(Number(poId), data);
 
+    // データ反映
     useEffect(() => {
         if (data?.details) {
             setDetails(data.details);
@@ -113,18 +139,22 @@ const PurchaseOrderDetailPage = () => {
         }
     }, [data?.details, data?.description]);
 
+    // 合計金額計算
     const totalAmount = useMemo(() => {
         return details.reduce((sum, item) => sum + item.qty * item.cost, 0);
     }, [details]);
 
+    // 保存処理
     const handleSave = async () => {
         try {
+            // バリデーションチェック
             await descriptionSchema.validate({ description }, { abortEarly: false });
             const updatedData: PurchaseOrderData = {
                 ...data!,
                 details: details,
                 description: description,
             };
+            // API更新
             await purchaseAPI.updatePurchaseOrderQuantityAndDescription(Number(poId), updatedData);
             showSnackbar(SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success");
             setIsEditing(false);
@@ -137,6 +167,7 @@ const PurchaseOrderDetailPage = () => {
         }
     };
 
+    // 削除Mutation
     const deleteMutation = useMutation({
         mutationFn: async () => purchaseAPI.deletePurchaseOrder(Number(poId)),
         onSuccess: (response) => {
@@ -150,6 +181,8 @@ const PurchaseOrderDetailPage = () => {
             showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
+
+    // 注文Mutation
     const submitMutation = useMutation({
         mutationFn: async () => purchaseAPI.placePurchaseOrder(Number(poId)),
         onSuccess: (response) => {
@@ -164,6 +197,7 @@ const PurchaseOrderDetailPage = () => {
         }
     });
 
+    // 受領数マッピング
     const mappedQty: PurchaseOrderDetailData[] = useMemo(() => {
         return details.map(item => {
             const sumReceived = dataReceivedQty?.find(d => d.sku === item.sku);
@@ -175,6 +209,7 @@ const PurchaseOrderDetailPage = () => {
 
     return (
         <Box m={3}>
+            {/* ヘッダー表示 */}
             {(isLoading || isLoadingReceivedQty) ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
@@ -201,8 +236,6 @@ const PurchaseOrderDetailPage = () => {
                 ) : (
                     <TableContainer component={Paper} sx={{ mb: 3 }}>
                         <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
-
-
                             <TableHead>
                                 <TableRow
                                     sx={{
@@ -265,6 +298,7 @@ const PurchaseOrderDetailPage = () => {
                                         </TableCell>
                                     </TableRow>
                                 )}
+                                {/* 合計行 */}
                                 <TableRow>
                                     <TableCell colSpan={5} align="right" sx={{ fontWeight: 'bold' }}>
                                         合計金額:
@@ -277,6 +311,7 @@ const PurchaseOrderDetailPage = () => {
                         </Table>
                     </TableContainer>
                 )}
+                {/* 注文説明 */}
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
@@ -305,11 +340,11 @@ const PurchaseOrderDetailPage = () => {
                     </Box>
                 )}
             </Box>
+            {/* ボタン群 */}
             <Stack
                 direction="row"
                 spacing={2}
             >
-
                 {(data?.status === 'NEW' && !isWarehouse) && (isEditing ? (
                     <Button variant="contained" color="success" onClick={() => handleSave()}>
                         保存
@@ -326,6 +361,7 @@ const PurchaseOrderDetailPage = () => {
                             削除
                         </Button>
                     </span>
+                    {/* 削除ボタン */}
                 </Tooltip>
                 {data?.status === 'NEW' && (
                     <Tooltip title={isWarehouse ? "管理者またはスタッフのみ注文可能" : ""} arrow>
@@ -336,6 +372,7 @@ const PurchaseOrderDetailPage = () => {
                         </span>
                     </Tooltip>
                 )}
+                {/* 受領ボタン */}
                 {(data?.status === 'PENDING' || data?.status === 'PROCESSING') && (
                     <Tooltip title={isStaff ? "管理者または倉庫管理者のみ受領可能" : ""} arrow>
                         <span>
@@ -346,7 +383,7 @@ const PurchaseOrderDetailPage = () => {
                     </Tooltip>
                 )}
             </Stack>
-
+            {/* 削除確認ダイアログ */}
             <DeleteConfirmDialog
                 open={openDeleteConfirm}
                 onClose={() => setOpenDeleteConfirm(false)}
@@ -354,6 +391,7 @@ const PurchaseOrderDetailPage = () => {
                 onDelete={() => deleteMutation.mutate()}
                 isDeleting={deleteMutation.isPending}
             />
+            {/* 注文確認ダイアログ */}
             <SubmitConfirmDialog
                 open={openSubmitConfirm}
                 onClose={() => setOpenSubmitConfirm(false)}

@@ -46,6 +46,7 @@ export interface StockHistoriesWithDetailData {
     createdAt: string,
     supplierSku: string,
     productName: string,
+    code: string,
     warehouseName: string,
     userName: string,
     price: number,

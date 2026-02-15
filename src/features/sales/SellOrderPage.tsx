@@ -1,4 +1,21 @@
-import { Box, Button, Chip, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, useTheme, type SxProps, type Theme } from "@mui/material";
+import {
+    Box,
+    Button,
+    Chip,
+    IconButton,
+    Paper,
+    Skeleton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Tooltip,
+    useTheme,
+    type SxProps,
+    type Theme
+} from "@mui/material";
 import { tokens } from "../../shared/theme";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
@@ -25,7 +42,13 @@ const renderStatusChip = (status: string) => {
         COMPLETED: "success",
         CANCELLED: "error",
     };
-    return <Chip label={status} color={colorMap[status] || "primary"} />;
+    return <Chip
+        label={status}
+        color={colorMap[status] || "primary"}
+        sx={{
+            width: 100
+        }}
+    />;
 };
 
 const cellStyle = (align?: "right" | "center", truncate?: boolean): SxProps<Theme> => ({

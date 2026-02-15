@@ -1,34 +1,33 @@
 
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type {  UserData } from '../types/auth';
+import type { UserData } from '../types/auth';
 
+// 認証情報の状態を定義
 type AuthState = {
-    accessToken: string | null;
     user: UserData | null;
 };
 
+// 初期状態
 const initialState: AuthState = {
-    accessToken: null,
     user: null,
 }
 
+// 認証用 slice を作成
 const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
-        setToken: (state, action: PayloadAction<string | null>) => {
-            state.accessToken = action.payload;
-        },
         
+        // ユーザー情報をセット
         setUser: (state, action: PayloadAction<UserData | null>) => {
             state.user = action.payload;
         },
+        // ログアウト処理（トークンとユーザー情報をクリア）
         logout: (state) => {
-            state.accessToken = null;
             state.user = null;
         }
     }
 });
 
-export const { setToken, setUser, logout } = authSlice.actions;
+export const { setUser, logout } = authSlice.actions;
 export default authSlice.reducer;

@@ -11,7 +11,7 @@ import '../styles/auth.css'
 import type { AxiosError } from "axios";
 import { authAPI } from "../api/authAPI";
 import { useDispatch } from "react-redux";
-import { setToken, setUser } from "../store/authSlice";
+import { setUser } from "../store/authSlice";
 
 // yupを使ったフォームバリデーションスキーマ
 const schema = yup.object({
@@ -50,8 +50,6 @@ const LoginPage = (): JSX.Element => {
     const mutation = useMutation({
         mutationFn: loginApi,
         onSuccess: (response) => {
-
-            dispatch(setToken(response.token));
             dispatch(setUser(response.user || null));
             showSnackbar("ログインしました。", "success");
             setTimeout(() => navigate("/profile"), 500); // カテゴリページへ遷移

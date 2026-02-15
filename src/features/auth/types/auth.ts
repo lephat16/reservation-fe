@@ -21,7 +21,6 @@ export interface RegisterResponse {
 }
 
 export interface LoginResponse {
-    token: string;
     role: Role;
     expirationTime: string;
     status: string;
