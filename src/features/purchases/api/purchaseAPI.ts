@@ -1,4 +1,4 @@
-import { api } from "../../../api/axiosClient";
+import { api } from "../../../shared/api/axiosClient";
 import type { ApiResponse } from "../../../shared";
 import type { SumReceivedGroupByProduct } from "../../products/types/product";
 import type { PurchaseOrderData, PurchaseOrderItem } from "../types/purchase";

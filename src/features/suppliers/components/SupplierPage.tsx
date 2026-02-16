@@ -12,7 +12,7 @@ import {
     Tooltip,
     useTheme,
 } from "@mui/material";
-import Header from "../../../pages/Header";
+import Header from "../../../shared/components/layout/Header";
 import type { SupplierData, SupplierProductFormType } from "../types/supplier";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { useSupplierProductsWithStock } from "../hooks/useSupplierProductsWithStock";
@@ -26,7 +26,6 @@ import SupplierForm from "./SupplierForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supplierAPI } from "../api/supplierAPI";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
-import type { AxiosError } from "axios";
 import { DeleteConfirmDialog } from "../../../shared/components/DeleteConfirmDialog";
 import { usePurchasesOrderBySupplier } from "../../purchases/hooks/usePurchasesOrderBySupplier";
 import SupplierStatCard from "./SupplierStatCard";
@@ -39,6 +38,7 @@ import { tokens } from "../../../shared/theme";
 import SupplierProductForm from "./SupplierProductForm";
 import { useProducts } from "../../products/hooks/useProducts";
 import type { ProductData } from "../../products/types/product";
+import { getErrorMessage } from "../../../shared/utils/errorHandler";
 
 
 const SupplierPage = () => {
@@ -95,13 +95,13 @@ const SupplierPage = () => {
             queryClient.invalidateQueries({ queryKey: ["supplier", Number(supplierId)] });
 
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
         },
     })
     const updateMutation = useMutation({
-        mutationFn: async (updateProduct: SupplierData) => {
-            const updatedRes = await supplierAPI.updateSupplier(updateProduct, Number(supplierId));
+        mutationFn: async (updateSupplier: SupplierData) => {
+            const updatedRes = await supplierAPI.updateSupplier(updateSupplier, Number(supplierId));
             return updatedRes;
         },
         onSuccess: (response) => {
@@ -110,8 +110,8 @@ const SupplierPage = () => {
             queryClient.invalidateQueries({ queryKey: ["supplier", Number(supplierId)] });
 
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
         },
     });
 
@@ -124,8 +124,8 @@ const SupplierPage = () => {
                 // navigate("/purchase-order");
             }, 500);
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
 

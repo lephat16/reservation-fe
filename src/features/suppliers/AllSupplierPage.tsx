@@ -6,7 +6,7 @@ import {
     Tooltip,
     useTheme
 } from "@mui/material";
-import Header from "../../pages/Header";
+import Header from "../../shared/components/layout/Header";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { SupplierData } from "./types/supplier";
 import {
@@ -27,13 +27,13 @@ import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import SupplierForm from "./components/SupplierForm";
 import AddHomeWorkIcon from '@mui/icons-material/AddHomeWork';
-import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { supplierAPI } from "./api/supplierAPI";
 import { useAllSuppliers } from "./hooks/useAllSuppliers";
 import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
 import { useScreen } from "../../shared/hooks/ScreenContext";
+import { getErrorMessage } from "../../shared/utils/errorHandler";
 
 
 interface ActionHandlers {
@@ -146,8 +146,8 @@ const AllSupplierPage = () => {
             showSnackbar(SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
 
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
         }
     })
 
@@ -161,8 +161,8 @@ const AllSupplierPage = () => {
             queryClient.invalidateQueries({ queryKey: ["suppliers"] });
 
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
 

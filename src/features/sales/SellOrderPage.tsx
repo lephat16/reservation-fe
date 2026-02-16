@@ -21,18 +21,18 @@ import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import Header from "../../pages/Header";
+import Header from "../../shared/components/layout/Header";
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
-import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { saleAPI } from "./api/saleAPI";
 import { useSaleOrders } from "./hooks/useSaleOrders";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import useRoleFlags from "../auth/hooks/useRoleFlags";
+import { getErrorMessage } from "../../shared/utils/errorHandler";
 
 const renderStatusChip = (status: string) => {
     const colorMap: Record<string, "secondary" | "primary" | "success" | "warning" | "error"> = {
@@ -93,8 +93,8 @@ const SellOrderPage = () => {
             queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
 
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
 

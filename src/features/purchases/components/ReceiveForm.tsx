@@ -21,10 +21,9 @@ import {
     useTheme
 } from "@mui/material";
 import { tokens } from "../../../shared/theme";
-import Header from "../../../pages/Header";
+import Header from "../../../shared/components/layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PurchaseOrderData, } from "../types/purchase";
-import type { AxiosError } from "axios";
 import type { SumReceivedGroupByProduct, WarehouseWithLocationData } from "../../products/types/product";
 import type { DeliverStockItem, InventoryHistoryByPurchaseOrder, ReceiveStockItem } from "../../stocks/types/stock";
 import { useNavigate, useParams } from "react-router-dom";
@@ -45,6 +44,7 @@ import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid
 import type { GridColDef } from "@mui/x-data-grid";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import useRoleFlags from "../../auth/hooks/useRoleFlags";
+import { getErrorMessage } from "../../../shared/utils/errorHandler";
 
 // 購入確認ダイアログ
 interface ReceiveConfirmDialogProps {
@@ -406,8 +406,8 @@ const ReceiveForm = () => {
                 navigate(`/purchase-order/${poId}`);
             }, 500);
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.ORDER.RECEIVE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.ORDER.RECEIVE_FAILED, "error");
         }
     });
 

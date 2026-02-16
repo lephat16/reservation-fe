@@ -1,4 +1,4 @@
-import { api } from "../../../api/axiosClient";
+import { api } from "../../../shared/api/axiosClient";
 import type { ApiResponse } from "../../../shared";
 import type { SaleOrderData, SellOrderItem, WeeklySalesByProduct } from "../types/sell";
 
@@ -16,9 +16,6 @@ export const saleAPI = {
         return (await api.post(`/transactions/sales/add`, sellData));
     },
     prepareSaleOrder: async (soId: number): Promise<ApiResponse<SaleOrderData>> => {
-        return (await api.put(`/transactions/sales/prepare/${soId}`));
-    },
-    prepareOrder: async (soId: number): Promise<ApiResponse<SaleOrderData>> => {
         return (await api.put(`/transactions/sales/prepare/${soId}`));
     },
     deleteSellOrder: async (orderId: number): Promise<ApiResponse<void>> => {

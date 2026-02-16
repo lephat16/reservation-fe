@@ -20,13 +20,16 @@ export interface RegisterResponse {
     timestamp: string;
 }
 
-export interface LoginResponse {
+export interface LoginData {
     role: Role;
     expirationTime: string;
+    user?: UserData;
+}
+export interface LoginResponse {
     status: string;
     message: string;
     timestamp: string;
-    user?: UserData;
+    data: LoginData
 }
 
 

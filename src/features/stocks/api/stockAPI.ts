@@ -1,4 +1,4 @@
-import { api } from "../../../api/axiosClient";
+import { api } from "../../../shared/api/axiosClient";
 import type { ApiResponse } from "../../../shared";
 import type { WarehouseWithLocationData } from "../../products/types/product";
 import type { DeliverStockItem, InventoryHistoryByPurchaseOrder, InventoryHistoryBySaleOrder, ReceiveStockItem, StockHistoriesWithDetailData, StockResultData, StockWithSupplierAndProduct, WarehouseFormData, WarehousesData, WarehouseWithTotalChangedQtyData } from "../types/stock";

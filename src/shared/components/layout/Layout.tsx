@@ -1,9 +1,9 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "../shared/components/global/Sidebar";
-import Topbar from "../shared/components/global/Topbar";
+import Sidebar from "../global/Sidebar";
+import Topbar from "../global/Topbar";
 import { Box, Drawer, } from "@mui/material";
 import { useState } from "react";
-import { useScreen } from "../shared/hooks/ScreenContext";
+import { useScreen } from "../../hooks/ScreenContext";
 
 const MainLayout = () => {
   const { isSM } = useScreen();

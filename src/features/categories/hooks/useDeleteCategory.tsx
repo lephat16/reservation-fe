@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { categoryAPI } from "../api/categoryAPI";
-import type { AxiosError } from "axios";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
+import { getErrorMessage } from "../../../shared/utils/errorHandler";
 
 export const useDeleteCategory = (
     onSuccess: () => void,
@@ -15,8 +15,8 @@ export const useDeleteCategory = (
             queryClient.invalidateQueries({ queryKey: ["category-summaries"] });
             onSuccess();
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || "削除に失敗しました", "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || "削除に失敗しました", "error");
         }
     });
 

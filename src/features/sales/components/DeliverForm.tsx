@@ -4,14 +4,13 @@ import { tokens } from '../../../shared/theme';
 import { useParams } from 'react-router-dom';
 import { useSnackbar } from '../../../shared/hooks/useSnackbar';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import Header from '../../../pages/Header';
+import Header from '../../../shared/components/layout/Header';
 import CustomSnackbar from '../../../shared/components/global/CustomSnackbar';
 import { type GridColDef } from '@mui/x-data-grid';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import CheckIcon from '@mui/icons-material/Check';
 import { ReceiveFormDialog } from '../../purchases/components/ReceiveForm';
 import { jaJP } from '@mui/x-data-grid/locales';
-import type { AxiosError } from 'axios';
 import ErrorState from '../../../shared/components/messages/ErrorState';
 import { SNACKBAR_MESSAGES } from '../../../constants/message';
 import type { WarehouseWithLocationData } from '../../products/types/product';
@@ -21,6 +20,7 @@ import { useSaleOrderDetail } from '../hooks/useSaleOrderDetail';
 import { useInventoryHistoryBySaleOrder } from '../../stocks/hooks/useInventoryHistoryBySaleOrder';
 import { StyledDataGrid } from '../../../shared/components/global/StyledDataGrid';
 import useRoleFlags from '../../auth/hooks/useRoleFlags';
+import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 const DeliverForm = () => {
 
@@ -58,8 +58,8 @@ const DeliverForm = () => {
 
             setOpenDeliverForm(false);
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.SELL.DELIVER_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.SELL.DELIVER_FAILED, "error");
         }
     });
 

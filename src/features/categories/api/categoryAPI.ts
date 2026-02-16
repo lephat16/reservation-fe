@@ -1,4 +1,4 @@
-import { api } from "../../../api/axiosClient";
+import { api } from "../../../shared/api/axiosClient";
 import type { ApiResponse, ResponseData } from "../../../shared";
 import type { CategoryData, CategorySummariesData, CategorySummaryData } from "../types/category";
 
@@ -23,7 +23,7 @@ export const categoryAPI = {
         return (await api.get(`/categories/${categoryId}`));
     },
     deleteCategory: async (categoryId: number): Promise<ResponseData> => {
-        return (await api.delete(`/categories/delete/${categoryId}`)).data;
+        return (await api.delete(`/categories/delete/${categoryId}`));
     },
 
 }

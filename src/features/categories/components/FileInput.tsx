@@ -32,7 +32,7 @@ export default function FileInput({ value, onChange, error }: FileInputProps) {
             return () => URL.revokeObjectURL(url);
         } else if (typeof value === "string") {
             if (value.startsWith("/uploads")) {
-                const imageUrl = `http://localhost:8081${value}`;
+                const imageUrl = `${import.meta.env.VITE_IMG_URL}${value}`;
 
                 setPreview(imageUrl);
                 return;

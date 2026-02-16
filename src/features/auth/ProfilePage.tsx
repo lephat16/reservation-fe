@@ -46,7 +46,8 @@ const ProfilePage = () => {
         onError: () => {
             showSnackbar("プロフィールの更新に失敗しました", "error");
         },
-    })
+    });
+    
     const handleSave = async () => {
         if (!user) return;
 

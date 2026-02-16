@@ -1,7 +1,7 @@
 import { GridActionsCell, GridActionsCellItem, type GridColDef, type GridRenderCellParams, type GridRowId } from "@mui/x-data-grid";
 import type { CategorySummariesData } from "./types/category";
 import { Box, Chip, IconButton, Skeleton, Tooltip, useTheme } from "@mui/material";
-import Header from "../../pages/Header";
+import Header from "../../shared/components/layout/Header";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { jaJP } from '@mui/x-data-grid/locales';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import NewLabelIcon from '@mui/icons-material/NewLabel';
-import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
@@ -21,6 +20,7 @@ import CategoryForm from "./components/CategoryForm";
 import { useDeleteCategory } from "./hooks/useDeleteCategory";
 import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
 import { useScreen } from "../../shared/hooks/ScreenContext";
+import { getErrorMessage } from "../../shared/utils/errorHandler";
 
 interface ActionHandlers {
     deleteCategory: (id: GridRowId) => void;
@@ -121,8 +121,8 @@ const CategoriesPage = () => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["category-summaries"] });
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
         }
     });
 

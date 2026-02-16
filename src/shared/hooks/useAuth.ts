@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import type { RootState } from "../../features/auth/store";
-import { canAccess } from "../role/roleUtils";
+import { canAccess } from "../utils/roleUtils";
 import type { Role } from "../../features/auth/types/auth";
 
 // 認証情報を取得するカスタムフック

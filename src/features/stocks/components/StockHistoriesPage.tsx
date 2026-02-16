@@ -21,7 +21,7 @@ import {
     useTheme
 } from "@mui/material"
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
-import Header from "../../../pages/Header";
+import Header from "../../../shared/components/layout/Header";
 import { tokens } from "../../../shared/theme";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import type { StockHistoriesWithDetailData } from "../types/stock";

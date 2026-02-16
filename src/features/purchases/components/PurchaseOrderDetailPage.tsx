@@ -19,7 +19,7 @@ import {
     Typography,
     useTheme
 } from "@mui/material";
-import Header from "../../../pages/Header";
+import Header from "../../../shared/components/layout/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import type { PurchaseOrderData, PurchaseOrderDetailData } from "../types/purchase";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -28,7 +28,6 @@ import { useEffect, useMemo, useState } from "react";
 import * as yup from "yup";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
-import type { AxiosError } from "axios";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { DeleteConfirmDialog } from "../../../shared/components/DeleteConfirmDialog";
@@ -37,6 +36,7 @@ import { usePurchaseOrderDetail } from "../hooks/usePurchaseOrderDetail";
 import { useSumReceivedQtyByPoGroupByProduct } from "../../products/hooks/useSumReceivedQtyByPoGroupByProduct";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import useRoleFlags from "../../auth/hooks/useRoleFlags";
+import { getErrorMessage } from "../../../shared/utils/errorHandler";
 
 // Yupスキーマ（説明のバリデーション用）
 const descriptionSchema = yup.object({
@@ -177,8 +177,8 @@ const PurchaseOrderDetailPage = () => {
                 navigate("/purchase-order");
             }, 500);
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
 
@@ -192,8 +192,8 @@ const PurchaseOrderDetailPage = () => {
                 navigate("/purchase-order");
             }, 500);
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.ORDER.CREATE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.ORDER.CREATE_FAILED, "error");
         }
     });
 

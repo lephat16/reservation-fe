@@ -20,7 +20,7 @@ import {
     Typography,
     useTheme
 } from "@mui/material"
-import Header from "../../pages/Header"
+import Header from "../../shared/components/layout/Header"
 import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { WarehouseFormData, WarehousesData, WarehouseWithTotalChangedQtyData } from "./types/stock";
@@ -46,13 +46,14 @@ import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
 import WarehouseForm from "./components/WarehouseForm";
-import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { stockAPI } from "./api/stockAPI";
 import { useWarehouses } from "./hooks/useWarehouses";
 import { useWarehouseWithTotalQty } from "./hooks/useWarehouseWithTotalQty";
 import { useScreen } from "../../shared/hooks/ScreenContext";
+import { STATUS } from "../../constants/status";
+import { getErrorMessage } from "../../shared/utils/errorHandler";
 
 
 interface TablePaginationActionsProps {
@@ -159,8 +160,8 @@ const WarehousePage = () => {
             queryClient.invalidateQueries({ queryKey: ["WarehousesData"] });
 
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
         }
     });
 
@@ -174,8 +175,8 @@ const WarehousePage = () => {
             setOpenDeleteConfirm(false);
             setCurrentWarehouseIndex(0);
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
 
@@ -187,8 +188,8 @@ const WarehousePage = () => {
             showSnackbar(SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["WarehousesData"] });
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
         }
     });
     useEffect(() => {
@@ -272,6 +273,7 @@ const WarehousePage = () => {
         ? (totalQuantity / selectedWarehouse.stockLimit) * 100
         : 0;
 
+    const statusKey = (selectedWarehouse?.status ?? "UNKNOWN") as keyof typeof STATUS;
     return (
         <Box m={3}>
             {isLoadingWH ? (
@@ -372,8 +374,8 @@ const WarehousePage = () => {
                             </Typography>
                             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} mt={1}>
                                 <Chip
-                                    label={selectedWarehouse?.status === "ACTIVE" ? "稼働中" : "停止中"}
-                                    color={selectedWarehouse?.status === "ACTIVE" ? "success" : "error"}
+                                    label={STATUS[statusKey].label}
+                                    color={STATUS[statusKey].color}
                                     size="small"
                                 />
                                 <Tooltip title="削除">

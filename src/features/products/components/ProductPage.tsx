@@ -1,12 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Box, Button, Card, CardContent, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, useTheme } from "@mui/material";
-import Header from "../../../pages/Header";
+import Header from "../../../shared/components/layout/Header";
 import { tokens } from "../../../shared/theme";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
-import type { AxiosError } from "axios";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { productAPI } from "../api/productAPI";
@@ -24,6 +23,7 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { useWeeklySalesByProduct } from "../hooks/useWeeklySalesByProduct";
 import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
+import { getErrorMessage } from "../../../shared/utils/errorHandler";
 
 const ProductPage = () => {
     const theme = useTheme();
@@ -53,8 +53,8 @@ const ProductPage = () => {
             queryClient.invalidateQueries({ queryKey: ["product-detail", Number(productId)] });
 
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
         },
 
     });
@@ -67,8 +67,8 @@ const ProductPage = () => {
                 navigate("/products");
             }, 500);
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
     const totalSuppliers = productDetail?.supplier.length || 0;

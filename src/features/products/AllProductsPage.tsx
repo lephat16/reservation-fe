@@ -29,7 +29,7 @@ import {
     useTheme,
     type SelectChangeEvent
 } from "@mui/material"
-import Header from "../../pages/Header"
+import Header from "../../shared/components/layout/Header"
 import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
@@ -44,7 +44,6 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import CloseIcon from '@mui/icons-material/Close';
-import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
@@ -57,6 +56,7 @@ import ProductForm from "./components/ProductForm";
 import type { ProductFormData } from "./types/product";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import SearchBar from "../../shared/components/global/SearchBar";
+import { getErrorMessage } from "../../shared/utils/errorHandler";
 
 type StockInfo = {
     stockId: number;
@@ -202,7 +202,7 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
     );
 }
 
-const AllProductsPageRefator = () => {
+const AllProductsPage = () => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
@@ -247,8 +247,8 @@ const AllProductsPageRefator = () => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["stock-with-supplier"] });
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
+        onError: (error:unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
         }
     })
     // 商品削除Mutation
@@ -259,8 +259,8 @@ const AllProductsPageRefator = () => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["stock-with-supplier"] });
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
 
@@ -907,4 +907,4 @@ const AllProductsPageRefator = () => {
     )
 }
 
-export default AllProductsPageRefator
+export default AllProductsPage

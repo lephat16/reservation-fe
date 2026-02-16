@@ -1,13 +1,12 @@
 import {
     Box,
+    Button,
     Card,
     CardContent,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    OutlinedInput,
+    Divider,
+    Drawer,
+    IconButton,
     Paper,
-    Select,
     Skeleton,
     Stack,
     Table,
@@ -27,14 +26,14 @@ import { tokens } from "../../../shared/theme";
 import type { StockHistoriesWithDetailData } from "../types/stock";
 import { useQuery } from "@tanstack/react-query";
 import { stockAPI } from "../api/stockAPI";
-import Header from "../../../pages/Header";
+import Header from "../../../shared/components/layout/Header";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { styledTable } from "../../../shared/components/global/StyleTable";
 import type { TableCellProps } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SearchBar from "../../../shared/components/global/SearchBar";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -45,12 +44,15 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import MovingIcon from '@mui/icons-material/Moving';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import CloseIcon from '@mui/icons-material/Close';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import CategoryIcon from '@mui/icons-material/Category';
 import { BarChart } from '@mui/x-charts/BarChart';
 import _ from "lodash";
-import { LineChart, type AxisValueFormatterContext } from "@mui/x-charts";
+import { LineChart, } from "@mui/x-charts";
+import FilterContent from "./FilterContent";
 
-type Type = "IN" | "OUT" | "ALL";
+export type Type = "IN" | "OUT" | "ALL";
 type Order = 'asc' | 'desc';
 type Column<T> = {
     key: keyof T;
@@ -104,8 +106,13 @@ const StockMovementHistoryPage = () => {
     const [keyword, setKeyword] = useState("");
     const [type, setType] = useState<Type>("ALL");
     const [minQty, setMinQty] = useState(0);
+
+    const [tempType, setTempType] = useState<Type>("ALL");
+    const [tempMinQty, setTempMinQuty] = useState(0);
     const [order, setOrder] = useState<Order>('asc');
     const [orderBy, setOrderBy] = useState<keyof StockRow>("date");
+
+    const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
 
     const [startDate, setStartDate] = useState<Dayjs | null>(null);
     const [endDate, setEndDate] = useState<Dayjs | null>(null);
@@ -118,6 +125,13 @@ const StockMovementHistoryPage = () => {
         },
 
     });
+
+    // フィルタDrawerを開く
+    const handleOpenDrawer = () => {
+        setTempType(type);
+        setTempMinQuty(minQty);
+        setOpenFilterDrawer(true);
+    };
 
     const mapToStockRow = (row: StockHistoriesWithDetailData): StockRow => ({
         id: row.id,
@@ -171,7 +185,7 @@ const StockMovementHistoryPage = () => {
             .filter(row => {
                 const matchesKeyword = !keyword || row.product.toLowerCase().includes(keyword.toLowerCase());
                 const matchesType = type === "ALL" || row.type === type;
-                const matchesQty = !minQty || row.qty >= Number(minQty);
+                const matchesQty = !minQty || Math.abs(Number(row.qty)) >= Number(minQty);
                 const matchesDate = (!startDate || dayjs(row.date).isAfter(startDate, "day")) &&
                     (!endDate || dayjs(row.date).isBefore(endDate, "day"));
                 return matchesKeyword && matchesType && matchesQty && matchesDate;
@@ -184,6 +198,10 @@ const StockMovementHistoryPage = () => {
             let valA = getSortValue(a, orderBy);
             let valB = getSortValue(b, orderBy);
 
+            if (orderBy === "qty") {
+                valA = Math.abs(Number(valA));
+                valB = Math.abs(Number(valB));
+            }
             if (typeof valA === "string") valA = valA.toString();
             if (typeof valB === "string") valB = valB.toString();
 
@@ -195,7 +213,9 @@ const StockMovementHistoryPage = () => {
     }, [filteredData, orderBy, order]);
 
     const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) ?? [];
-
+    useEffect(() => {
+        setPage(0);
+    }, [filteredData, sortedData]);
     dayjs.extend(isoWeek);
 
     const dataWithWeek = data?.map(row => ({
@@ -672,121 +692,107 @@ const StockMovementHistoryPage = () => {
                         </Box>
 
                         <Box display="flex" justifyContent="space-between" mt={1}>
-                            <Stack direction="row">
-                                <FormControl sx={{ m: 1, ml: 0, width: { lg: 150, xs: 120 } }}>
-                                    <InputLabel
-                                        id="multiple-types-label"
-                                        sx={{
-                                            color: colors.grey[100],
-                                            '&.Mui-focused': {
-                                                color: colors.grey[200],
-                                            },
-                                        }}
-                                    >区分</InputLabel>
-                                    <Select
-                                        labelId="multiple-types-label"
-                                        id="multiple-types"
-                                        value={type}
-                                        onChange={e => {
-                                            setType(e.target.value as Type)
-                                        }}
-                                        input={<OutlinedInput label="区分" />}
-                                        MenuProps={{
-                                            PaperProps: {
-                                                sx: {
-                                                    backgroundColor: colors.blueAccent[800],
-                                                    color: colors.grey[100],
-                                                    minWidth: 200,
-                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                                }
-                                            }
-                                        }}
-                                    >
-                                        <MenuItem value="ALL">
-                                            <em>全て</em>
-                                        </MenuItem>
-                                        <MenuItem value="IN">入庫</MenuItem>
-                                        <MenuItem value="OUT">出庫</MenuItem>
-                                    </Select>
-                                </FormControl>
+                            {isLG ? (
+                                <IconButton
+                                    color="primary"
+                                    onClick={handleOpenDrawer}
+                                    aria-label="フィルター"
+                                >
+                                    <FilterListIcon />
+                                </IconButton>
+                            ) : (
 
-                                <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
-                                    <InputLabel
-                                        id="multiple-qty-label"
-                                        sx={{
-                                            color: colors.grey[100],
-                                            '&.Mui-focused': {
-                                                color: colors.grey[200],
-                                            },
-                                        }}
-                                    >数量</InputLabel>
-                                    <Select
-                                        labelId="multiple-qty-label"
-                                        id="multiple-qty"
-                                        value={minQty}
-                                        onChange={(e) => {
-                                            const value = e.target.value ? e.target.value : "";
-                                            if (value === null) {
-                                                setMinQty(value);
-                                            } else setMinQty(Number(value));
-                                        }}
-                                        input={<OutlinedInput label="数量" />}
-                                        MenuProps={{
-                                            PaperProps: {
-                                                sx: {
-                                                    backgroundColor: colors.blueAccent[800],
-                                                    color: colors.grey[100],
-                                                    minWidth: 200,
-                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                                }
-                                            }
-                                        }}
-                                    >
-                                        <MenuItem value={0}>
-                                            <em>未選択</em>
-                                        </MenuItem>
-                                        <MenuItem value={5}>5以上</MenuItem>
-                                        <MenuItem value={10}>10以上</MenuItem>
-                                        <MenuItem value={20}>20以上</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Stack>
-                            <Stack direction="row">
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <DatePicker
-                                        label="開始日"
-                                        value={startDate}
-                                        onChange={(newValue) => setStartDate(newValue)}
-                                        sx={{ m: 1, maxWidth: 160, }}
-                                        slotProps={{
-                                            desktopPaper: {
-                                                style: {
-                                                    backgroundColor: colors.blueAccent[800],
-                                                },
-                                            }
-                                        }}
-                                    />
-                                    <DatePicker
-                                        label="終了日"
-                                        value={endDate}
-                                        onChange={(newValue) => setEndDate(newValue)}
-                                        sx={{ m: 1, maxWidth: 160 }}
-                                        slotProps={{
-                                            desktopPaper: {
-                                                style: {
-                                                    backgroundColor: colors.blueAccent[800],
-                                                },
-                                            }
-                                        }}
-                                    />
-                                </LocalizationProvider>
-                            </Stack>
+                                <Stack direction="row">
+                                    <Stack direction="row">
+                                        <FilterContent
+                                            type={type}
+                                            setType={setType}
+                                            minQty={minQty}
+                                            setMinQty={setMinQty}
+                                            sx={{ m: 1, ml: 0, width: { lg: 150, xs: 120 } }}
+                                        />
+                                    </Stack>
+                                    <Stack direction="row">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DatePicker
+                                                label="開始日"
+                                                value={startDate}
+                                                onChange={(newValue) => setStartDate(newValue)}
+                                                sx={{ m: 1, maxWidth: 160, }}
+                                                slotProps={{
+                                                    desktopPaper: {
+                                                        style: {
+                                                            backgroundColor: colors.blueAccent[800],
+                                                        },
+                                                    }
+                                                }}
+                                            />
+                                            <DatePicker
+                                                label="終了日"
+                                                value={endDate}
+                                                onChange={(newValue) => setEndDate(newValue)}
+                                                sx={{ m: 1, maxWidth: 160 }}
+                                                slotProps={{
+                                                    desktopPaper: {
+                                                        style: {
+                                                            backgroundColor: colors.blueAccent[800],
+                                                        },
+                                                    }
+                                                }}
+                                            />
+                                        </LocalizationProvider>
+                                    </Stack>
+                                </Stack>
+                            )}
 
                             <SearchBar
                                 value={keyword}
                                 onChange={setKeyword}
                                 sx={{ p: "0 !important" }}
                             />
+                            <Drawer
+                                anchor="left"
+                                open={openFilterDrawer}
+                                onClose={() => setOpenFilterDrawer(false)}
+                                slotProps={{
+                                    paper: {
+                                        style: {
+                                            width: '40vw',
+                                            backgroundColor: colors.primary[400]
+                                        }
+                                    }
+                                }}
+                            >
+                                <Box p={2} display="flex" flexDirection="column" height="100%">
+                                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                                        <Typography variant="h6">フィルター</Typography>
+                                        <IconButton onClick={() => setOpenFilterDrawer(false)}>
+                                            <CloseIcon />
+                                        </IconButton>
+                                    </Box>
+                                    <Divider sx={{ my: 1 }} />
+                                    <FilterContent
+                                        type={tempType}
+                                        setType={setTempType}
+                                        minQty={tempMinQty}
+                                        setMinQty={setTempMinQuty}
+                                        sx={{ mt: 2 }}
+                                    />
+                                    <Box mt="auto" display="flex" justifyContent="space-between" py={2}>
+                                        <Button variant="outlined" onClick={() => setOpenFilterDrawer(false)}>キャンセル</Button>
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => {
+                                                setType(tempType);;
+                                                setMinQty(tempMinQty)
+                                                setOpenFilterDrawer(false);
+                                            }}
+                                        >
+                                            適用
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            </Drawer>
                         </Box>
                         {
                             isLoading ? (
@@ -888,7 +894,7 @@ const StockMovementHistoryPage = () => {
                                         <TableFooter>
                                             <TableRow>
                                                 <TablePagination
-                                                    count={data?.length || 0}
+                                                    count={sortedData?.length || 0}
                                                     page={page}
                                                     rowsPerPage={rowsPerPage}
                                                     onPageChange={(_, newPage) => setPage(newPage)}

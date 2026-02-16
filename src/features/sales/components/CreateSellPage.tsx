@@ -12,7 +12,7 @@ import {
     Typography,
     useTheme
 } from "@mui/material"
-import Header from "../../../pages/Header";
+import Header from "../../../shared/components/layout/Header";
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import { tokens } from "../../../shared/theme";
@@ -213,7 +213,7 @@ const CreateSellPage = () => {
 
         try {
             const createdSaleOrder = await saleAPI.createSaleOrder(sellItem);
-            await saleAPI.prepareOrder(Number(createdSaleOrder.data.id));
+            await saleAPI.prepareSaleOrder(Number(createdSaleOrder.data.id));
             showSnackbar(SNACKBAR_MESSAGES.SELL.CREATE_SUCCESS, "success");
 
             const categoryIds = rows

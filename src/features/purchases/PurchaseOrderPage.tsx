@@ -16,7 +16,7 @@ import {
     type SxProps,
     type Theme
 } from "@mui/material";
-import Header from "../../pages/Header";
+import Header from "../../shared/components/layout/Header";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { tokens } from "../../shared/theme";
 import { useNavigate } from "react-router-dom";
@@ -26,13 +26,13 @@ import { useState } from "react";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
 import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
-import type { AxiosError } from "axios";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { purchaseAPI } from "./api/purchaseAPI";
 import { usePurchaseOrders } from "./hooks/usePurchaseOrders";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import useRoleFlags from "../auth/hooks/useRoleFlags";
+import { getErrorMessage } from "../../shared/utils/errorHandler";
 
 // ステータスに応じたChipを表示する関数
 const renderStatusChip = (status: string) => {
@@ -43,12 +43,12 @@ const renderStatusChip = (status: string) => {
         COMPLETED: "success",
         CANCELLED: "error",
     };
-    return <Chip 
-    label={status} 
-    color={colorMap[status] || "primary"} 
-    sx={{
-        width: 100
-    }}
+    return <Chip
+        label={status}
+        color={colorMap[status] || "primary"}
+        sx={{
+            width: 100
+        }}
     />;
 };
 // テーブルセルのスタイル関数（右寄せや省略表示など）
@@ -97,8 +97,8 @@ const PurchaseOrderPage = () => {
             queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
 
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
 

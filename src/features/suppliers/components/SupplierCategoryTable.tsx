@@ -25,9 +25,9 @@ import SupplierProductForm from "./SupplierProductForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supplierAPI } from "../api/supplierAPI";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
-import type { AxiosError } from "axios";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
+import { getErrorMessage } from "../../../shared/utils/errorHandler";
 
 type SupplierCategoryTableProps = {
     categoryName: string | undefined;
@@ -59,8 +59,8 @@ const SupplierCategoryTable = ({ categoryName, products, supplierId, supplierSta
             showSnackbar(response.message || SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success"); // スナックバー表示
             queryClient.invalidateQueries({ queryKey: ["supplier-product-with-price-history", selectedSupplierProduct?.sku] });
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
         },
     })
     return (

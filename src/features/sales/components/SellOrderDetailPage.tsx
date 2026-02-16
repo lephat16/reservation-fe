@@ -21,18 +21,18 @@ import type { SaleOrderData, SaleOrderDetailData } from "../types/sell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
-import Header from "../../../pages/Header";
+import Header from "../../../shared/components/layout/Header";
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import * as yup from "yup";
 import { DeleteConfirmDialog } from "../../../shared/components/DeleteConfirmDialog";
 import { SubmitConfirmDialog } from "../../purchases/components/PurchaseOrderDetailPage";
-import type { AxiosError } from "axios";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { saleAPI } from "../api/saleAPI";
 import { useSaleOrderDetail } from "../hooks/useSaleOrderDetail";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import useRoleFlags from "../../auth/hooks/useRoleFlags";
+import { getErrorMessage } from "../../../shared/utils/errorHandler";
 
 const descriptionSchema = yup.object({
     description: yup
@@ -106,8 +106,8 @@ const SellOrderDetailPage = () => {
                 navigate("/sell-order");
             }, 500);
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
     const submitMutation = useMutation({
@@ -119,8 +119,8 @@ const SellOrderDetailPage = () => {
                 navigate("/sell-order");
             }, 500);
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.SELL.CREATE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.SELL.CREATE_FAILED, "error");
         }
     });
     return (

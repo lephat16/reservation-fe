@@ -13,6 +13,7 @@ import { tokens } from '../../../shared/theme'
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import type { SupplierData } from '../types/supplier';
+import { STATUS } from '../../../constants/status';
 
 type SupplierDetailCardProps = {
   supplier: SupplierData,
@@ -48,8 +49,8 @@ const SupplierDetailCard: React.FC<SupplierDetailCardProps> = ({
       </Typography>
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} mt={1}>
         <Chip
-          label={supplier.supplierStatus === "ACTIVE" ? "稼働中" : "停止中"}
-          color={supplier.supplierStatus === "ACTIVE" ? "success" : "error"}
+          label={STATUS[supplier.supplierStatus].label}
+          color={STATUS[supplier.supplierStatus].color}
           size="small"
         />
         <Tooltip title="削除">

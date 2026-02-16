@@ -1,4 +1,4 @@
-import { api } from "../../../api/axiosClient";
+import { api } from "../../../shared/api/axiosClient";
 import type { ApiResponse } from "../../../shared";
 import type { StockWithSupplierAndProduct } from "../../stocks/types/stock";
 import type { ProductData, ProductDetailDataDTO, ProductFormData } from "../types/product";
@@ -14,23 +14,17 @@ export const productAPI = {
     getProductInfoDetail: async (productId: number): Promise<ApiResponse<ProductDetailDataDTO>> => {
         return (await api.get(`/products/info-detail/${productId}`));
     },
-    getProductsByCategory: async (categoryId: number): Promise<ApiResponse<ProductData[]>> => {
-        return (await api.get(`/products/all/by-category/${categoryId}`)).data;
-    },
-    getProductsById: async (productId: number): Promise<ApiResponse<ProductData>> => {
-        return (await api.get(`/products/${productId}`)).data;
-    },
-    updateProduct: async (productData: FormData, productId: number): Promise<ApiResponse<ProductData>> => {
-        return (await api.put(`/products/update/${productId}`, productData)).data;
+    updateProduct: async (productData: FormData, productId: number): Promise<ApiResponse<ProductData>> => {      
+        return (await api.put(`/products/update/${productId}`, productData));
     },
     deleteProduct: async (productId: number): Promise<ApiResponse<ProductData>> => {
-        return (await api.delete(`/products/delete/${productId}`)).data;
+        return (await api.delete(`/products/delete/${productId}`));
     },
     getAllProductsWithInventoryOptional: async (): Promise<ApiResponse<StockWithSupplierAndProduct[]>> => {
         return (await api.get(`/products/all/with-inventory-optional`));
     },
-    
-    
+
+
 }
 
 

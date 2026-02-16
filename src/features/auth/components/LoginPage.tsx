@@ -50,7 +50,7 @@ const LoginPage = (): JSX.Element => {
     const mutation = useMutation({
         mutationFn: loginApi,
         onSuccess: (response) => {
-            dispatch(setUser(response.user || null));
+            dispatch(setUser(response.data.user || null));
             showSnackbar("ログインしました。", "success");
             setTimeout(() => navigate("/profile"), 500); // カテゴリページへ遷移
         },

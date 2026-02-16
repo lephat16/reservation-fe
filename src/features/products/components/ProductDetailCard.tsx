@@ -5,6 +5,7 @@ import { Card, CardContent, Chip, Grid, IconButton, Stack, Tooltip, Typography, 
 import { tokens } from '../../../shared/theme'
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import { STATUS } from '../../../constants/status';
 
 type ProductDetailCardProps = {
   product: ProductData,
@@ -41,8 +42,8 @@ const ProductDetailCard: React.FC<ProductDetailCardProps> = ({
         <Typography>カテゴリ: {product.categoryName}</Typography>
         <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} mt={1}>
           <Chip
-            label={product.status === "ACTIVE" ? "稼働中" : "停止中"}
-            color={product.status === "ACTIVE" ? "success" : "error"}
+            label={STATUS[product.status].label}
+            color={STATUS[product.status].color}
             size="small"
           />
           <Tooltip title="削除">

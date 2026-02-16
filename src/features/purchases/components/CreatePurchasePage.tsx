@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { tokens } from '../../../shared/theme';
 import type { SupplierData } from '../../suppliers/types/supplier';
-import Header from '../../../pages/Header';
+import Header from '../../../shared/components/layout/Header';
 import CustomSnackbar from '../../../shared/components/global/CustomSnackbar';
 import { useSnackbar } from '../../../shared/hooks/useSnackbar';
 import { useEffect, useState } from 'react';

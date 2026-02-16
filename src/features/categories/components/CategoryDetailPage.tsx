@@ -20,7 +20,7 @@ import {
     useTheme
 } from "@mui/material";
 import { tokens } from "../../../shared/theme";
-import Header from "../../../pages/Header";
+import Header from "../../../shared/components/layout/Header";
 import type { CategoryFormData, ProductStockData } from "../types/category";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -38,8 +38,9 @@ import CategoryForm from "./CategoryForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { categoryAPI } from "../api/categoryAPI";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
-import type { AxiosError } from "axios";
 import { styledTable } from "../../../shared/components/global/StyleTable";
+import { STATUS } from "../../../constants/status";
+import { getErrorMessage } from "../../../shared/utils/errorHandler";
 
 interface ProductRowProps {
     product: ProductStockData;
@@ -171,8 +172,8 @@ const CategoryDetailPage = () => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["category"] });
         },
-        onError: (error: AxiosError<{ message: string }>) => {
-            showSnackbar(error.response?.data?.message || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
         }
     });
     const getAllSuppliers = (products?: ProductStockData[]): string => {
@@ -251,8 +252,8 @@ const CategoryDetailPage = () => {
 
                                         <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} mt={1}>
                                             <Chip
-                                                label={data.categoryInfo.status === "ACTIVE" ? "稼働中" : "停止中"}
-                                                color={data.categoryInfo.status === "ACTIVE" ? "success" : "error"}
+                                                label={STATUS[data.categoryInfo.status].label}
+                                                color={STATUS[data.categoryInfo.status].color}
                                                 size="small"
                                                 sx={{ mb: 1 }}
                                             />
@@ -318,7 +319,7 @@ const CategoryDetailPage = () => {
                                 <CardMedia
                                     component="img"
                                     sx={{ width: 180, height: 180, objectFit: 'cover' }}
-                                    image={`http://localhost:8081${data.categoryInfo.imageUrl}`}
+                                    image={`${import.meta.env.VITE_IMG_URL}${data.categoryInfo.imageUrl}`}
                                     alt={data.categoryInfo.name}
                                 />
                             </Card>

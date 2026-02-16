@@ -6,7 +6,7 @@ import ProductPage from './features/products/components/ProductPage'
 import ProfilePage from './features/auth/ProfilePage'
 import { ColorModeContext, useMode } from './shared/theme'
 import { CssBaseline, ThemeProvider } from '@mui/material'
-import MainLayout from './pages/Layout'
+import MainLayout from './shared/components/layout/Layout'
 import CategoriesPage from './features/categories/CategoriesPage'
 import CategoryDetailPage from './features/categories/components/CategoryDetailPage'
 import AllSupplierPage from './features/suppliers/AllSupplierPage'
@@ -20,36 +20,16 @@ import SellOrderDetailPage from './features/sales/components/SellOrderDetailPage
 import DeliverForm from './features/sales/components/DeliverForm'
 import CreateSellPage from './features/sales/components/CreateSellPage'
 import WarehousePage from './features/stocks/WarehousePage'
-import AllProductsPageRefator from './features/products/AllProductsPageRefator'
+import AllProductsPage from './features/products/AllProductsPage'
 import ErrorBoundary from './shared/components/global/ErrorBoundary'
 import { ScreenProvider } from './shared/hooks/ScreenContext'
 import StockMovementHistoryPage from './features/stocks/components/StockMovementHistoryPage'
-import { useDispatch } from "react-redux";
-import { useEffect, useState } from 'react'
-import { setUser } from './features/auth/store/authSlice'
-import { authAPI } from './features/auth/api/authAPI'
+
 
 function App() {
 
   const [theme, colorMode] = useMode();
-  const dispatch = useDispatch();
-  const [loadingAuth, setLoadingAuth] = useState(true);
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const profile = await authAPI.getLoggedInUser();
-        dispatch(setUser(profile.data));
-      } catch (err) {
-        dispatch(setUser(null));
-      } finally {
-        setLoadingAuth(false);
-      }
-    };
-    initializeAuth();
-  }, [dispatch]);
-
-  if (loadingAuth) return <div>Loading...</div>;
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
@@ -65,7 +45,7 @@ function App() {
                   <Route path="/category" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<CategoriesPage />} />} />
                   <Route path='/category/:categoryId' element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<CategoryDetailPage />} />} />
                   <Route path="/products/:productId" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<ProductPage />} />} />
-                  <Route path="/products" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<AllProductsPageRefator />} />} />
+                  <Route path="/products" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<AllProductsPage />} />} />
                   <Route path="/suppliers" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<AllSupplierPage />} />} />
                   <Route path="/suppliers/:supplierId" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<SupplierPage />} />} />
 
