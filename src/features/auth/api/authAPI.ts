@@ -1,6 +1,6 @@
 import { api } from "../../../shared/api/axiosClient";
 import type { ApiResponse } from "../../../shared";
-import type { AllUserRespose, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserData } from "../types/auth";
+import type { AllUserRespose, ChangePasswordRequest, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserData } from "../types/auth";
 
 export const authAPI = {
 
@@ -17,7 +17,7 @@ export const authAPI = {
         return (await api.get(`/users/all`));
     },
     getLoggedInUser: async (): Promise<ApiResponse<UserData>> => {
-        return ((await api.get(`/auth/me`)));
+        return ((await api.get(`/users/current`)));
     },
     getUserById: async (userId: number): Promise<UserData> => {
         return (await api.get(`/users/transaction/${userId}`));
@@ -27,6 +27,9 @@ export const authAPI = {
     },
     deleteUser: async (userId: number): Promise<RegisterResponse> => {
         return (await api.delete(`/users/delete/${userId}`));
+    },
+    changePassword: async (userId: number, request: ChangePasswordRequest): Promise<ApiResponse<UserData>> => {
+        return (await api.put(`/users/${userId}/password`, request));
     },
 }
 

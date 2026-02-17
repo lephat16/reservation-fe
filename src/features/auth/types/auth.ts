@@ -49,3 +49,10 @@ export interface AllUserRespose {
     message: string;
     users: UserData[];
 }
+export interface ChangePasswordRequest {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+}
+
+

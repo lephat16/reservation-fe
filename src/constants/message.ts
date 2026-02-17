@@ -20,5 +20,7 @@ export const SNACKBAR_MESSAGES = {
         DELIVER_SUCCESS: "出荷に成功しました",
         DELIVER_FAILED: "出荷に失敗しました",
     },
+    CHANGE_PASSWORD_SUCCESS: "パスワードが変更されました",
+    CHANGE_PASSWORD_CREATE_FAILED: "パスワード変更に失敗しました",
 
 };

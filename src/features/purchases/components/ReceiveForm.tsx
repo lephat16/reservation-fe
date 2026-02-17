@@ -253,7 +253,6 @@ export const ReceiveFormDialog = ({
                         name="warehouses"
                         control={control}
                         render={({ field }) => (
-
                             <TextField
                                 label="倉庫"
                                 select

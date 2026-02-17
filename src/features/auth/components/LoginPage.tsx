@@ -52,7 +52,7 @@ const LoginPage = (): JSX.Element => {
         onSuccess: (response) => {
             dispatch(setUser(response.data.user || null));
             showSnackbar("ログインしました。", "success");
-            setTimeout(() => navigate("/profile"), 500); // カテゴリページへ遷移
+            setTimeout(() => navigate("/warehouses"), 500); // カテゴリページへ遷移
         },
         onError: (error: AxiosError<{ message: string }>) => {
             showSnackbar(error.response?.data?.message ||

@@ -1,4 +1,4 @@
-import { Button, Card, FormControl, FormLabel, Input, Stack, useTheme } from "@mui/material";
+import { Button, Card, FormControl, FormLabel, Input, Stack, Typography, useTheme } from "@mui/material";
 import type React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -41,9 +41,19 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
     return (
         <Card
             sx={{
+                mt: 2,
                 p: 2,
                 background: `${colors.primary[400]}`
             }}>
+            <Typography
+                className="title"
+                variant="h4"
+                align="center"
+                fontWeight="bold"
+                sx={{ color: colors.grey[100], mb: 2 }}
+            >
+                個人情報
+            </Typography>
             <Stack
                 direction={{ xs: "column", md: "row" }}
                 spacing={1}
@@ -120,7 +130,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
                         <Button variant="outlined" color="info" onClick={handleEdit}>
                             Edit
                         </Button>
-                        <Button variant="contained" color="primary" onClick={() => navigate("/dashboard")}>
+                        <Button variant="contained" color="primary" onClick={() => navigate("/warehouses")}>
                             OK
                         </Button>
                     </>

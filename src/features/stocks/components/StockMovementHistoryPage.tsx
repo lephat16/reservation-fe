@@ -51,6 +51,7 @@ import { BarChart } from '@mui/x-charts/BarChart';
 import _ from "lodash";
 import { LineChart, } from "@mui/x-charts";
 import FilterContent from "./FilterContent";
+import FilterDatePicker from "./FilterDatePicker";
 
 export type Type = "IN" | "OUT" | "ALL";
 type Order = 'asc' | 'desc';
@@ -361,334 +362,466 @@ const StockMovementHistoryPage = () => {
                     }}
                 >
                     <Box flex={2}>
-                        <Box display="flex" gap={1}>
-                            <Card
-                                sx={{
-                                    backgroundColor: colors.primary[400],
-                                    color: colors.grey[100],
-                                    display: "flex",
-                                    width: 160
-                                }}
-                            >
-                                <Box
-                                    minWidth={140}
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                    }}
-                                    flexGrow={1}
-                                >
-                                    <CardContent
-                                        sx={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            flex: 1,
-                                            justifyContent: "space-between",
-                                            alignItems: "center"
-                                        }}
-                                    >
-                                        <Stack direction="row" gap={2} justifyContent="space-between">
-                                            <ArchiveIcon sx={{ fontSize: 50 }} color="info" />
-                                            <Stack direction="column">
-                                                <Stack direction="row" gap={1}>
-                                                    {inPercentChange >= 0 ? (
-                                                        <MovingIcon color="success" sx={{ fontSize: 24 }} />
-                                                    ) : (
-                                                        <TrendingDownIcon color="error" sx={{ fontSize: 24 }} />
-                                                    )}
-                                                    <Typography
-                                                        alignContent="center"
-                                                        variant="subtitle2"
-                                                        color={inPercentChange >= 0 ? 'success.main' : 'error.main'}
-                                                        sx={{ fontWeight: 'bold' }}
-                                                    >
-                                                        {inPercentChange >= 0 ? `+${inPercentChange.toFixed(1)}%` : `${inPercentChange.toFixed(1)}%`}
-                                                    </Typography>
-                                                </Stack>
-                                                <Typography
-                                                    textAlign="center"
-                                                    sx={{
-                                                        fontWeight: 'bold',
-                                                        lineHeight: 1,
-                                                        fontSize: { xl: '0.2rem', xs: '0.6rem' }
-                                                    }}
-                                                >今週</Typography>
-                                                <Typography
-                                                    textAlign="center"
-                                                    sx={{
-                                                        fontWeight: 'bold',
-                                                        lineHeight: 1.2,
-                                                        fontSize: {
-                                                            xl: '0.4rem',
-                                                            xs: '1.2rem'
-                                                        },
-                                                    }}
-                                                >
-                                                    {thisWeekData?.totalIn || 0}
-                                                </Typography>
-                                            </Stack>
-                                        </Stack>
-                                        <Typography
-                                            component="div"
-                                            sx={{
-                                                fontSize: {
-                                                    xl: '1rem',
-                                                    xs: '2rem'
-                                                },
-                                                fontWeight: 'bold',
-                                            }}
-                                        >
-                                            {totalQtyIn}
-                                        </Typography>
-                                        <Typography
-                                            variant="subtitle1"
-                                            fontWeight={600}
-                                            color="success"
-                                        >
-                                            入庫合計
-                                        </Typography>
-                                    </CardContent>
-                                </Box>
-                            </Card>
-                            <Card
-                                sx={{
-                                    backgroundColor: colors.primary[400],
-                                    color: colors.grey[100],
-                                    display: "flex",
-                                    width: 160
-                                }}
-                            >
-                                <Box
-                                    minWidth={140}
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                    }}
-                                    flexGrow={1}
-                                >
-                                    <CardContent
-                                        sx={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            flex: 1,
-                                            justifyContent: "space-between",
-                                            alignItems: "center"
-                                        }}
-                                    >
-                                        <Stack direction="row" gap={2} justifyContent="space-between">
-                                            <UnarchiveIcon sx={{ fontSize: 50 }} color="info" />
-                                            <Stack direction="column">
-                                                <Stack direction="row" gap={1}>
-                                                    {outPercentChange >= 0 ? (
-                                                        <MovingIcon color="success" sx={{ fontSize: 24 }} />
-                                                    ) : (
-                                                        <TrendingDownIcon color="error" sx={{ fontSize: 24 }} />
-                                                    )}
-                                                    <Typography
-                                                        alignContent="center"
-                                                        variant="subtitle2"
-                                                        color={outPercentChange >= 0 ? 'success.main' : 'error.main'}
-                                                        sx={{ fontWeight: 'bold' }}
-                                                    >
-                                                        {outPercentChange >= 0 ? `+${outPercentChange.toFixed(1)}%` : `${outPercentChange.toFixed(1)}%`}
-                                                    </Typography>
-                                                </Stack>
-                                                <Typography
-                                                    textAlign="center"
-                                                    sx={{
-                                                        fontWeight: 'bold',
-                                                        lineHeight: 1,
-                                                        fontSize: { xl: '0.2rem', xs: '0.6rem' }
-                                                    }}
-                                                >今週</Typography>
-                                                <Typography
-                                                    textAlign="center"
-                                                    sx={{
-                                                        fontWeight: 'bold',
-                                                        lineHeight: 1.2,
-                                                        fontSize: {
-                                                            xl: '0.4rem',
-                                                            xs: '1.2rem'
-                                                        },
-                                                    }}
-                                                >
-                                                    {thisWeekData?.totalOut || 0}
-                                                </Typography>
+                        <Box display="flex" gap={1} justifyContent="stretch">
+                            <Box display="flex" gap={1} sx={{ flexDirection: { xs: "column", md: "row" } }}>
 
+                                <Card
+                                    sx={{
+                                        backgroundColor: colors.primary[400],
+                                        color: colors.grey[100],
+                                        display: "flex",
+                                        width: { md: 160, xs: 120, sm: 180 },
+                                        height: { md: 192, xs: 90 }
+                                    }}
+                                >
+                                    <Box
+                                        minWidth={120}
+                                        sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                        }}
+                                        flexGrow={1}
+                                    >
+                                        <CardContent
+                                            sx={{
+                                                display: "flex",
+                                                flexDirection: { md: "column", xs: "row" },
+                                                flex: 1,
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                                height: '100%'
+                                            }}
+                                        >
+                                            <Stack
+                                                direction="row"
+                                                sx={{
+                                                    minHeight: 80,
+                                                    justifyContent: {
+                                                        xs: "center",
+                                                        md: "space-between"
+                                                    },
+                                                    alignItems: "center"
+                                                }}
+                                            >
+                                                <ArchiveIcon
+                                                    sx={{
+                                                        fontSize: { md: 50, xs: 30, alignSelf: "center" },
+                                                        display: { xs: "none", md: "inline-block" }
+                                                    }}
+                                                    color="info" />
+                                                <Stack direction="column">
+                                                    <Stack direction="row" gap={1}>
+                                                        {inPercentChange >= 0 ? (
+                                                            <MovingIcon color="success" sx={{ fontSize: { md: 24, xs: 18 } }} />
+                                                        ) : (
+                                                            <TrendingDownIcon color="error" sx={{ fontSize: { md: 24, xs: 18 } }} />
+                                                        )}
+                                                        <Typography
+                                                            alignContent="center"
+                                                            variant="subtitle2"
+                                                            color={inPercentChange >= 0 ? 'success.main' : 'error.main'}
+                                                            sx={{ fontWeight: 'bold' }}
+                                                        >
+                                                            {inPercentChange >= 0 ? `+${inPercentChange.toFixed(1)}%` : `${inPercentChange.toFixed(1)}%`}
+                                                        </Typography>
+                                                    </Stack>
+                                                    <Typography
+                                                        textAlign="center"
+                                                        sx={{
+                                                            fontWeight: 'bold',
+                                                            lineHeight: 1,
+                                                            fontSize: {
+                                                                md: '1rem',
+                                                                xs: '0.6rem'
+                                                            }
+                                                        }}
+                                                    >今週</Typography>
+                                                    <Typography
+                                                        textAlign="center"
+                                                        sx={{
+                                                            fontWeight: 'bold',
+                                                            lineHeight: 1.2,
+                                                            fontSize: {
+                                                                md: '1.4rem',
+                                                                xs: '1rem'
+                                                            },
+                                                        }}
+                                                    >
+                                                        {thisWeekData?.totalIn || 0}
+                                                    </Typography>
+                                                </Stack>
                                             </Stack>
-                                        </Stack>
-                                        <Typography
-                                            component="div"
+                                            <Stack alignItems="center">
+                                                <Typography
+                                                    component="div"
+                                                    sx={{
+                                                        fontSize: {
+                                                            md: '2rem',
+                                                            xs: '1rem'
+                                                        },
+                                                        fontWeight: 'bold',
+                                                    }}
+                                                >
+                                                    {totalQtyIn}
+                                                </Typography>
+                                                <Typography
+                                                    variant="subtitle1"
+                                                    fontWeight={600}
+                                                    color="success"
+                                                    sx={{
+                                                        fontSize: {
+                                                            md: '1rem',
+                                                            sm: '0.8rem',
+                                                            xs: '0.6rem'
+                                                        },
+                                                    }}
+                                                >
+                                                    入庫合計
+                                                </Typography>
+                                            </Stack>
+                                        </CardContent>
+                                    </Box>
+                                </Card>
+                                <Card
+                                    sx={{
+                                        backgroundColor: colors.primary[400],
+                                        color: colors.grey[100],
+                                        display: "flex",
+                                        width: { md: 160, xs: 120, sm: 180 },
+                                        height: { md: 192, xs: 90 }
+                                    }}
+                                >
+                                    <Box
+                                        minWidth={120}
+                                        sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                        }}
+                                        flexGrow={1}
+                                    >
+                                        <CardContent
                                             sx={{
-                                                fontSize: {
-                                                    xl: '1rem',
-                                                    xs: '2rem'
-                                                },
-                                                fontWeight: 'bold',
+                                                display: "flex",
+                                                flexDirection: { md: "column", xs: "row" },
+                                                flex: 1,
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                                height: "100%"
                                             }}
                                         >
-                                            {totalQtyOut}
-                                        </Typography>
-                                        <Typography
-                                            variant="subtitle1"
-                                            fontWeight={600}
-                                            color="success"
-                                        >
-                                            出庫合計
-                                        </Typography>
-                                    </CardContent>
-                                </Box>
-                            </Card>
-                            <Card
-                                sx={{
-                                    backgroundColor: colors.primary[400],
-                                    color: colors.grey[100],
-                                    display: "flex",
-                                    width: 160
-                                }}
-                            >
-                                <Box
-                                    minWidth={140}
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                    }}
-                                    flexGrow={1}
-                                >
-                                    <CardContent
-                                        sx={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            flex: 1,
-                                            justifyContent: "space-between",
-                                            alignItems: "center"
-                                        }}
-                                    >
-                                        <Stack direction="row" gap={2} justifyContent="space-between">
-                                            <CategoryIcon sx={{ fontSize: 50 }} color="info" />
-                                            <Tooltip
-                                                title={topInProduct.productName}
-                                                arrow
-                                                slotProps={{
-                                                    popper: {
-                                                        modifiers: [
-                                                            {
-                                                                name: 'offset',
-                                                                options: {
-                                                                    offset: [0, -20]
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
+                                            <Stack
+                                                direction="row"
+                                                sx={{
+                                                    minHeight: 80,
+                                                    justifyContent: {
+                                                        xs: "center",
+                                                        md: "space-between"
+                                                    },
+                                                    alignItems: "center"
                                                 }}
                                             >
+                                                <UnarchiveIcon
+                                                    sx={{
+                                                        fontSize: { md: 50, xs: 30, alignSelf: "center" },
+                                                        display: { xs: "none", md: "inline-block" }
+                                                    }}
+
+                                                    color="info" />
+                                                <Stack direction="column">
+                                                    <Stack direction="row" gap={1}>
+                                                        {outPercentChange >= 0 ? (
+                                                            <MovingIcon color="success" sx={{ fontSize: { md: 24, xs: 18 } }} />
+                                                        ) : (
+                                                            <TrendingDownIcon color="error" sx={{ fontSize: { md: 24, xs: 18 } }} />
+                                                        )}
+                                                        <Typography
+                                                            alignContent="center"
+                                                            variant="subtitle2"
+                                                            color={outPercentChange >= 0 ? 'success.main' : 'error.main'}
+                                                            sx={{ fontWeight: 'bold' }}
+                                                        >
+                                                            {outPercentChange >= 0 ? `+${outPercentChange.toFixed(1)}%` : `${outPercentChange.toFixed(1)}%`}
+                                                        </Typography>
+                                                    </Stack>
+                                                    <Typography
+                                                        textAlign="center"
+                                                        sx={{
+                                                            fontWeight: 'bold',
+                                                            lineHeight: 1,
+                                                            fontSize: {
+                                                                md: '1rem',
+                                                                xs: '0.6rem'
+                                                            }
+                                                        }}
+                                                    >今週</Typography>
+                                                    <Typography
+                                                        textAlign="center"
+                                                        sx={{
+                                                            fontWeight: 'bold',
+                                                            lineHeight: 1.2,
+                                                            fontSize: {
+                                                                md: '1.4rem',
+                                                                xs: '1rem'
+                                                            },
+                                                        }}
+                                                    >
+                                                        {thisWeekData?.totalOut || 0}
+                                                    </Typography>
+
+                                                </Stack>
+                                            </Stack>
+                                            <Stack alignItems="center">
                                                 <Typography
-                                                    variant="h6"
-                                                    sx={{ fontWeight: 'bold', textAlign: 'center' }}
-                                                    color="warning"
-                                                    alignContent="center"
+                                                    component="div"
+                                                    sx={{
+                                                        fontSize: {
+                                                            md: '2rem',
+                                                            xs: '1rem'
+                                                        },
+                                                        fontWeight: 'bold',
+                                                    }}
                                                 >
-                                                    {topInProduct.code}
+                                                    {totalQtyOut}
                                                 </Typography>
-                                            </Tooltip>
-                                        </Stack>
-                                        <Typography
-                                            component="div"
+                                                <Typography
+                                                    variant="subtitle1"
+                                                    fontWeight={600}
+                                                    color="success"
+                                                    sx={{
+                                                        fontSize: {
+                                                            md: '1rem',
+                                                            sm: '0.8rem',
+                                                            xs: '0.6rem'
+                                                        },
+                                                    }}
+                                                >
+                                                    出庫合計
+                                                </Typography>
+                                            </Stack>
+                                        </CardContent>
+                                    </Box>
+                                </Card>
+                            </Box>
+                            <Box display="flex" gap={1} sx={{ flexDirection: { xs: "column", md: "row" } }}>
+                                <Card
+                                    sx={{
+                                        backgroundColor: colors.primary[400],
+                                        color: colors.grey[100],
+                                        display: "flex",
+                                        width: { md: 160, xs: 120, sm: 180 },
+                                        height: { md: 192, xs: 90 }
+                                    }}
+                                >
+                                    <Box
+                                        minWidth={120}
+                                        sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                        }}
+                                        flexGrow={1}
+                                    >
+                                        <CardContent
                                             sx={{
-                                                fontSize: {
-                                                    xl: '1rem',
-                                                    xs: '2rem'
-                                                },
-                                                fontWeight: 'bold',
+                                                display: "flex",
+                                                flexDirection: { md: "column", xs: "row" },
+                                                flex: 1,
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                                height: '100%'
                                             }}
                                         >
-                                            {topInProduct.totalIn}
-                                        </Typography>
-                                        <Typography
-                                            variant="subtitle1"
-                                            fontWeight={600}
-                                            color="success"
-                                        >
-                                            入庫最多商品
-                                        </Typography>
-                                    </CardContent>
-                                </Box>
-                            </Card>
-                            <Card
-                                sx={{
-                                    backgroundColor: colors.primary[400],
-                                    color: colors.grey[100],
-                                    display: "flex",
-                                    width: 160
-                                }}
-                            >
-                                <Box
-                                    minWidth={140}
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                    }}
-                                    flexGrow={1}
-                                >
-                                    <CardContent
-                                        sx={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            flex: 1,
-                                            justifyContent: "space-between",
-                                            alignItems: "center"
-                                        }}
-                                    >
-                                        <Stack direction="row" gap={2} justifyContent="space-between">
-                                            <CategoryIcon sx={{ fontSize: 50 }} color="info" />
-                                            <Tooltip
-                                                title={topInProduct.productName}
-                                                arrow
-                                                slotProps={{
-                                                    popper: {
-                                                        modifiers: [
-                                                            {
-                                                                name: 'offset',
-                                                                options: {
-                                                                    offset: [0, -20]
+                                            <Stack
+                                                direction="row"
+                                                sx={{
+                                                    minHeight: 80,
+                                                    justifyContent: {
+                                                        xs: "center",
+                                                        md: "space-between"
+                                                    },
+                                                    alignItems: "center"
+                                                }}
+
+                                            >
+                                                <CategoryIcon
+                                                    sx={{
+                                                        fontSize: { md: 50, xs: 30, alignSelf: "center" },
+                                                        display: { xs: "none", md: "inline-block" }
+                                                    }}
+                                                    color="info" />
+                                                <Tooltip
+                                                    title={topInProduct.productName}
+                                                    arrow
+                                                    slotProps={{
+                                                        popper: {
+                                                            modifiers: [
+                                                                {
+                                                                    name: 'offset',
+                                                                    options: {
+                                                                        offset: [0, -20]
+                                                                    }
                                                                 }
+                                                            ]
+                                                        }
+                                                    }}
+                                                >
+                                                    <Typography
+                                                        variant="h6"
+                                                        sx={{
+                                                            fontWeight: 'bold',
+                                                            textAlign: 'center',
+                                                            fontSize: {
+                                                                md: '1.2rem',
+                                                                xs: '0.8rem'
                                                             }
-                                                        ]
-                                                    }
+                                                        }}
+                                                        color="warning"
+                                                        alignContent="center"
+                                                    >
+                                                        {topInProduct.code}
+                                                    </Typography>
+                                                </Tooltip>
+                                            </Stack>
+                                            <Stack alignItems="center">
+                                                <Typography
+                                                    component="div"
+                                                    sx={{
+                                                        fontSize: {
+                                                            md: '2rem',
+                                                            xs: '1rem'
+                                                        },
+                                                        fontWeight: 'bold',
+                                                    }}
+                                                >
+                                                    {topInProduct.totalIn}
+                                                </Typography>
+                                                <Typography
+                                                    variant="subtitle1"
+                                                    fontWeight={600}
+                                                    color="success"
+                                                    sx={{
+                                                        fontSize: {
+                                                            md: '1rem',
+                                                            sm: '0.8rem',
+                                                            xs: '0.6rem'
+                                                        },
+                                                    }}
+                                                >
+                                                    入庫最多商品
+                                                </Typography>
+                                            </Stack>
+                                        </CardContent>
+                                    </Box>
+                                </Card>
+                                <Card
+                                    sx={{
+                                        backgroundColor: colors.primary[400],
+                                        color: colors.grey[100],
+                                        display: "flex",
+                                        width: { md: 160, xs: 120, sm: 180 },
+                                        height: { md: 192, xs: 90 }
+                                    }}
+                                >
+                                    <Box
+                                        minWidth={120}
+                                        sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                        }}
+                                        flexGrow={1}
+                                    >
+                                        <CardContent
+                                            sx={{
+                                                display: "flex",
+                                                flexDirection: { md: "column", xs: "row" },
+                                                flex: 1,
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                                height: '100%'
+                                            }}
+                                        >
+                                            <Stack
+                                                direction="row"
+                                                sx={{
+                                                    minHeight: 80,
+                                                    justifyContent: {
+                                                        xs: "center",
+                                                        md: "space-between"
+                                                    },
+                                                    alignItems: "center"
                                                 }}
                                             >
-                                                <Typography
-                                                    variant="h6"
-                                                    sx={{ fontWeight: 'bold', textAlign: 'center' }}
-                                                    color="warning"
-                                                    alignContent="center"
+                                                <CategoryIcon
+                                                    sx={{
+                                                        fontSize: { md: 50, xs: 30, alignSelf: "center" },
+                                                        display: { xs: "none", md: "inline-block" }
+                                                    }}
+                                                    color="info"
+                                                />
+                                                <Tooltip
+                                                    title={topInProduct.productName}
+                                                    arrow
+                                                    slotProps={{
+                                                        popper: {
+                                                            modifiers: [
+                                                                {
+                                                                    name: 'offset',
+                                                                    options: {
+                                                                        offset: [0, -20]
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    }}
                                                 >
-                                                    {topOutProduct.code}
+                                                    <Typography
+                                                        variant="h6"
+                                                        sx={{
+                                                            fontWeight: 'bold',
+                                                            textAlign: 'center',
+                                                            fontSize: {
+                                                                md: '1.2rem',
+                                                                xs: '0.8rem'
+                                                            }
+                                                        }}
+                                                        color="warning"
+                                                        alignContent="center"
+                                                    >
+                                                        {topOutProduct.code}
+                                                    </Typography>
+                                                </Tooltip>
+                                            </Stack>
+                                            <Stack alignItems="center">
+                                                <Typography
+                                                    component="div"
+                                                    sx={{
+                                                        fontSize: {
+                                                            md: '2rem',
+                                                            xs: '1rem'
+                                                        },
+                                                        fontWeight: 'bold',
+                                                    }}
+                                                >
+                                                    {topOutProduct.totalOut}
                                                 </Typography>
-                                            </Tooltip>
-                                        </Stack>
-                                        <Typography
-                                            component="div"
-                                            sx={{
-                                                fontSize: {
-                                                    xl: '1rem',
-                                                    xs: '2rem'
-                                                },
-                                                fontWeight: 'bold',
-                                            }}
-                                        >
-                                            {topOutProduct.totalOut}
-                                        </Typography>
-                                        <Typography
-                                            variant="subtitle1"
-                                            fontWeight={600}
-                                            color="success"
-                                        >
-                                            出庫最多商品
-                                        </Typography>
-                                    </CardContent>
-                                </Box>
-                            </Card>
+                                                <Typography
+                                                    variant="subtitle1"
+                                                    fontWeight={600}
+                                                    color="success"
+                                                    sx={{
+                                                        fontSize: {
+                                                            md: '1rem',
+                                                            sm: '0.8rem',
+                                                            xs: '0.6rem'
+                                                        },
+                                                    }}
+                                                >
+                                                    出庫最多商品
+                                                </Typography>
+                                            </Stack>
+                                        </CardContent>
+                                    </Box>
+                                </Card>
+                            </Box>
                         </Box>
 
                         <Box display="flex" justifyContent="space-between" mt={1}>
@@ -701,7 +834,6 @@ const StockMovementHistoryPage = () => {
                                     <FilterListIcon />
                                 </IconButton>
                             ) : (
-
                                 <Stack direction="row">
                                     <Stack direction="row">
                                         <FilterContent
@@ -713,7 +845,7 @@ const StockMovementHistoryPage = () => {
                                         />
                                     </Stack>
                                     <Stack direction="row">
-                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
                                             <DatePicker
                                                 label="開始日"
                                                 value={startDate}
@@ -740,7 +872,13 @@ const StockMovementHistoryPage = () => {
                                                     }
                                                 }}
                                             />
-                                        </LocalizationProvider>
+                                        </LocalizationProvider> */}
+                                        <FilterDatePicker
+                                            startDate={startDate}
+                                            endDate={endDate}
+                                            setStartDate={setStartDate}
+                                            setEndDate={setEndDate}
+                                        />
                                     </Stack>
                                 </Stack>
                             )}
@@ -756,8 +894,8 @@ const StockMovementHistoryPage = () => {
                                 onClose={() => setOpenFilterDrawer(false)}
                                 slotProps={{
                                     paper: {
-                                        style: {
-                                            width: '40vw',
+                                        sx: {
+                                            width: { xs: '100vw', sm: '40vw' },
                                             backgroundColor: colors.primary[400]
                                         }
                                     }
@@ -777,6 +915,12 @@ const StockMovementHistoryPage = () => {
                                         minQty={tempMinQty}
                                         setMinQty={setTempMinQuty}
                                         sx={{ mt: 2 }}
+                                    />
+                                    <FilterDatePicker
+                                        startDate={startDate}
+                                        endDate={endDate}
+                                        setStartDate={setStartDate}
+                                        setEndDate={setEndDate}
                                     />
                                     <Box mt="auto" display="flex" justifyContent="space-between" py={2}>
                                         <Button variant="outlined" onClick={() => setOpenFilterDrawer(false)}>キャンセル</Button>

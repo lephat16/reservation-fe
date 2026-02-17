@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
-import type { UserData } from "./types/auth";
-import { Box, Container, Typography, useTheme } from "@mui/material";
+import type { ChangePasswordRequest, UserData } from "./types/auth";
+import { Box, Container, Tab, Tabs, useTheme } from "@mui/material";
 import ProfileCard from "./components/ProfileCard";
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import { useEffect, useState } from "react";
@@ -9,6 +9,11 @@ import { tokens } from "../../shared/theme";
 import { authAPI } from "./api/authAPI";
 import type { RootState } from "./store";
 import { useSelector, } from "react-redux";
+import ChangePasswordCard from "./components/ChangePasswordCard";
+import { SNACKBAR_MESSAGES } from "../../constants/message";
+import { getErrorMessage } from "../../shared/utils/errorHandler";
+import GppGoodIcon from '@mui/icons-material/GppGood';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
 
 type UpdateUserPayload = {
     id: number;
@@ -28,6 +33,10 @@ const ProfilePage = () => {
 
     const { user } = useSelector((state: RootState) => state.auth);
 
+    const [tabValue, setTabValue] = useState(0);
+    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+        setTabValue(newValue);
+    };
     useEffect(() => {
         if (user) {
             setName(user.name);
@@ -47,7 +56,24 @@ const ProfilePage = () => {
             showSnackbar("プロフィールの更新に失敗しました", "error");
         },
     });
-    
+
+    const changePasswordMutation = useMutation({
+        mutationFn: async (data: ChangePasswordRequest) => {
+            return authAPI.changePassword(Number(user?.id), data)
+        },
+
+        onSuccess: (response) => {
+            showSnackbar(response.message || SNACKBAR_MESSAGES.CHANGE_PASSWORD_SUCCESS, "success");
+            queryClient.invalidateQueries({ queryKey: ["profile"] });
+
+        },
+
+        onError: (error: unknown) => {
+            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.CHANGE_PASSWORD_SUCCESS, "error");
+        },
+    });
+
+
     const handleSave = async () => {
         if (!user) return;
 
@@ -71,37 +97,54 @@ const ProfilePage = () => {
                 onClose={closeSnackbar}
             />
             {/* ページタイトル */}
-            <Typography
-                className="title"
-                variant="h4"
-                align="center"
-                fontWeight="bold"
-                sx={{ color: colors.grey[100], mb: 2 }}
-            >
-                個人情報
-            </Typography>
+
 
             <Box
                 sx={{
                     position: 'sticky',
                     top: { sm: -100, md: -110 },
                     bgcolor: 'background.body',
-                    zIndex: 9995,
                 }}
             >
-                <Box sx={{ px: { xs: 2, md: 6 } }}>
+                <Box sx={{ px: { xs: 2, md: 6 } }} color={colors.grey[100]}>
+                    <Tabs
+                        variant="fullWidth"
+                        centered
+                        value={tabValue}
+                        indicatorColor="secondary"
+                        textColor="inherit"
+                        onChange={handleTabChange}
+                        aria-label="icon tabs"
+
+                    >
+                        <Tab icon={<AccountBoxIcon />} label="個人情報" />
+                        <Tab icon={<GppGoodIcon />} label="パスワード変更" />
+                    </Tabs>
                     {user && (
-                        <ProfileCard
-                            name={name}
-                            userId={user.userId || ""}
-                            email={email}
-                            role={user.role}
-                            phoneNumber={phoneNumber}
-                            onChangeName={setName}
-                            onChangeEmail={setEmail}
-                            onChangePhoneNumber={setPhoneNumber}
-                            onSave={handleSave}
-                        />
+                        <>
+
+                            {tabValue === 0 && (
+                                <ProfileCard
+                                    name={name}
+                                    userId={user.userId || ""}
+                                    email={email}
+                                    role={user.role}
+                                    phoneNumber={phoneNumber}
+                                    onChangeName={setName}
+                                    onChangeEmail={setEmail}
+                                    onChangePhoneNumber={setPhoneNumber}
+                                    onSave={handleSave}
+                                />
+                            )}
+                            {tabValue === 1 && (
+                                <ChangePasswordCard
+                                    onSubmit={(request: ChangePasswordRequest) => {
+                                        changePasswordMutation.mutate(request);
+                                    }}
+                                />
+                            )}
+
+                        </>
                     )}
                 </Box>
             </Box>

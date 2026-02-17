@@ -7,9 +7,7 @@ import {
   Stack,
   Tooltip,
   Typography,
-  useTheme
 } from '@mui/material'
-import { tokens } from '../../../shared/theme'
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import type { SupplierData } from '../types/supplier';
@@ -25,9 +23,6 @@ const SupplierDetailCard: React.FC<SupplierDetailCardProps> = ({
   openDeleteDialog,
   openEditDialog,
 }) => {
-
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
 
   return (
     <Box sx={{ m: 2 }}>
