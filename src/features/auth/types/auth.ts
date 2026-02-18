@@ -12,6 +12,7 @@ export interface RegisterRequest {
 export interface LoginRequest {
     email: string;
     password: string;
+    remember?:boolean;
 }
 
 export interface RegisterResponse {
@@ -54,5 +55,15 @@ export interface ChangePasswordRequest {
     newPassword: string;
     confirmPassword: string;
 }
+export interface LoginHistories {
+    id: number;
+    userId: string;
+    loginTime: string;
+    ipAddress: string;
+    userAgent: string;
+    status: string;
+}
+
+
 
 

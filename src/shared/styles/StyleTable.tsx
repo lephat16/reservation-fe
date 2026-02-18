@@ -1,4 +1,4 @@
-import { tokens } from "../../theme";
+import type { tokens } from "../theme";
 
 type ColorTokens = ReturnType<typeof tokens>
 type StyledTableOptions = {

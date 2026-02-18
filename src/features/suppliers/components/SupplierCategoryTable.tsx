@@ -13,7 +13,7 @@ import {
     Tooltip,
     useTheme
 } from "@mui/material";
-import { styledTable } from "../../../shared/components/global/StyleTable";
+import { styledTable } from "../../../shared/styles/StyleTable"; 
 import { useNavigate } from "react-router-dom";
 import { useSupplierProducWithPriceHistory } from "../hooks/useSupplierProducWithPriceHistory";
 import { useState } from "react";

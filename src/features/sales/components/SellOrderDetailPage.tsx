@@ -24,7 +24,7 @@ import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import Header from "../../../shared/components/layout/Header";
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import * as yup from "yup";
-import { DeleteConfirmDialog } from "../../../shared/components/DeleteConfirmDialog";
+import { DeleteConfirmDialog } from "../../../shared/components/global/DeleteConfirmDialog";
 import { SubmitConfirmDialog } from "../../purchases/components/PurchaseOrderDetailPage";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";

@@ -1,6 +1,6 @@
 import { api } from "../../../shared/api/axiosClient";
 import type { ApiResponse } from "../../../shared";
-import type { AllUserRespose, ChangePasswordRequest, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserData } from "../types/auth";
+import type { AllUserRespose, ChangePasswordRequest, LoginHistories, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserData } from "../types/auth";
 
 export const authAPI = {
 
@@ -31,6 +31,10 @@ export const authAPI = {
     changePassword: async (userId: number, request: ChangePasswordRequest): Promise<ApiResponse<UserData>> => {
         return (await api.put(`/users/${userId}/password`, request));
     },
+    getLoginHistories: async (): Promise<ApiResponse<LoginHistories[]>> => {
+        return (await api.get(`/users/login-history`,));
+    },
+
 }
 
 

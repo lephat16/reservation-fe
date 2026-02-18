@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
-import type { ChangePasswordRequest, UserData } from "./types/auth";
-import { Box, Container, Tab, Tabs, useTheme } from "@mui/material";
+import type { ChangePasswordRequest, LoginHistories, UserData } from "./types/auth";
+import { Box, Tab, Tabs, useTheme } from "@mui/material";
 import ProfileCard from "./components/ProfileCard";
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import { useEffect, useState } from "react";
@@ -14,6 +14,8 @@ import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import GppGoodIcon from '@mui/icons-material/GppGood';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import HistoryIcon from '@mui/icons-material/History';
+import LoginHistoriesCard from "./components/LoginHistoryCard";
 
 type UpdateUserPayload = {
     id: number;
@@ -32,6 +34,7 @@ const ProfilePage = () => {
     const [phoneNumber, setPhoneNumber] = useState("");
 
     const { user } = useSelector((state: RootState) => state.auth);
+    console.log("Full state:", useSelector((state: RootState) => state));
 
     const [tabValue, setTabValue] = useState(0);
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
@@ -44,6 +47,15 @@ const ProfilePage = () => {
             setPhoneNumber(user.phoneNumber);
         }
     }, [user]);
+
+    const { isLoading, error, data } = useQuery<LoginHistories[]>({
+        queryKey: ["login-histories"],
+        queryFn: async () => {
+            const resloginHistories = await authAPI.getLoginHistories();
+            return resloginHistories.data
+        },
+        enabled: !!user
+    });
 
     const updateUserMutation = useMutation({
         mutationFn: (payload: UpdateUserPayload) =>
@@ -88,7 +100,7 @@ const ProfilePage = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
+        <Box mt={3} height="75vh">
             {/* メッセージ表示 */}
             <CustomSnackbar
                 open={snackbar.open}
@@ -119,6 +131,7 @@ const ProfilePage = () => {
                     >
                         <Tab icon={<AccountBoxIcon />} label="個人情報" />
                         <Tab icon={<GppGoodIcon />} label="パスワード変更" />
+                        <Tab icon={<HistoryIcon />} label="ロギング履歴" />
                     </Tabs>
                     {user && (
                         <>
@@ -143,13 +156,19 @@ const ProfilePage = () => {
                                     }}
                                 />
                             )}
+                            {tabValue === 2 && (
+                                <LoginHistoriesCard
+                                    loginHistories={data || []}
+                                    isLoading={isLoading}
+                                    error={error}
+                                />
+                            )}
 
                         </>
                     )}
                 </Box>
             </Box>
-
-        </Container>
+        </Box>
 
 
     )

@@ -23,7 +23,7 @@ import { type GridValueGetter } from "@mui/x-data-grid";
 import { jaJP } from "@mui/x-data-grid/locales";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
 import { useNavigate } from "react-router-dom";
-import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
+import { DeleteConfirmDialog } from "../../shared/components/global/DeleteConfirmDialog";
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import SupplierForm from "./components/SupplierForm";
 import AddHomeWorkIcon from '@mui/icons-material/AddHomeWork';

@@ -26,7 +26,7 @@ import SupplierForm from "./SupplierForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supplierAPI } from "../api/supplierAPI";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
-import { DeleteConfirmDialog } from "../../../shared/components/DeleteConfirmDialog";
+import { DeleteConfirmDialog } from "../../../shared/components/global/DeleteConfirmDialog";
 import { usePurchasesOrderBySupplier } from "../../purchases/hooks/usePurchasesOrderBySupplier";
 import SupplierStatCard from "./SupplierStatCard";
 import OrderBySupplierTable from "./OrderBySupplierTable";

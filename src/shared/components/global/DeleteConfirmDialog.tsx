@@ -1,4 +1,4 @@
-import { tokens } from '../theme';
+import { tokens } from '../../theme';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography, useTheme } from '@mui/material';
 
 type DeleteConfirmDialogProps = {

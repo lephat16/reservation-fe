@@ -24,7 +24,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { useState } from "react";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
-import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
+import { DeleteConfirmDialog } from "../../shared/components/global/DeleteConfirmDialog";
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";

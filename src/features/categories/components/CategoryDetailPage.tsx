@@ -30,7 +30,7 @@ import ErrorState from "../../../shared/components/messages/ErrorState";
 import { useInfoCategory } from "../hooks/useInfoCategory";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { DeleteConfirmDialog } from "../../../shared/components/DeleteConfirmDialog";
+import { DeleteConfirmDialog } from "../../../shared/components/global/DeleteConfirmDialog";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import { useDeleteCategory } from "../hooks/useDeleteCategory";
 import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
@@ -38,7 +38,7 @@ import CategoryForm from "./CategoryForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { categoryAPI } from "../api/categoryAPI";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
-import { styledTable } from "../../../shared/components/global/StyleTable";
+import { styledTable } from "../../../shared/styles/StyleTable"; 
 import { STATUS } from "../../../constants/status";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
 

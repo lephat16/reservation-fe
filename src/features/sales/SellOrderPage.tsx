@@ -25,7 +25,7 @@ import Header from "../../shared/components/layout/Header";
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
-import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
+import { DeleteConfirmDialog } from "../../shared/components/global/DeleteConfirmDialog";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { saleAPI } from "./api/saleAPI";

@@ -21,7 +21,7 @@ import {
 import type { PurchaseOrderData } from "../../purchases/types/purchase";
 import { tokens } from "../../../shared/theme";
 import { useState } from "react";
-import { styledTable } from "../../../shared/components/global/StyleTable";
+import { styledTable } from "../../../shared/styles/StyleTable"; 
 import InfoIcon from '@mui/icons-material/Info';
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 

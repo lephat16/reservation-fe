@@ -44,7 +44,7 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import Battery20Icon from '@mui/icons-material/Battery20';
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
 import { PieChart } from '@mui/x-charts/PieChart';
-import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
+import { DeleteConfirmDialog } from "../../shared/components/global/DeleteConfirmDialog";
 import WarehouseForm from "./components/WarehouseForm";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";

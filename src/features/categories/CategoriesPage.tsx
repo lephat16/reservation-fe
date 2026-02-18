@@ -13,7 +13,7 @@ import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import NewLabelIcon from '@mui/icons-material/NewLabel';
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
-import { DeleteConfirmDialog } from "../../shared/components/DeleteConfirmDialog";
+import { DeleteConfirmDialog } from "../../shared/components/global/DeleteConfirmDialog";
 import { categoryAPI } from "./api/categoryAPI";
 import { useCategorySummaries } from "./hooks/useCategorySummaries";
 import CategoryForm from "./components/CategoryForm";

@@ -7,7 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { Box, Button, Dialog, DialogContent, DialogTitle, MenuItem, Stack, TextField, useTheme } from '@mui/material';
 import { tokens } from '../../../shared/theme';
 import type { CategoryData } from '../../categories/types/category';
-import { StyledSelectTextField } from '../../../shared/components/global/StyledSelectTextField';
+import { StyledSelectTextField } from '../../../shared/styles/StyledSelectTextField';
 
 type ProductFormProps = {
     open: boolean;

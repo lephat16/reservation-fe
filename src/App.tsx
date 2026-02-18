@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import RegisterPage from './features/auth/components/RegisterPage'
 import LoginPage from './features/auth/components/LoginPage'
-import { ProtectedRoute } from './shared/Security'
+import { ProtectedRoute } from './shared/security/ProtectedRoute'
 import ProductPage from './features/products/components/ProductPage'
 import ProfilePage from './features/auth/ProfilePage'
 import { ColorModeContext, useMode } from './shared/theme'
@@ -24,11 +23,35 @@ import AllProductsPage from './features/products/AllProductsPage'
 import ErrorBoundary from './shared/components/global/ErrorBoundary'
 import { ScreenProvider } from './shared/hooks/ScreenContext'
 import StockMovementHistoryPage from './features/stocks/components/StockMovementHistoryPage'
-
+import { useDispatch } from "react-redux";
+import { useEffect, useState } from 'react'
+import { authAPI } from './features/auth/api/authAPI'
+import { setUser } from './features/auth/store/authSlice'
+import { PublicRoute } from './shared/security/PublicRoute'
+import NotFoundPage from './shared/components/NotFoundPage'
 
 function App() {
 
   const [theme, colorMode] = useMode();
+  const dispatch = useDispatch();
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    const restoreUser = async () => {
+      try {
+        const res = await authAPI.getLoggedInUser();
+        dispatch(setUser(res.data));
+      } catch {
+        dispatch(setUser(null));
+      } finally {
+        setChecked(true);
+      }
+    };
+
+    restoreUser();
+  }, []);
+
+  if (!checked) return <div>Loading...</div>;
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -39,8 +62,9 @@ function App() {
             {/* <UserProvider> */}
             <Router>
               <Routes>
-                <Route path='/register' element={<RegisterPage />}></Route>
-                <Route path='/login' element={<LoginPage />}></Route>
+                {/* 登録ページは現在使用しないため、コメントアウトしています */}
+                {/* <Route path='/register' element={<PublicRoute element={<RegisterPage />} />} /> */}
+                <Route path='/login' element={<PublicRoute element={<LoginPage />} />} />
                 <Route element={<MainLayout />}>
                   <Route path="/category" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<CategoriesPage />} />} />
                   <Route path='/category/:categoryId' element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<CategoryDetailPage />} />} />
@@ -64,6 +88,7 @@ function App() {
 
                   <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
                 </Route>
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Router>
             {/* </UserProvider> */}

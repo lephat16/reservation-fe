@@ -23,14 +23,14 @@ import {
     useTheme
 } from '@mui/material'
 import Dialog from '@mui/material/Dialog'
-import { styledTable } from '../../../shared/components/global/StyleTable'
+import { styledTable } from '../../../shared/styles/StyleTable' 
 import type { SupplierProductFormType, SupplierProducWithPriceHistory } from '../types/supplier'
 import { tokens } from '../../../shared/theme'
 import * as yup from 'yup';
 import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm, type Resolver } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { StyledSelectTextField } from '../../../shared/components/global/StyledSelectTextField'
+import { StyledSelectTextField } from '../../../shared/styles/StyledSelectTextField'
 import CommentIcon from '@mui/icons-material/Comment';
 import type { ProductData } from '../../products/types/product'
 import { useNavigate } from 'react-router-dom'
@@ -400,7 +400,7 @@ const SupplierProductForm = ({
                                 variant="contained"
                                 color="success"
                                 disabled={isSubmitting}
-                                onClick={() => handleSubmit(handleFormSubmit, (data) => {
+                                onClick={() => handleSubmit(handleFormSubmit, (_) => {
                                 })()}
                             >
                                 {isSubmitting ? "送信中..." : "確認"}
