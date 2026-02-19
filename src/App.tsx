@@ -30,6 +30,7 @@ import { setUser } from './features/auth/store/authSlice'
 import { PublicRoute } from './shared/security/PublicRoute'
 import NotFoundPage from './shared/components/notfoundpage/NotFoundPage'
 import UsersPage from './features/user/UsersPage'
+import CreatePasswordPage from './features/user/compoments/CreatePassword'
 
 function App() {
 
@@ -89,6 +90,7 @@ function App() {
                   <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
                   <Route path="/users" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<UsersPage />} />} />
                 </Route>
+                <Route path="/create-password" element={<PublicRoute element={<CreatePasswordPage />} />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Router>

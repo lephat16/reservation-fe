@@ -33,7 +33,6 @@ const LoginPage = (): JSX.Element => {
 
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch();
-    console.log("Full state:", useSelector((state: RootState) => state));
 
     console.log(user);
 

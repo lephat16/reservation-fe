@@ -1,26 +1,70 @@
-import { Box, IconButton, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, useTheme } from "@mui/material";
+import { Box, IconButton, Skeleton, Tooltip, useTheme } from "@mui/material";
 import { useAllUsers } from "./hooks/useAllUsers";
 import Header from "../../shared/components/layout/Header";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import { useSnackbar } from "../../shared/hooks/useSnackbar";
 import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import ErrorState from "../../shared/components/messages/ErrorState";
-import { styledTable } from "../../shared/styles/StyleTable";
 import { tokens } from "../../shared/theme";
-import { ROLES } from "../../constants/role";
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import { blue, red } from "@mui/material/colors";
+
+import { useState } from "react";
+import type { UserData, UserRequestData } from "./types/user";
+import { useDeleteUser } from "./hooks/useDeleteUser";
+import UserHeader from "./compoments/UserHeader";
+import UsersTable from "./compoments/UsersTable";
+import UserShow from "./compoments/UserShow";
+import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
+import { userAPI } from "./api/userAPI";
+import { SNACKBAR_MESSAGES } from "../../constants/message";
+import { getErrorMessage } from "../../shared/utils/errorHandler";
 import UserForm from "./compoments/UserForm";
+
+
 const UsersPage = () => {
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const { isSM, isMD } = useScreen();
   const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
+  const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false)
+  const [mode, setMode] = useState<"list" | "detail" | "edit" | "create">("list");
+
+  const queryClient = useQueryClient();
+  const handleDeleteSuccess = () => {
+    setOpenDeleteConfirm(false);
+    setSelectedUser(null);
+  };
 
   const { isLoading, error, data } = useAllUsers();
+  const deleteMutation = useDeleteUser(handleDeleteSuccess, showSnackbar);
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: UserRequestData }) => {
+      return userAPI.updateUserById(id, data);
+    },
+    onSuccess: (response) => {
+      showSnackbar(response.message || SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error: unknown) => {
+      showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
+    }
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (data: UserRequestData) => {
+      return userAPI.createUserByAdmin(data);
+    },
+    onSuccess: (response) => {
+      showSnackbar(response.message || SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error: unknown) => {
+      showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
+    }
+  })
 
   return (
     <Box m={3}>
@@ -39,7 +83,7 @@ const UsersPage = () => {
               color="success"
               aria-label="追加"
               onClick={() => {
-
+                setMode("create");
               }}>
               <PersonAddIcon fontSize="large" />
             </IconButton>
@@ -62,81 +106,78 @@ const UsersPage = () => {
         {isLoading ? (
           <Skeleton variant="rectangular" height={400} />
         ) : (
-          <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }} gap={4} >
-            <TableContainer component={Paper} sx={{ height: "100%", minWidth: { xs: 308, md: 600 } }}>
-              <Table
-                sx={{
-                  tableLayout: "fixed",
-                  ...styledTable(colors),
-                }}
-              >
-                <colgroup>
-                  <col style={{ width: "15%" }} />
-                  <col style={{ width: "15%" }} />
-                  {!isMD && <col style={{ width: "25%" }} />}
-                  {!isMD && <col style={{ width: "15%" }} />}
-                  <col style={{ width: "15%" }} />
-                  {!isMD && <col style={{ width: "15%" }} />}
-                  <col style={{ width: "15%" }} />
-                </colgroup>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>ユーザーID</TableCell>
-                    <TableCell>名前</TableCell>
-                    {!isMD && <TableCell>メール</TableCell>}
-                    {!isMD && <TableCell>電話番号</TableCell>}
-                    <TableCell>役割</TableCell>
-                    {!isMD && <TableCell>作成日時</TableCell>}
-                    <TableCell></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {data?.map((user) => (
-                    <TableRow key={user.id}>
-                      {!isMD && <TableCell>{user.userId}</TableCell>}
-                      <TableCell>{user.name}</TableCell>
-                      {!isMD && <TableCell>{user.email}</TableCell>}
-                      <TableCell>{user.phoneNumber}</TableCell>
-                      <TableCell>{ROLES[user.role].label}</TableCell>
-                      {!isMD && <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>}
-                      <TableCell>
-                        <Stack direction="row">
-                          <Tooltip title="詳細">
-                            <IconButton
-                              aria-label="see-more"
-                              size="small"
-                              sx={{
-                                '&:hover': {
-                                  color: theme.alpha(blue[800], 1),
-                                },
-                              }}
-                              onClick={() => { }}
-                            >
-                              <EditIcon fontSize="inherit" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="削除">
-                            <IconButton
-                              aria-label="delete"
-                              size="small"
-                              sx={{
-                                '&:hover': {
-                                  color: theme.alpha(red[800], 1),
-                                },
-                              }}
-                              onClick={() => { }}
-                            >
-                              <DeleteIcon fontSize="inherit" />
-                            </IconButton>
-                          </Tooltip>
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <UserForm />
+          <Box mt={1}>
+            <UserHeader
+              user={selectedUser}
+              mode={mode}
+              onNavigate={(targetMode) => {
+                if (targetMode === "list") {
+                  setSelectedUser(null);
+                  setMode("list");
+                }
+                if (targetMode === "detail") {
+                  setMode("detail");
+                }
+              }}
+            />
+            <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }} gap={4} >
+
+
+              {
+                mode === "list" &&
+                <UsersTable
+                  users={data ?? []}
+                  isMD={isMD}
+                  colors={colors}
+                  theme={theme}
+                  onSelectUser={(user) => {
+                    setSelectedUser(user);
+                    setMode("detail");
+                  }}
+
+                // onDelete={() =>
+                //   selectedUser &&
+                //   deleteMutation.mutate(selectedUser?.id || 0)}
+                />
+              }
+              {
+                (mode === "edit" || mode === "create") &&
+                <UserForm
+                  user={selectedUser}
+                  mode={mode}
+                  onBack={() => {
+                    mode === "edit" ? setMode("detail") : setMode("list")
+                  }}
+                  onSubmit={(data) => {
+                    if (mode === "edit") {
+                      if (!selectedUser) return;
+                      updateMutation.mutate({
+                        id: selectedUser.id,
+                        data
+                      });
+                    } else if (mode === "create") {
+                      createMutation.mutate(data);
+                    }
+                    setMode("list");
+                  }}
+                />
+              }
+
+              {
+                mode === "detail" &&
+                <UserShow
+                  user={selectedUser}
+                  onBack={() => {
+                    setSelectedUser(null);
+                    setMode("list");
+                  }}
+                  onEdit={() => setMode("edit")}
+                // onDelete={() =>
+                //   selectedUser &&
+                //   deleteMutation.mutate(selectedUser?.id || 0)}
+                />
+              }
+            </Box>
           </Box>
         )}
       </Box>

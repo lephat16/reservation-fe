@@ -1,10 +1,18 @@
 import { api } from "../../../shared/api/axiosClient";
 import type { ApiResponse } from "../../../shared";
-import type { ChangePasswordRequest, LoginHistories, UserData } from "../types/user";
-import type { RegisterResponse } from "../../auth/types/auth";
+import type { ChangePasswordRequest, LoginHistories, SetPasswordRequest, UserData, UserRequestData } from "../types/user";
 
 export const userAPI = {
 
+    createUserByAdmin: async (request: UserRequestData): Promise<ApiResponse<void>> => {
+        return (await api.post(`/users/create`, request));
+    },
+    setPasswordByToken: async (request: SetPasswordRequest): Promise<ApiResponse<void>> => {
+        return (await api.post(`/users/set-password`, request));
+    },
+    sendPasswordTokenEmail: async (email: string): Promise<ApiResponse<void>> => {
+        return (await api.post(`/users/send-reset-password`, email));
+    },
     getAllUsers: async (): Promise<ApiResponse<UserData[]>> => {
         return (await api.get(`/users/all`));
     },
@@ -17,7 +25,7 @@ export const userAPI = {
     updateUserById: async (userId: number, userData: Partial<UserData>): Promise<ApiResponse<UserData>> => {
         return (await api.put(`/users/update/${userId}`, userData));
     },
-    deleteUser: async (userId: number): Promise<RegisterResponse> => {
+    deleteUser: async (userId: number): Promise<ApiResponse<void>> => {
         return (await api.delete(`/users/delete/${userId}`));
     },
     changePassword: async (userId: number, request: ChangePasswordRequest): Promise<ApiResponse<UserData>> => {

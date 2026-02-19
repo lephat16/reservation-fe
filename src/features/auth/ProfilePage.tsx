@@ -34,7 +34,6 @@ const ProfilePage = () => {
     const [phoneNumber, setPhoneNumber] = useState("");
 
     const { user } = useSelector((state: RootState) => state.auth);
-    console.log("Full state:", useSelector((state: RootState) => state));
 
     const [tabValue, setTabValue] = useState(0);
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {

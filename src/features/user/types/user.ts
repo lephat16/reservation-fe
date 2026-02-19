@@ -1,3 +1,4 @@
+import type { Role } from "../../auth/types/auth";
 
 export interface UserData {
     id: number;
@@ -5,7 +6,7 @@ export interface UserData {
     name: string;
     email: string;
     phoneNumber: string;
-    role: "ADMIN" | "STAFF" | "WAREHOUSE";
+    role: Role;
     createdAt: string;
 }
 export interface ChangePasswordRequest {
@@ -21,3 +22,14 @@ export interface LoginHistories {
     userAgent: string;
     status: string;
 }
+export interface UserRequestData {
+    name: string;
+    email: string;
+    phoneNumber: string;
+    role: Role;
+}
+
+export interface SetPasswordRequest {
+    token: string;
+    password: string;
+};
