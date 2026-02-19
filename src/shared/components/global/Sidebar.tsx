@@ -19,7 +19,7 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useScreen } from '../../hooks/ScreenContext';
-
+import GroupIcon from '@mui/icons-material/Group';
 import { useQueryClient } from "@tanstack/react-query";
 import { useDispatch, useSelector, } from "react-redux";
 import { logout as logoutAction } from "../../../features/auth/store/authSlice";
@@ -310,6 +310,14 @@ const Sidebar = ({ onClose }: SidebarProps) => {
                         icon={<AccountBoxIcon />}
 
                     />
+                    {canAccess(["ADMIN"]) && (
+                        <Item
+                            title="ユーザー管理"
+                            to="/users"
+                            icon={<GroupIcon />}
+
+                        />
+                    )}
                     <Item
                         title="ログアウト"
                         onClick={handleLogout}
@@ -318,7 +326,7 @@ const Sidebar = ({ onClose }: SidebarProps) => {
                     />
                 </Box>
             </Menu>
-        </ProSidebar>
+        </ProSidebar >
     );
 };
 

@@ -42,7 +42,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         <Card
             sx={{
                 mt: 2,
-                p: 2,
+                p: 3,
                 background: `${colors.primary[400]}`
             }}>
             <Typography

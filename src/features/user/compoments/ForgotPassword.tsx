@@ -1,6 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, OutlinedInput, useTheme } from "@mui/material";
-import { tokens } from "../../../shared/theme";
-import { blue, blueGrey } from "@mui/material/colors";
+import { blueGrey } from "@mui/material/colors";
 
 type ForgotPasswordProps = {
     open: boolean;
@@ -19,7 +18,7 @@ const ForgotPassword = ({ open, handleClose }: ForgotPasswordProps) => {
                         event.preventDefault();
                         handleClose();
                     },
-                    sx: { backgroundColor: theme.alpha(blueGrey[700], 1)},
+                    sx: { backgroundColor: theme.alpha(blueGrey[700], 1) },
                 },
             }}
         >

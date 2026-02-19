@@ -281,8 +281,11 @@ const PurchaseOrderDetailPage = () => {
                                                                 },
                                                             }}
                                                         />
-                                                    ) : (data?.status === "NEW" ? detail.qty : `${detail.received || 0}/${detail.qty}`)
-
+                                                    ) : (data?.status === "NEW"
+                                                        ? detail.qty
+                                                        : data?.status === "COMPLETED"
+                                                            ? `${detail.qty}/${detail.qty}`
+                                                            : `${detail.received ?? 0}/${detail.qty}`)
                                                     }
                                                 </TableCell>
                                                 <TableCell>{detail.cost}</TableCell>

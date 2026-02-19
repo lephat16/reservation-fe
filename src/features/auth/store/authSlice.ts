@@ -1,6 +1,6 @@
 
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { UserData } from '../types/auth';
+import type { UserData } from '../../user/types/user';
 
 // 認証情報の状態を定義
 type AuthState = {
@@ -17,7 +17,7 @@ const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
-        
+
         // ユーザー情報をセット
         setUser: (state, action: PayloadAction<UserData | null>) => {
             state.user = action.payload;

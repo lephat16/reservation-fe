@@ -25,10 +25,11 @@ import { ScreenProvider } from './shared/hooks/ScreenContext'
 import StockMovementHistoryPage from './features/stocks/components/StockMovementHistoryPage'
 import { useDispatch } from "react-redux";
 import { useEffect, useState } from 'react'
-import { authAPI } from './features/auth/api/authAPI'
+import { userAPI } from './features/user/api/userAPI'
 import { setUser } from './features/auth/store/authSlice'
 import { PublicRoute } from './shared/security/PublicRoute'
-import NotFoundPage from './shared/components/NotFoundPage'
+import NotFoundPage from './shared/components/notfoundpage/NotFoundPage'
+import UsersPage from './features/user/UsersPage'
 
 function App() {
 
@@ -39,7 +40,7 @@ function App() {
   useEffect(() => {
     const restoreUser = async () => {
       try {
-        const res = await authAPI.getLoggedInUser();
+        const res = await userAPI.getLoggedInUser();
         dispatch(setUser(res.data));
       } catch {
         dispatch(setUser(null));
@@ -59,7 +60,6 @@ function App() {
         <CssBaseline />
         <ErrorBoundary>
           <ScreenProvider>
-            {/* <UserProvider> */}
             <Router>
               <Routes>
                 {/* 登録ページは現在使用しないため、コメントアウトしています */}
@@ -87,11 +87,11 @@ function App() {
                   <Route path="/warehouses" element={<ProtectedRoute element={<WarehousePage />} />} />
 
                   <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
+                  <Route path="/users" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<UsersPage />} />} />
                 </Route>
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Router>
-            {/* </UserProvider> */}
           </ScreenProvider>
         </ErrorBoundary>
       </ThemeProvider>

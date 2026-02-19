@@ -1,7 +1,7 @@
 import { Button, Card, IconButton, InputAdornment, Stack, TextField, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import * as yup from 'yup';
-import type { ChangePasswordRequest } from "../types/auth";
+import type { ChangePasswordRequest } from "../types/user";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useState } from "react";

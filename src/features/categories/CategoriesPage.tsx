@@ -58,7 +58,7 @@ const columns: GridColDef<CategorySummariesData>[] = [
     },
     {
         field: "categoryName",
-        headerName: "カテゴリ名",
+        headerName: "カテゴリ一名",
         flex: 1
     },
     {
@@ -158,7 +158,7 @@ const CategoriesPage = () => {
                 ) : (
                     !isSM && <Header
                         title="カテゴリ一覧"
-                        subtitle="カテゴリ情報の一覧表示"
+                        subtitle="カテゴリ一情報の一覧表示"
                     />
                 )}
                 <Box mt={4}>

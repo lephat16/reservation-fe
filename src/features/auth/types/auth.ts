@@ -1,4 +1,5 @@
 import { ROLES } from "../../../constants/role";
+import type { UserData } from "../../user/types/user";
 
 export type Role = (typeof ROLES)[keyof typeof ROLES]["value"];
 
@@ -34,35 +35,9 @@ export interface LoginResponse {
 }
 
 
-export interface UserData {
-    id: number;
-    userId: string;
-    name: string;
-    email: string;
-    phoneNumber: string;
-    role: "ADMIN" | "STAFF" | "WAREHOUSE";
-    createdAt: string;
-}
 
 
-export interface AllUserRespose {
-    status: string;
-    message: string;
-    users: UserData[];
-}
-export interface ChangePasswordRequest {
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
-}
-export interface LoginHistories {
-    id: number;
-    userId: string;
-    loginTime: string;
-    ipAddress: string;
-    userAgent: string;
-    status: string;
-}
+
 
 
 
