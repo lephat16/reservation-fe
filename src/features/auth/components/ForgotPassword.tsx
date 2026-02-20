@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, OutlinedInput, useTheme } from "@mui/material";
 import { blueGrey } from "@mui/material/colors";
-import { userAPI } from "../api/userAPI";
+import { userAPI } from "../../user/api/userAPI";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
@@ -40,8 +40,11 @@ const ForgotPassword = ({ open, handleClose }: ForgotPasswordProps) => {
                     component: 'form',
                     onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
                         event.preventDefault();
-                        handleClose();
-                        sendMutation.mutate(email);
+                        sendMutation.mutate(email, {
+                            onSuccess: () => {
+                                handleClose();
+                            }
+                        });
                     },
                     sx: { backgroundColor: theme.alpha(blueGrey[700], 1) },
                 },

@@ -23,5 +23,7 @@ export const SNACKBAR_MESSAGES = {
     CHANGE_PASSWORD_SUCCESS: "パスワードが変更されました",
     CHANGE_PASSWORD_CREATE_FAILED: "パスワード変更に失敗しました",
     SEND_REQUEST_SUCCESS: "",
-    SEND_REQUEST_FAILED: ""
+    SEND_REQUEST_FAILED: "",
+    RESET_PASSWORD_SUCCESS: "パスワードが変更されました",
+    RESET_PASSWORD_CREATE_FAILED: "パスワード変更に失敗しました",
 };

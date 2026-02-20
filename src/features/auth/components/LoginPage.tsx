@@ -34,8 +34,6 @@ const LoginPage = (): JSX.Element => {
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch();
 
-    console.log(user);
-
     useEffect(() => {
         if (user) {
             navigate("/warehouses");

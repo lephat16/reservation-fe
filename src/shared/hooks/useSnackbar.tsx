@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { AlertColor } from "@mui/material"; // MUIのアラートカラー型
 
 // スナックバーの状態の型定義
@@ -10,7 +10,7 @@ interface SnackbarState {
 
 // カスタムフック: スナックバー管理
 export const useSnackbar = (defaultSeverity: AlertColor = "info") => {
-  
+
   // スナックバーの状態をuseStateで管理
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     open: false, // 初期状態は閉じている
@@ -19,15 +19,26 @@ export const useSnackbar = (defaultSeverity: AlertColor = "info") => {
   });
 
   // スナックバーを表示する関数
-  const showSnackbar = (message: string, severity: AlertColor = defaultSeverity) => {
-    // openをtrueにして状態更新
-    setSnackbar({ open: true, message, severity });
-  };
+  // const showSnackbar = (message: string, severity: AlertColor = defaultSeverity) => {
+  //   // openをtrueにして状態更新
+  //   setSnackbar({ open: true, message, severity });
+  // };
+
+  const showSnackbar = useCallback(
+    (message: string, severity: AlertColor = defaultSeverity) => {
+      setSnackbar({ open: true, message, severity });
+    },
+    [defaultSeverity]
+  );
 
   // スナックバーを閉じる関数
-  const closeSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
-  };
+  // const closeSnackbar = () => {
+  //   setSnackbar(prev => ({ ...prev, open: false }));
+  // };
+
+  const closeSnackbar = useCallback(() => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  }, []);
 
   // フックが返すオブジェクト
   return { snackbar, showSnackbar, closeSnackbar };

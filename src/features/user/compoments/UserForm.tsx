@@ -216,7 +216,7 @@ const UserForm = ({
                     type="submit"
                     variant="contained"
                     size="large"
-                    loading={isSubmitting}
+                    disabled={isSubmitting}
                 >
                     保存
                 </Button>

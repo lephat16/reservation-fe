@@ -31,6 +31,8 @@ import { PublicRoute } from './shared/security/PublicRoute'
 import NotFoundPage from './shared/components/notfoundpage/NotFoundPage'
 import UsersPage from './features/user/UsersPage'
 import CreatePasswordPage from './features/user/compoments/CreatePassword'
+import ResetPassword from './features/user/compoments/ResetPassword'
+import { SnackbarProvider } from './shared/hooks/SnackbarContext'
 
 function App() {
 
@@ -61,39 +63,44 @@ function App() {
         <CssBaseline />
         <ErrorBoundary>
           <ScreenProvider>
-            <Router>
-              <Routes>
-                {/* 登録ページは現在使用しないため、コメントアウトしています */}
-                {/* <Route path='/register' element={<PublicRoute element={<RegisterPage />} />} /> */}
-                <Route path='/login' element={<PublicRoute element={<LoginPage />} />} />
-                <Route element={<MainLayout />}>
-                  <Route path="/category" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<CategoriesPage />} />} />
-                  <Route path='/category/:categoryId' element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<CategoryDetailPage />} />} />
-                  <Route path="/products/:productId" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<ProductPage />} />} />
-                  <Route path="/products" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<AllProductsPage />} />} />
-                  <Route path="/suppliers" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<AllSupplierPage />} />} />
-                  <Route path="/suppliers/:supplierId" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<SupplierPage />} />} />
+            {/* <SnackbarProvider> */}
+              <Router>
+                <Routes>
+                  {/* 登録ページは現在使用しないため、コメントアウトしています */}
+                  {/* <Route path='/register' element={<PublicRoute element={<RegisterPage />} />} /> */}
 
-                  <Route path="/purchase-order" element={<ProtectedRoute element={<PurchaseOrderPage />} />} />
-                  <Route path="/purchase-order/:poId/receive" element={<ProtectedRoute element={<ReceiveForm />} />} />
-                  <Route path="/purchase-order/:poId" element={<ProtectedRoute element={<PurchaseOrderDetailPage />} />} />
-                  <Route path="/purchase-order/create" element={<ProtectedRoute element={<CreatePurchasePage />} />} />
+                  <Route path='/login' element={<PublicRoute element={<LoginPage />} />} />
 
-                  <Route path="/sell-order" element={<ProtectedRoute element={<SellOrderPage />} />} />
-                  <Route path="/sell-order/:soId/deliver" element={<ProtectedRoute element={<DeliverForm />} />} />
-                  <Route path="/sell-order/:soId" element={<ProtectedRoute element={<SellOrderDetailPage />} />} />
-                  <Route path="/sell-order/create" element={<ProtectedRoute element={<CreateSellPage />} />} />
+                  <Route element={<MainLayout />}>
+                    <Route path="/category" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<CategoriesPage />} />} />
+                    <Route path='/category/:categoryId' element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<CategoryDetailPage />} />} />
+                    <Route path="/products/:productId" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<ProductPage />} />} />
+                    <Route path="/products" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<AllProductsPage />} />} />
+                    <Route path="/suppliers" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<AllSupplierPage />} />} />
+                    <Route path="/suppliers/:supplierId" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<SupplierPage />} />} />
 
-                  <Route path="/stocks/history" element={<ProtectedRoute element={<StockMovementHistoryPage />} />} />
-                  <Route path="/warehouses" element={<ProtectedRoute element={<WarehousePage />} />} />
+                    <Route path="/purchase-order" element={<ProtectedRoute element={<PurchaseOrderPage />} />} />
+                    <Route path="/purchase-order/:poId/receive" element={<ProtectedRoute element={<ReceiveForm />} />} />
+                    <Route path="/purchase-order/:poId" element={<ProtectedRoute element={<PurchaseOrderDetailPage />} />} />
+                    <Route path="/purchase-order/create" element={<ProtectedRoute element={<CreatePurchasePage />} />} />
 
-                  <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
-                  <Route path="/users" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<UsersPage />} />} />
-                </Route>
-                <Route path="/create-password" element={<PublicRoute element={<CreatePasswordPage />} />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </Router>
+                    <Route path="/sell-order" element={<ProtectedRoute element={<SellOrderPage />} />} />
+                    <Route path="/sell-order/:soId/deliver" element={<ProtectedRoute element={<DeliverForm />} />} />
+                    <Route path="/sell-order/:soId" element={<ProtectedRoute element={<SellOrderDetailPage />} />} />
+                    <Route path="/sell-order/create" element={<ProtectedRoute element={<CreateSellPage />} />} />
+
+                    <Route path="/stocks/history" element={<ProtectedRoute element={<StockMovementHistoryPage />} />} />
+                    <Route path="/warehouses" element={<ProtectedRoute element={<WarehousePage />} />} />
+
+                    <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
+                    <Route path="/users" element={<ProtectedRoute requiredRoles={["ADMIN"]} element={<UsersPage />} />} />
+                  </Route>
+                  <Route path="/create-password" element={<PublicRoute element={<CreatePasswordPage />} />} />
+                  <Route path="/reset-password" element={<PublicRoute element={<ResetPassword />} />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Router>
+            {/* </SnackbarProvider> */}
           </ScreenProvider>
         </ErrorBoundary>
       </ThemeProvider>

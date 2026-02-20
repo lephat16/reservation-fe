@@ -5,7 +5,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import type { LoginRequest } from '../types/auth';
 
 import { useState, type JSX } from 'react';
-import ForgotPassword from '../../user/compoments/ForgotPassword';
+import ForgotPassword from './ForgotPassword';
 import { AuthCard, AuthTextField } from '../styles/AuthCardStyle';
 
 

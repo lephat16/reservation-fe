@@ -10,8 +10,16 @@ export const userAPI = {
     setPasswordByToken: async (request: SetPasswordRequest): Promise<ApiResponse<void>> => {
         return (await api.post(`/users/set-password`, request));
     },
+    resetPasswordByToken: async (request: SetPasswordRequest): Promise<ApiResponse<void>> => {
+        return (await api.post(`/users/reset-password`, request));
+    },
     sendPasswordTokenEmail: async (email: string): Promise<ApiResponse<void>> => {
-        return (await api.post(`/users/send-reset-password`, email));
+        return (await api.post(`/users/send-reset-password`, { email }));
+    },
+    verifyResetToken: async (token: string): Promise<ApiResponse<void>> => {
+        return (await api.get("/users/verify-reset-token", {
+            params: { token },
+        }));
     },
     getAllUsers: async (): Promise<ApiResponse<UserData[]>> => {
         return (await api.get(`/users/all`));
