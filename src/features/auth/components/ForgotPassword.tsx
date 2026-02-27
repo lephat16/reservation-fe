@@ -1,11 +1,24 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, OutlinedInput, useTheme } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, TextField, useTheme } from "@mui/material";
 import { blueGrey } from "@mui/material/colors";
 import { userAPI } from "../../user/api/userAPI";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
-import { useState } from "react";
+import * as yup from "yup";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
+
+type ForgotPasswordForm = {
+    email: string;
+};
+
+const schema = yup.object({
+    email: yup
+        .string()
+        .email("有効なメールアドレスを入力してください。")
+        .required("メールアドレスは必須です。"),
+});
 
 type ForgotPasswordProps = {
     open: boolean;
@@ -15,9 +28,21 @@ const ForgotPassword = ({ open, handleClose }: ForgotPasswordProps) => {
 
     const theme = useTheme();
     const queryClient = useQueryClient();
-    const [email, setEmail] = useState("");
 
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
+    const { showSnackbar } = useSnackbar();
+
+    const {
+        control,
+        handleSubmit,
+        formState: { errors }, reset
+    } = useForm<ForgotPasswordForm>({
+        resolver: yupResolver(schema),
+        mode: "onBlur",
+        defaultValues: {
+            email: "",
+        }
+    });
+
     const sendMutation = useMutation({
         mutationFn: async (email: string) => {
             const response = await userAPI.sendPasswordTokenEmail(email);
@@ -38,14 +63,14 @@ const ForgotPassword = ({ open, handleClose }: ForgotPasswordProps) => {
             slotProps={{
                 paper: {
                     component: 'form',
-                    onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-                        event.preventDefault();
-                        sendMutation.mutate(email, {
+                    onSubmit: handleSubmit((data) => {
+                        sendMutation.mutate(data.email, {
                             onSuccess: () => {
+                                reset();
                                 handleClose();
                             }
                         });
-                    },
+                    }),
                     sx: { backgroundColor: theme.alpha(blueGrey[700], 1) },
                 },
             }}
@@ -57,18 +82,27 @@ const ForgotPassword = ({ open, handleClose }: ForgotPasswordProps) => {
                 <DialogContentText>
                     アカウントのメールアドレスを入力してください。リセット用のリンクをお送りします。
                 </DialogContentText>
-                <OutlinedInput
-                    autoFocus
-                    margin="dense"
-                    id="email"
-                    name="email"
-                    label="メールアドレス"
-                    placeholder="メールアドレス"
-                    type="email"
-                    fullWidth
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
+                <FormControl variant="outlined" fullWidth>
+
+                    <Controller
+                        name="email"
+                        control={control}
+                        render={({ field }) => (
+                            <TextField
+                                {...field}
+                                id="email"
+                                name="email"
+                                label="メールアドレス"
+                                // autoFocus
+                                fullWidth
+                                color={errors.email ? "error" : "primary"}
+                                error={!!errors.email}
+                                helperText={errors.email ? errors.email.message : ' '}
+                            />
+                        )}
+
+                    />
+                </FormControl>
             </DialogContent>
             <DialogActions sx={{ pb: 3, px: 3 }}>
                 <Button onClick={handleClose}>キャンセル</Button>
@@ -76,7 +110,7 @@ const ForgotPassword = ({ open, handleClose }: ForgotPasswordProps) => {
                     続行
                 </Button>
             </DialogActions>
-        </Dialog>
+        </Dialog >
     )
 }
 

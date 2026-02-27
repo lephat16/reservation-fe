@@ -30,8 +30,8 @@ export const supplierAPI = {
     updateSupplier: async (supplierData: SupplierData, supplierId: number): Promise<ApiResponse<SupplierData>> => {
         return (await api.put(`/suppliers/update/${supplierId}`, supplierData));
     },
-    updateSupplierProduct: async (data: SupplierProductFormType, spId: number): Promise<ApiResponse<SupplierProductData>> => {
-        return (await api.put(`/sup-product/${spId}`, data));
+    updateSupplierProduct: async (data: SupplierProductFormType, sku: string): Promise<ApiResponse<SupplierProductData>> => {
+        return (await api.put(`/sup-product/${sku}`, data));
     },
     deleteSupplier: async (supplierId: number): Promise<ApiResponse<void>> => {
         return (await api.delete(`/suppliers/delete/${supplierId}`));

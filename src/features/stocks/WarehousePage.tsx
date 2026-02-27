@@ -24,7 +24,6 @@ import Header from "../../shared/components/layout/Header"
 import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { WarehouseFormData, WarehousesData, WarehouseWithTotalChangedQtyData } from "./types/stock";
-import { useSnackbar } from "../../shared/hooks/useSnackbar";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import AddIcon from '@mui/icons-material/Add';
@@ -34,7 +33,6 @@ import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import LastPageIcon from '@mui/icons-material/LastPage';
 import WidgetsIcon from '@mui/icons-material/Widgets';
-import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import ArchiveIcon from '@mui/icons-material/Archive';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import MovingIcon from '@mui/icons-material/Moving';
@@ -44,7 +42,6 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import Battery20Icon from '@mui/icons-material/Battery20';
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
 import { PieChart } from '@mui/x-charts/PieChart';
-import { DeleteConfirmDialog } from "../../shared/components/global/DeleteConfirmDialog";
 import WarehouseForm from "./components/WarehouseForm";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
@@ -54,6 +51,8 @@ import { useWarehouseWithTotalQty } from "./hooks/useWarehouseWithTotalQty";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import { STATUS } from "../../constants/status";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
+import { useSnackbar } from "../../shared/hooks/SnackbarContext";
+import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 
 
 interface TablePaginationActionsProps {
@@ -122,14 +121,14 @@ export function TablePaginationActions(props: TablePaginationActionsProps) {
     );
 }
 
-
 const WarehousePage = () => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
+    const { showSnackbar } = useSnackbar();
     const queryClient = useQueryClient();
+    const { confirmDelete } = useDialogs();
 
     const { isSM } = useScreen();
 
@@ -138,7 +137,6 @@ const WarehousePage = () => {
 
     const [openCreateWarehouseForm, setOpenCreateWarehouseForm] = useState(false);
     const [openEditWarehouseForm, setOpenEditWarehouseForm] = useState(false);
-    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
 
     const [selectedWarehouse, setSelectedWarehouse] = useState<WarehousesData | undefined>(undefined);
     const [selectedWarehouseWithTotal, setSelectedWarehouseWithTotal] = useState<WarehouseWithTotalChangedQtyData | undefined>(undefined);
@@ -157,7 +155,7 @@ const WarehousePage = () => {
         },
         onSuccess: () => {
             showSnackbar(SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["WarehousesData"] });
+            queryClient.invalidateQueries({ queryKey: ["warehouses", "warehouses-with-total"] });
 
         },
         onError: (error: unknown) => {
@@ -171,8 +169,7 @@ const WarehousePage = () => {
         },
         onSuccess: () => {
             showSnackbar(SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["WarehousesData"] });
-            setOpenDeleteConfirm(false);
+            queryClient.invalidateQueries({ queryKey: ["warehouses", "warehouses-with-total"] });
             setCurrentWarehouseIndex(0);
         },
         onError: (error: unknown) => {
@@ -180,13 +177,22 @@ const WarehousePage = () => {
         }
     });
 
+    const handleDelete = async () => {
+        const ok = await confirmDelete(
+            `倉庫「${selectedWarehouse?.name}」を削除しますか`
+        );
+        if (ok && selectedWarehouse?.id) {
+            deleteMutation.mutate(selectedWarehouse.id);
+        }
+    }
+
     const updateMutation = useMutation({
         mutationFn: async ({ id, data }: { id: number; data: WarehouseFormData }) => {
             return stockAPI.updateWarehouse(id, data);
         },
         onSuccess: () => {
             showSnackbar(SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["WarehousesData"] });
+            queryClient.invalidateQueries({ queryKey: ["warehouses", "warehouses-with-total"] });
         },
         onError: (error: unknown) => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
@@ -289,14 +295,6 @@ const WarehousePage = () => {
                 minHeight="75vh"
                 height="auto"
             >
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
-
                 {/* エラー表示 */}
                 {(errorWH || errorWHWithTotal) && (
                     <ErrorState />
@@ -388,7 +386,7 @@ const WarehousePage = () => {
                                             },
                                         }}
                                         onClick={() => {
-                                            setOpenDeleteConfirm(true)
+                                            handleDelete()
                                         }}
                                     >
                                         <DeleteIcon fontSize="inherit" />
@@ -772,20 +770,6 @@ const WarehousePage = () => {
                         }}
                     />
                 )}
-
-
-                <DeleteConfirmDialog
-                    open={openDeleteConfirm}
-                    onClose={() => setOpenDeleteConfirm(false)}
-                    targetName={selectedWarehouse?.name}
-                    title="倉庫"
-                    onDelete={() => {
-                        if (selectedWarehouse?.id) {
-                            deleteMutation.mutate(selectedWarehouse.id);
-                        }
-                    }}
-                    isDeleting={deleteMutation.isPending}
-                />
             </Box>
         </Box >
     )

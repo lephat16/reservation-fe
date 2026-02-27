@@ -20,10 +20,8 @@ import {
     useMediaQuery,
     useTheme
 } from "@mui/material"
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import Header from "../../../shared/components/layout/Header";
 import { tokens } from "../../../shared/theme";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import type { StockHistoriesWithDetailData } from "../types/stock";
 import { useQuery } from "@tanstack/react-query";
 import { type GridColDef, type GridRowParams } from "@mui/x-data-grid";
@@ -77,7 +75,6 @@ const StockHistoriesPage = () => {
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
     const { isSM } = useScreen();
-    const { snackbar, closeSnackbar } = useSnackbar();
 
     const [selectedRow, setSelectedRow] = useState<StockHistoryGroupRow | null>(null);
     const [open, setOpen] = useState(false);
@@ -216,14 +213,6 @@ const StockHistoriesPage = () => {
                 />
             )}
             <Box mt={3} height="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
-
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />

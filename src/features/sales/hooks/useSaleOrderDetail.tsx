@@ -4,7 +4,7 @@ import { saleAPI } from "../api/saleAPI";
 
 export const useSaleOrderDetail = (soId: number) => {
     return useQuery<SaleOrderData>({
-        queryKey: ["sellOrder-detail", soId],
+        queryKey: ["sell-order-detail", soId],
         queryFn: async () => {
             const resPODetail = await saleAPI.getSaleOrderById(soId);
             return resPODetail.data;

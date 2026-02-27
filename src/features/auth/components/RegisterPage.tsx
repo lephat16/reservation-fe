@@ -5,8 +5,7 @@ import * as yup from 'yup';
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import type { RegisterRequest } from "../types/auth";
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import type { AxiosError } from "axios";
 import { authAPI } from "../api/authAPI";
 import RegisterCard from "./RegisterCard";
@@ -37,7 +36,7 @@ const RegisterPage = (): JSX.Element => {
     const navigate = useNavigate();
 
     // スナックバー状態管理
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
+    const { showSnackbar } = useSnackbar();
 
     // React Hook Form初期化
     const {
@@ -80,12 +79,7 @@ const RegisterPage = (): JSX.Element => {
 
     return (
         <>
-            <CustomSnackbar
-                open={snackbar.open}
-                message={snackbar.message}
-                severity={snackbar.severity}
-                onClose={closeSnackbar}
-            />
+
             <AuthLayout>
                 <RegisterCard
                     control={control}

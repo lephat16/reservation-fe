@@ -1,9 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSnackbar } from "../../shared/hooks/useSnackbar";
+import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import type { ChangePasswordRequest, LoginHistories, UserData } from "../user/types/user";
 import { Box, Tab, Tabs, useTheme } from "@mui/material";
 import ProfileCard from "../user/compoments/ProfileCard";
-import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import { useEffect, useState } from "react";
 import { tokens } from "../../shared/theme";
 import type { RootState } from "./store";
@@ -28,7 +27,7 @@ const ProfilePage = () => {
     const colors = tokens(theme.palette.mode);
 
     const queryClient = useQueryClient(); // React Queryのクライアント取得
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar(); // スナックバー管理用カスタムフック
+    const { showSnackbar } = useSnackbar(); // スナックバー管理用カスタムフック
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
@@ -100,15 +99,8 @@ const ProfilePage = () => {
 
     return (
         <Box mt={3} height="75vh">
-            {/* メッセージ表示 */}
-            <CustomSnackbar
-                open={snackbar.open}
-                message={snackbar.message}
-                severity={snackbar.severity}
-                onClose={closeSnackbar}
-            />
-            {/* ページタイトル */}
 
+            {/* ページタイトル */}
 
             <Box
                 sx={{

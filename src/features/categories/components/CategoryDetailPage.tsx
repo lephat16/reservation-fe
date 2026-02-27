@@ -21,26 +21,25 @@ import {
 } from "@mui/material";
 import { tokens } from "../../../shared/theme";
 import Header from "../../../shared/components/layout/Header";
-import type { CategoryFormData, ProductStockData } from "../types/category";
+import type { CategoryData, CategoryFormData, ProductStockData } from "../types/category";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { useInfoCategory } from "../hooks/useInfoCategory";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { DeleteConfirmDialog } from "../../../shared/components/global/DeleteConfirmDialog";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import { useDeleteCategory } from "../hooks/useDeleteCategory";
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import CategoryForm from "./CategoryForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { categoryAPI } from "../api/categoryAPI";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
-import { styledTable } from "../../../shared/styles/StyleTable"; 
+import { styledTable } from "../../../shared/styles/StyleTable";
 import { STATUS } from "../../../constants/status";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
+import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 
 interface ProductRowProps {
     product: ProductStockData;
@@ -154,10 +153,9 @@ const CategoryDetailPage = () => {
     const { categoryId } = useParams<{ categoryId: string }>();
 
     const [openEditCategoryForm, setOpenEditCategoryForm] = useState(false);
-    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
 
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
-    const navigate = useNavigate();
+    const { showSnackbar } = useSnackbar();
+    const { confirmDelete } = useDialogs();
     const queryClient = useQueryClient();
 
     const [showMore, setShowMore] = useState(false);
@@ -185,11 +183,16 @@ const CategoryDetailPage = () => {
         return Array.from(new Set(suppliers)).join(", ");
     };
 
-    const handleDeleteSuccess = () => {
-        setOpenDeleteConfirm(false);
-        navigate("/category");
-    };
-    const deleteMutation = useDeleteCategory(handleDeleteSuccess, showSnackbar);
+    const deleteMutation = useDeleteCategory(showSnackbar);
+    const handleDelete = async (category: CategoryData) => {
+        const ok = await confirmDelete(
+            `ユーザー「${category.name}」を削除しますか？`
+        );
+
+        if (ok) {
+            deleteMutation.mutate(Number(categoryId));
+        }
+    }
     const mappedCategoryFormData: CategoryFormData = {
         name: data?.categoryInfo.name ?? '',
         status: data?.categoryInfo.status ?? 'INACTIVE',
@@ -207,13 +210,6 @@ const CategoryDetailPage = () => {
                 />
             )}
             <Box m="40px 0 0 0" minHeight="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
 
                 {/* エラー表示 */}
                 {(error) && (
@@ -267,7 +263,9 @@ const CategoryDetailPage = () => {
                                                         },
                                                     }}
                                                     onClick={() => {
-                                                        setOpenDeleteConfirm(true)
+                                                        if (data.categoryInfo) {
+                                                            handleDelete(data.categoryInfo)
+                                                        }
                                                     }}
                                                 >
                                                     <DeleteIcon fontSize="inherit" />
@@ -366,15 +364,7 @@ const CategoryDetailPage = () => {
 
                 )}
 
-                <DeleteConfirmDialog
-                    open={openDeleteConfirm}
-                    onClose={() => setOpenDeleteConfirm(false)}
-                    title="カテゴリー"
-                    targetName={data?.categoryInfo.name}
-                    onDelete={() =>
-                        deleteMutation.mutate(Number(categoryId))}
-                    isDeleting={deleteMutation.isPending}
-                />
+
                 {openEditCategoryForm && (
                     <CategoryForm
                         open

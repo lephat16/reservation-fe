@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
     Box,
     Button,
@@ -18,15 +18,12 @@ import ErrorState from "../../../shared/components/messages/ErrorState";
 import { useSupplierProductsWithStock } from "../hooks/useSupplierProductsWithStock";
 import SupplierDetailCard from "./SupplierDetailCard";
 import { useEffect, useState } from "react";
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import SupplierForm from "./SupplierForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supplierAPI } from "../api/supplierAPI";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
-import { DeleteConfirmDialog } from "../../../shared/components/global/DeleteConfirmDialog";
 import { usePurchasesOrderBySupplier } from "../../purchases/hooks/usePurchasesOrderBySupplier";
 import SupplierStatCard from "./SupplierStatCard";
 import OrderBySupplierTable from "./OrderBySupplierTable";
@@ -39,6 +36,8 @@ import SupplierProductForm from "./SupplierProductForm";
 import { useProducts } from "../../products/hooks/useProducts";
 import type { ProductData } from "../../products/types/product";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
+import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 
 
 const SupplierPage = () => {
@@ -46,9 +45,11 @@ const SupplierPage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const { supplierId } = useParams<{ supplierId: string }>();
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
 
-    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+    const navigate = useNavigate();
+    const { showSnackbar } = useSnackbar();
+    const { confirmDelete } = useDialogs();
+
     const [openEditSupplierForm, setOpenEditSupplierForm] = useState(false);
     const [openSupplierProductDialog, setOpenSupplierProductDialog] = useState(false);
 
@@ -121,13 +122,22 @@ const SupplierPage = () => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["supplier"] });
             setTimeout(() => {
-                // navigate("/purchase-order");
+                navigate("/suppliers");
             }, 500);
         },
         onError: (error: unknown) => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
+
+    const handleDelete = async () => {
+        const ok = await confirmDelete(
+            `仕入先「${data?.supplier.name}」を削除しますか`
+        );
+        if (ok) {
+            deleteMutation.mutate();
+        }
+    };
 
     const handleOpenCreate = async () => {
         let products: ProductData[] = dataAllProducts;
@@ -138,6 +148,7 @@ const SupplierPage = () => {
         setAllproducts(products);
         setOpenSupplierProductDialog(true);
     };
+    
     return (
         <Box m={3}>
             {isLoading ? (
@@ -149,13 +160,6 @@ const SupplierPage = () => {
                 />
             )}
             <Box m={3} minHeight="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
                 {/* エラー表示 */}
                 {(error || errorPO) && (
                     <ErrorState />
@@ -175,7 +179,7 @@ const SupplierPage = () => {
                                 >
                                     <SupplierDetailCard
                                         supplier={data?.supplier}
-                                        openDeleteDialog={() => setOpenDeleteConfirm(true)}
+                                        openDeleteDialog={() => handleDelete()}
                                         openEditDialog={() => setOpenEditSupplierForm(true)}
                                     />
 
@@ -315,13 +319,6 @@ const SupplierPage = () => {
                                     products={allProducts ?? []}
                                 />
                             }
-                            <DeleteConfirmDialog
-                                open={openDeleteConfirm}
-                                onClose={() => setOpenDeleteConfirm(false)}
-                                targetName={data.supplier.name}
-                                onDelete={() => deleteMutation.mutate()}
-                                isDeleting={deleteMutation.isPending}
-                            />
                         </>
                     )
                 )}

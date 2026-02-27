@@ -1,8 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import { useVerifyResetToken } from "../hooks/useVerifyToken";
 import { useEffect } from "react";
 import { Typography } from "@mui/material";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 
 type TokenGuardProps = {
     children: (token: string) => React.ReactNode;

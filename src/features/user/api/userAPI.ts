@@ -1,6 +1,6 @@
 import { api } from "../../../shared/api/axiosClient";
 import type { ApiResponse } from "../../../shared";
-import type { ChangePasswordRequest, LoginHistories, SetPasswordRequest, UserData, UserRequestData } from "../types/user";
+import type { ChangePasswordRequest, LoginHistories, SetPasswordRequest, UserData, UserRequestData, UserSession } from "../types/user";
 
 export const userAPI = {
 
@@ -42,7 +42,15 @@ export const userAPI = {
     getLoginHistories: async (): Promise<ApiResponse<LoginHistories[]>> => {
         return (await api.get(`/users/login-history`,));
     },
-
+    getUserSessions: async (userId: number): Promise<ApiResponse<UserSession[]>> => {
+        return (await api.get(`/users/${userId}/sessions`,));
+    },
+    revokeSession: async (sessionId: number): Promise<ApiResponse<void>> => {
+        return (await api.get(`/users/sessions/${sessionId}/revoke`,));
+    },
+    revokeAllSessions: async (userId: number): Promise<ApiResponse<void>> => {
+        return (await api.get(`/users/${userId}/sessions/revoke-all`,));
+    }
 }
 
 

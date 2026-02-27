@@ -26,17 +26,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { tokens } from "../../../shared/theme";
 import { useEffect, useMemo, useState } from "react";
 import * as yup from "yup";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
-import { DeleteConfirmDialog } from "../../../shared/components/global/DeleteConfirmDialog";
 import { purchaseAPI } from "../api/purchaseAPI";
 import { usePurchaseOrderDetail } from "../hooks/usePurchaseOrderDetail";
 import { useSumReceivedQtyByPoGroupByProduct } from "../../products/hooks/useSumReceivedQtyByPoGroupByProduct";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import useRoleFlags from "../../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
+import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 
 // Yupスキーマ（説明のバリデーション用）
 const descriptionSchema = yup.object({
@@ -117,12 +116,12 @@ const PurchaseOrderDetailPage = () => {
     const [description, setDescription] = useState<string>("");
     const [descriptionError, setDescriptionError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
     const [openSubmitConfirm, setOpenSubmitConfirm] = useState(false);
 
     const { isSM } = useScreen(); // 画面サイズ判定
     const queryClient = useQueryClient();
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
+    const { confirmDelete } = useDialogs();
+    const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
 
     const { isLoading, error, data } = usePurchaseOrderDetail(Number(poId));
@@ -172,7 +171,7 @@ const PurchaseOrderDetailPage = () => {
         mutationFn: async () => purchaseAPI.deletePurchaseOrder(Number(poId)),
         onSuccess: (response) => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["purchaseOrderDetail"] });
+            queryClient.invalidateQueries({ queryKey: ["purchase-order-detail"] });
             setTimeout(() => {
                 navigate("/purchase-order");
             }, 500);
@@ -181,13 +180,21 @@ const PurchaseOrderDetailPage = () => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
+    const handleDelete = async () => {
+        const ok = await confirmDelete(
+            `注文のアイテム「${poId}」を削除しますか`
+        );
+        if (ok) {
+            deleteMutation.mutate();
+        }
+    }
 
     // 注文Mutation
     const submitMutation = useMutation({
         mutationFn: async () => purchaseAPI.placePurchaseOrder(Number(poId)),
         onSuccess: (response) => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.ORDER.CREATE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["purchaseOrderDetail"] });
+            queryClient.invalidateQueries({ queryKey: ["purchase-order-detail"] });
             setTimeout(() => {
                 navigate("/purchase-order");
             }, 500);
@@ -219,14 +226,6 @@ const PurchaseOrderDetailPage = () => {
                 />
             )}
             <Box mt={3} height="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
-
                 {/* エラー表示 */}
                 {(error || errorReceivedQty) && (
                     <ErrorState />
@@ -360,7 +359,7 @@ const PurchaseOrderDetailPage = () => {
                 ))}
                 <Tooltip title={isWarehouse ? "管理者またはスタッフのみ削除可能" : ""} arrow>
                     <span>
-                        <Button disabled={isWarehouse} variant="contained" color="error" onClick={() => setOpenDeleteConfirm(true)}>
+                        <Button disabled={isWarehouse} variant="contained" color="error" onClick={() => handleDelete()}>
                             削除
                         </Button>
                     </span>
@@ -386,14 +385,7 @@ const PurchaseOrderDetailPage = () => {
                     </Tooltip>
                 )}
             </Stack>
-            {/* 削除確認ダイアログ */}
-            <DeleteConfirmDialog
-                open={openDeleteConfirm}
-                onClose={() => setOpenDeleteConfirm(false)}
-                targetName={poId}
-                onDelete={() => deleteMutation.mutate()}
-                isDeleting={deleteMutation.isPending}
-            />
+
             {/* 注文確認ダイアログ */}
             <SubmitConfirmDialog
                 open={openSubmitConfirm}

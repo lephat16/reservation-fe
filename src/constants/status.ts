@@ -14,3 +14,21 @@ export const STATUS = {
         color: "default"
     },
 } as const;
+
+export const SESSION_STATUS = {
+    ACTIVE: {
+        value: 'ACTIVE',
+        label: "使用中",
+        color: "success"
+    },
+    EXPIRED: {
+        value: 'EXPIRED',
+        label: "期限切れ",
+        color: "warning"
+    },
+    REVOKED: {
+        value: 'REVOKED',
+        label: "無効化",
+        color: "error"
+    },
+} as const;

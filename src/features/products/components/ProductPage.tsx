@@ -4,16 +4,13 @@ import Header from "../../../shared/components/layout/Header";
 import { tokens } from "../../../shared/theme";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { productAPI } from "../api/productAPI";
 import { useProductDetailAndCategories } from "../hooks/useProductDetailAndCategories";
-import { styledTable } from "../../../shared/styles/StyleTable"; 
+import { styledTable } from "../../../shared/styles/StyleTable";
 import ProductDetailCard from "./ProductDetailCard";
 import ProductForm from "./ProductForm";
-import { DeleteConfirmDialog } from "../../../shared/components/global/DeleteConfirmDialog";
 import StoreIcon from '@mui/icons-material/Store';
 import RealEstateAgentIcon from '@mui/icons-material/RealEstateAgent';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -24,17 +21,19 @@ import { useWeeklySalesByProduct } from "../hooks/useWeeklySalesByProduct";
 import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
+import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 
 const ProductPage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
     const [openEditProductForm, setOpenEditProductForm] = useState(false);
-    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
 
     const queryClient = useQueryClient();
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
+    const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
+    const { confirmDelete } = useDialogs();
 
     const { isSM } = useScreen();
     const { productId } = useParams<{ productId: string }>();
@@ -71,6 +70,14 @@ const ProductPage = () => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
+    const handleDelete = async () => {
+        const ok = await confirmDelete(
+            `商品「${productDetail?.product.productName}」を削除しますか`
+        );
+        if (ok) {
+            deleteMutation.mutate();
+        }
+    }
     const totalSuppliers = productDetail?.supplier.length || 0;
     const averagePrice = productDetail?.supplier && totalSuppliers > 0
         ? productDetail.supplier.reduce((sum, sp) => sum + (sp.price ?? 0), 0)
@@ -171,13 +178,7 @@ const ProductPage = () => {
                 />
             )}
             <Box m="40px 0 0 0" minHeight="90vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
+
                 {/* ローディング表示 */}
 
 
@@ -192,7 +193,7 @@ const ProductPage = () => {
                         <Box>
                             <ProductDetailCard
                                 product={data.productDetail.product}
-                                openDeleteDialog={() => setOpenDeleteConfirm(true)}
+                                openDeleteDialog={() => handleDelete()}
                                 openEditDialog={() => setOpenEditProductForm(true)}
                             />
                         </Box>
@@ -639,13 +640,7 @@ const ProductPage = () => {
                                 categories={categories ?? []}
                             />
                         )}
-                        <DeleteConfirmDialog
-                            open={openDeleteConfirm}
-                            onClose={() => setOpenDeleteConfirm(false)}
-                            targetName={productDetail?.product.productName}
-                            onDelete={() => deleteMutation.mutate()}
-                            isDeleting={deleteMutation.isPending}
-                        />
+
                     </>
                 ) : (<Skeleton variant="rectangular" height={400} />)}
 

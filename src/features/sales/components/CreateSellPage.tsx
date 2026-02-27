@@ -13,8 +13,7 @@ import {
     useTheme
 } from "@mui/material"
 import Header from "../../../shared/components/layout/Header";
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import { tokens } from "../../../shared/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -71,7 +70,7 @@ const CreateSellPage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
+    const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const [customerName, setCustomerName] = useState<string>("");
 
     const { isSM } = useScreen();
@@ -292,14 +291,6 @@ const CreateSellPage = () => {
                 />
             )}
             <Box mt={3} minHeight="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
-
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />

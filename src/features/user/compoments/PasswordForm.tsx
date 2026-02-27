@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import { Controller, useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import type { SetPasswordRequest } from "../types/user";
@@ -9,7 +8,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Box, Button, Stack, TextField, Typography } from "@mui/material";
 import * as yup from "yup";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 
 type PasswordFormProps = {
     token: string;
@@ -34,7 +33,7 @@ const schema = yup.object({
 
 const PasswordForm = ({ token, title }: PasswordFormProps) => {
     const navigate = useNavigate();
-    const { showSnackbar, snackbar, closeSnackbar } = useSnackbar();
+    const { showSnackbar } = useSnackbar();
 
     const {
         control,
@@ -71,13 +70,6 @@ const PasswordForm = ({ token, title }: PasswordFormProps) => {
 
     return (
         <Box mt={3} height="75vh">
-            {/* メッセージ表示 */}
-            <CustomSnackbar
-                open={snackbar.open}
-                message={snackbar.message}
-                severity={snackbar.severity}
-                onClose={closeSnackbar}
-            />
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Stack spacing={2} width={400} mx="auto" mt={5}>
                     <Typography variant="h6">{title}</Typography>

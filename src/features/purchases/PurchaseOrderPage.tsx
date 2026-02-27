@@ -22,10 +22,7 @@ import { tokens } from "../../shared/theme";
 import { useNavigate } from "react-router-dom";
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
-import { useState } from "react";
-import { useSnackbar } from "../../shared/hooks/useSnackbar";
-import { DeleteConfirmDialog } from "../../shared/components/global/DeleteConfirmDialog";
-import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
+import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { purchaseAPI } from "./api/purchaseAPI";
@@ -33,6 +30,7 @@ import { usePurchaseOrders } from "./hooks/usePurchaseOrders";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import useRoleFlags from "../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
+import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 
 // ステータスに応じたChipを表示する関数
 const renderStatusChip = (status: string) => {
@@ -66,11 +64,10 @@ const PurchaseOrderPage = () => {
     const { isMD, isSM } = useScreen();
     const navigate = useNavigate();
 
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
-    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
-    const [selectedPurchaseOrderId, setSelectedPurchaseOrderId] = useState(0);
+    const { showSnackbar } = useSnackbar();
 
     const queryClient = useQueryClient();
+    const { confirmDelete } = useDialogs();
 
     const { isAdmin, isStaff, isWarehouse } = useRoleFlags();
 
@@ -91,10 +88,8 @@ const PurchaseOrderPage = () => {
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => purchaseAPI.deletePurchaseOrder(id),
         onSuccess: (response) => {
-            setOpenDeleteConfirm(false);
-            setSelectedPurchaseOrderId(0);
             showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
+            queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
 
         },
         onError: (error: unknown) => {
@@ -102,9 +97,13 @@ const PurchaseOrderPage = () => {
         }
     });
 
-    const handleDelete = (id: number) => {
-        setSelectedPurchaseOrderId(id)
-        setOpenDeleteConfirm(true)
+    const handleDelete = async (orderId: number) => {
+        const ok = await confirmDelete(
+            `注文「${orderId}」を削除しますか`
+        );
+        if (ok) {
+            deleteMutation.mutate(orderId);
+        }
     }
 
     return (
@@ -129,13 +128,6 @@ const PurchaseOrderPage = () => {
             </Box>
 
             <Box height="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />
@@ -275,17 +267,6 @@ const PurchaseOrderPage = () => {
                         </Table>
                     </TableContainer>
                 )}
-                {/* 削除確認ダイアログ */}
-                <DeleteConfirmDialog
-                    open={openDeleteConfirm}
-                    onClose={() => setOpenDeleteConfirm(false)}
-                    onDelete={() =>
-                        selectedPurchaseOrderId &&
-                        deleteMutation.mutate(Number(selectedPurchaseOrderId) || 0)}
-                    isDeleting={deleteMutation.isPending}
-                    targetName={`${selectedPurchaseOrderId}の注文`}
-                    title="購入注文"
-                />
 
             </Box>
         </Box>

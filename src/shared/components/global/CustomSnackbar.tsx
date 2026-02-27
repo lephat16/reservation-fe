@@ -28,6 +28,7 @@ const CustomSnackbar: React.FC<CustomSnackbarProps> = ({
                 elevation={6}
                 variant="filled"
                 severity={severity}
+                onClose={onClose}
             >
                 {message}
             </MuiAlert>

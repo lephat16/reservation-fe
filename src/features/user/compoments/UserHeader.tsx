@@ -1,15 +1,18 @@
-import { Breadcrumbs, Link, Typography, Box } from "@mui/material";
+import { Breadcrumbs, Link, Typography, Box, Tooltip, IconButton } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import type { UserData } from "../types/user";
 import type { ReactNode } from "react";
+import ReplyIcon from '@mui/icons-material/Reply';
+
 
 type UserHeaderProps = {
     user: UserData | null;
-    mode?: "list" | "detail" | "edit" | "create";
+    mode?: "list" | "detail" | "edit" | "create" | "showSessions";
     onNavigate?: (mode: "list" | "detail") => void;
+    onRevokeAll: () => void;
 };
 
-const UserHeader = ({ user, mode = "list", onNavigate }: UserHeaderProps) => {
+const UserHeader = ({ user, mode = "list", onNavigate, onRevokeAll }: UserHeaderProps) => {
 
     const handleNavigate = (target: "list" | "detail") => {
         onNavigate?.(target);
@@ -34,7 +37,7 @@ const UserHeader = ({ user, mode = "list", onNavigate }: UserHeaderProps) => {
             </Typography>
         )
     }
-    if ((mode === "detail" || mode === "edit") && user) {
+    if ((mode === "detail" || mode === "edit" || mode === 'showSessions') && user) {
         breadcrumbs.push(
             <Link
                 underline="hover"
@@ -52,14 +55,34 @@ const UserHeader = ({ user, mode = "list", onNavigate }: UserHeaderProps) => {
             </Typography>
         );
     }
+    if (mode === "showSessions") {
+        breadcrumbs.push(
+            <Typography key="edit" sx={{ color: "text.primary" }}>
+                セッション
+            </Typography>
+        );
+    }
     return (
-        <Box mb={3}>
+        <Box display="flex" justifyContent="space-between">
             <Breadcrumbs
                 separator={<NavigateNextIcon fontSize="small" />}
                 aria-label="breadcrumb"
+                sx={{ alignContent: "center", lineHeight: 2 }}
             >
                 {breadcrumbs}
             </Breadcrumbs>
+            {mode === "showSessions" &&
+                <Tooltip title="すべてのセッションを無効化しました">
+                    <IconButton
+                        color="warning"
+                        aria-label="すべてのセッションを無効化しました"
+                        onClick={onRevokeAll}
+                        size="small"
+                    >
+                        <ReplyIcon fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            }
         </Box>
     );
 };

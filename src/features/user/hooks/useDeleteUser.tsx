@@ -13,7 +13,7 @@ export const useDeleteUser = (
             userAPI.deleteUser(id),
         onSuccess: (response) => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["category-summaries"] });
+            queryClient.invalidateQueries({ queryKey: ["users"] });
             onSuccess();
         },
         onError: (error: unknown) => {

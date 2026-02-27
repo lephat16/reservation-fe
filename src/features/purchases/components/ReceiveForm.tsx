@@ -27,8 +27,6 @@ import type { PurchaseOrderData, } from "../types/purchase";
 import type { SumReceivedGroupByProduct, WarehouseWithLocationData } from "../../products/types/product";
 import type { DeliverStockItem, InventoryHistoryByPurchaseOrder, ReceiveStockItem } from "../../stocks/types/stock";
 import { useNavigate, useParams } from "react-router-dom";
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import CheckIcon from '@mui/icons-material/Check';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import { useEffect, useState } from "react";
@@ -45,6 +43,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import useRoleFlags from "../../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 
 // 購入確認ダイアログ
 interface ReceiveConfirmDialogProps {
@@ -349,7 +348,7 @@ const ReceiveForm = () => {
     const { isSM } = useScreen();
     const { isStaff } = useRoleFlags();
     const queryClient = useQueryClient();
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
+    const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
     const [selectedProduct, setSelectedProduct] = useState<{
         productName: string;
@@ -468,14 +467,6 @@ const ReceiveForm = () => {
                 />
             )}
             <Box mt={3} height="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
-
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />

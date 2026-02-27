@@ -32,8 +32,7 @@ import {
 import Header from "../../shared/components/layout/Header"
 import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSnackbar } from "../../shared/hooks/useSnackbar";
-import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
+import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { Fragment, useMemo, useState } from "react";
 import { TablePaginationActions } from "../stocks/WarehousePage";
 import type { ProductStockData, SupplierProductStockData } from "../stocks/types/stock";
@@ -46,7 +45,6 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import CloseIcon from '@mui/icons-material/Close';
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
-import { DeleteConfirmDialog } from "../../shared/components/global/DeleteConfirmDialog";
 import { productAPI } from "./api/productAPI";
 import { useStockWithSupplier } from "../stocks/hooks/useStockWithSupplier";
 import { styledSelect } from "../../shared/styles/styledSelect";
@@ -57,6 +55,7 @@ import type { ProductFormData } from "./types/product";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import SearchBar from "../../shared/components/global/SearchBar";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
+import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 
 type StockInfo = {
     stockId: number;
@@ -212,7 +211,6 @@ const AllProductsPage = () => {
     const [categoryNames, setCategoryNames] = useState<string[]>([]);
     const [selectedQty, setSelectedQty] = useState<number | "">("");
     const [selectedStatus, setSelectedStatus] = useState<Status>("");
-    const [selectedProduct, setSelectedProduct] = useState<ProductStockData | null>(null);
     const [searchText, setSearchText] = useState<string>("");
 
     // フィルター用の一時state（Drawerでのキャンセル操作対応）
@@ -221,9 +219,10 @@ const AllProductsPage = () => {
     const [tempStatus, setTempStatus] = useState<Status>("");
 
     // スナックバー表示用カスタムフック
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
+    const { showSnackbar } = useSnackbar();
 
     const queryClient = useQueryClient();
+    const { confirmDelete } = useDialogs();
 
     // ページネーション
     const [page, setPage] = useState(0);
@@ -234,7 +233,6 @@ const AllProductsPage = () => {
     const [orderBy, setOrderBy] = useState<'code' | 'name' | 'qty'>('code');
 
     const [openAddProductForm, setOpenAddProductForm] = useState(false);
-    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
     const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
 
     // 在庫データ取得
@@ -247,7 +245,7 @@ const AllProductsPage = () => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["stock-with-supplier"] });
         },
-        onError: (error:unknown) => {
+        onError: (error: unknown) => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
         }
     })
@@ -255,7 +253,6 @@ const AllProductsPage = () => {
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => productAPI.deleteProduct(id),
         onSuccess: (response) => {
-            setOpenDeleteConfirm(false);
             showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["stock-with-supplier"] });
         },
@@ -263,6 +260,15 @@ const AllProductsPage = () => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
+
+    const handleDelete = async (product: ProductStockData) => {
+        const ok = await confirmDelete(
+            `商品「${product.name}」を削除しますか`
+        );
+        if (ok) {
+            deleteMutation.mutate(Number(product.id));
+        }
+    }
 
     // ページ切り替え
     const handleChangePage = (
@@ -436,13 +442,6 @@ const AllProductsPage = () => {
                 minHeight="75vh"
                 height="auto"
             >
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
 
                 {/* エラー表示 */}
                 {(error) && (
@@ -832,8 +831,7 @@ const AllProductsPage = () => {
                                                 key={row.product.id}
                                                 row={row}
                                                 onDelete={(product: ProductStockData) => {
-                                                    setOpenDeleteConfirm(true);
-                                                    setSelectedProduct(product);
+                                                    handleDelete(product);
                                                 }}
                                             />))
                                         }
@@ -878,18 +876,7 @@ const AllProductsPage = () => {
                         </Box>
                     )
                 }
-                <DeleteConfirmDialog
-                    open={openDeleteConfirm}
-                    onClose={() => setOpenDeleteConfirm(false)}
-                    targetName={selectedProduct?.name}
-                    title="商品"
-                    onDelete={() => {
-                        if (selectedProduct?.id) {
-                            deleteMutation.mutate(Number(selectedProduct.id));
-                        }
-                    }}
-                    isDeleting={deleteMutation.isPending}
-                />
+
                 {
                     openAddProductForm && (
                         <ProductForm

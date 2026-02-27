@@ -2,10 +2,8 @@ import { Box, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableCon
 import { useState } from 'react'
 import { tokens } from '../../../shared/theme';
 import { useParams } from 'react-router-dom';
-import { useSnackbar } from '../../../shared/hooks/useSnackbar';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Header from '../../../shared/components/layout/Header';
-import CustomSnackbar from '../../../shared/components/global/CustomSnackbar';
 import { type GridColDef } from '@mui/x-data-grid';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import CheckIcon from '@mui/icons-material/Check';
@@ -21,6 +19,7 @@ import { useInventoryHistoryBySaleOrder } from '../../stocks/hooks/useInventoryH
 import { StyledDataGrid } from '../../../shared/components/global/StyledDataGrid';
 import useRoleFlags from '../../auth/hooks/useRoleFlags';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import { useSnackbar } from '../../../shared/hooks/SnackbarContext';
 
 const DeliverForm = () => {
 
@@ -31,7 +30,7 @@ const DeliverForm = () => {
     const { isStaff } = useRoleFlags();
 
     const queryClient = useQueryClient();
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
+    const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
 
     const [openDeliverForm, setOpenDeliverForm] = useState(false);
     const [selectedRemains, setSelectedRemains] = useState<number | null>(null);
@@ -124,14 +123,6 @@ const DeliverForm = () => {
                 />
             )}
             <Box mt={3} height="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
-
                 {/* エラー表示 */}
                 {(errorSOD || errorStock) && (
                     <ErrorState />

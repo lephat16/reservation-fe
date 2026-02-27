@@ -20,11 +20,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { SaleOrderData, SaleOrderDetailData } from "../types/sell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import Header from "../../../shared/components/layout/Header";
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
 import * as yup from "yup";
-import { DeleteConfirmDialog } from "../../../shared/components/global/DeleteConfirmDialog";
 import { SubmitConfirmDialog } from "../../purchases/components/PurchaseOrderDetailPage";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
@@ -33,6 +30,8 @@ import { useSaleOrderDetail } from "../hooks/useSaleOrderDetail";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import useRoleFlags from "../../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
+import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 
 const descriptionSchema = yup.object({
     description: yup
@@ -49,17 +48,16 @@ const SellOrderDetailPage = () => {
 
     const { isStaff, isWarehouse } = useRoleFlags();
 
-
     const { isSM } = useScreen();
     const [details, setDetails] = useState<SaleOrderDetailData[]>([]);
     const [description, setDescription] = useState<string>("");
     const [descriptionError, setDescriptionError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
     const [openSubmitConfirm, setOpenSubmitConfirm] = useState(false);
 
     const queryClient = useQueryClient();
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
+    const { confirmDelete } = useDialogs();
+    const { showSnackbar, } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
 
     const { isLoading, error, data } = useSaleOrderDetail(Number(soId));
@@ -101,7 +99,7 @@ const SellOrderDetailPage = () => {
         mutationFn: async () => saleAPI.deleteSellOrder(Number(soId)),
         onSuccess: (response) => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["sellOrderDetail"] });
+            queryClient.invalidateQueries({ queryKey: ["sell-order-detail"] });
             setTimeout(() => {
                 navigate("/sell-order");
             }, 500);
@@ -110,11 +108,20 @@ const SellOrderDetailPage = () => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
+
+    const handleDelete = async () => {
+        const ok = await confirmDelete(
+            `販売アイテム「${soId}」を削除しますか`
+        );
+        if (ok) {
+            deleteMutation.mutate();
+        }
+    }
     const submitMutation = useMutation({
         mutationFn: async () => saleAPI.prepareSaleOrder(Number(soId)),
         onSuccess: () => {
             showSnackbar(SNACKBAR_MESSAGES.SELL.CREATE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["sellOrderDetail"] });
+            queryClient.invalidateQueries({ queryKey: ["sell-order-detail"] });
             setTimeout(() => {
                 navigate("/sell-order");
             }, 500);
@@ -134,14 +141,6 @@ const SellOrderDetailPage = () => {
                 />
             )}
             <Box mt={3} height="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
-
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />
@@ -269,7 +268,7 @@ const SellOrderDetailPage = () => {
                 ))}
                 <Tooltip title={isWarehouse ? "管理者またはスタッフのみ削除可能" : ""} arrow>
                     <span>
-                        <Button disabled={isWarehouse} variant="contained" color="error" onClick={() => setOpenDeleteConfirm(true)}>
+                        <Button disabled={isWarehouse} variant="contained" color="error" onClick={() => handleDelete()}>
                             削除
                         </Button>
                     </span>
@@ -294,13 +293,6 @@ const SellOrderDetailPage = () => {
                 )}
             </Stack>
 
-            <DeleteConfirmDialog
-                open={openDeleteConfirm}
-                onClose={() => setOpenDeleteConfirm(false)}
-                targetName={soId}
-                onDelete={() => deleteMutation.mutate()}
-                isDeleting={deleteMutation.isPending}
-            />
             <SubmitConfirmDialog
                 open={openSubmitConfirm}
                 onClose={() => setOpenSubmitConfirm(false)}

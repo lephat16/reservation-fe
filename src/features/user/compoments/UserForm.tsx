@@ -1,4 +1,4 @@
-import { Box, Button, FormGroup, Grid, MenuItem, Stack, TextField, useTheme } from '@mui/material'
+import { Box, Button, Divider, FormGroup, Grid, MenuItem, Stack, styled, TextField, useTheme } from '@mui/material'
 import { Controller, useForm } from 'react-hook-form'
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -9,6 +9,14 @@ import { blueGrey } from '@mui/material/colors';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useEffect } from 'react';
 
+const CssTextField = styled(TextField)(() => ({
+    '& .MuiInputBase-input': {
+        fontSize: '1.5rem',
+    },
+    '& .MuiInputLabel-root': {
+        fontSize: '1.2rem',
+    },
+}));
 const roleValues = Object.keys(ROLES) as Array<keyof typeof ROLES>;
 const schema = yup.object({
     name: yup
@@ -20,12 +28,7 @@ const schema = yup.object({
     phoneNumber: yup
         .string()
         .required("連絡先は必須です。")
-        .matches(
-            /^[0-9+()\-\s]{8,20}$/,
-            "電話番号の形式が正しくありません。"
-        )
-        .min(10, "電話番号が短すぎます。")
-        .max(16, "電話番号が長すぎます。"),
+        .matches(/^[0-9]{10,11}$/, "電話番号の形式が正しくありません。"),
 
     email: yup
         .string()
@@ -95,15 +98,16 @@ const UserForm = ({
             noValidate
             autoComplete="off"
             // onReset={handleReset}
-            sx={{ width: '100%' }}
+            sx={{
+                width: '100%',
+            }}
+
         >
-
-
             <FormGroup>
-                <Grid container spacing={2} sx={{ mb: 2, width: '100%' }}>
+                <Grid container spacing={2} sx={{ width: '100%' }}>
                     {mode === "edit" && (
                         <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
-                            <TextField
+                            <CssTextField
                                 label="ID"
                                 value={user?.userId}
                                 variant="filled"
@@ -117,7 +121,9 @@ const UserForm = ({
                                             cursor: "pointer",
                                         }
                                     },
-                                    inputLabel: { shrink: true }
+                                    inputLabel: {
+                                        shrink: true,
+                                    },
                                 }}
                                 sx={{
                                     flex: 2,
@@ -130,14 +136,13 @@ const UserForm = ({
                             name="name"
                             control={control}
                             render={({ field }) => (
-                                <TextField
+                                <CssTextField
                                     {...field}
                                     label="名前"
                                     variant="filled"
                                     fullWidth
                                     error={!!errors.name}
                                     helperText={errors.name ? errors.name.message : ' '}
-                                    sx={{ mb: 2 }}
                                 />
                             )}
                         />
@@ -147,14 +152,13 @@ const UserForm = ({
                             name="email"
                             control={control}
                             render={({ field }) => (
-                                <TextField
+                                <CssTextField
                                     {...field}
                                     label="メールアドレス"
                                     variant="filled"
                                     fullWidth
                                     error={!!errors.email}
                                     helperText={errors.email ? errors.email.message : ' '}
-                                    sx={{ mb: 2 }}
                                 />
                             )}
                         />
@@ -164,14 +168,13 @@ const UserForm = ({
                             name="phoneNumber"
                             control={control}
                             render={({ field }) => (
-                                <TextField
+                                <CssTextField
                                     {...field}
                                     label="電話番号"
                                     variant="filled"
                                     fullWidth
                                     error={!!errors.phoneNumber}
                                     helperText={errors.phoneNumber ? errors.phoneNumber.message : ' '}
-                                    sx={{ mb: 2 }}
                                 />
                             )}
                         />
@@ -189,9 +192,9 @@ const UserForm = ({
                                     fullWidth
                                     error={!!errors.role}
                                     helperText={errors.role ? errors.role.message : ' '}
-                                    sx={{ mb: 2 }}
                                     bgColor={theme.alpha(blueGrey[900], 1)}
-
+                                    inputFontSize='1.5rem'
+                                    labelFontSize='1.2rem'
                                 >
                                     {Object.values(ROLES).map((role) => (
                                         <MenuItem key={role.value} value={role.value}>
@@ -204,6 +207,7 @@ const UserForm = ({
                     </Grid>
                 </Grid>
             </FormGroup>
+            <Divider sx={{ my: 3 }} />
             <Stack direction="row" spacing={2} justifyContent="space-between">
                 <Button
                     variant="contained"

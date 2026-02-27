@@ -14,8 +14,7 @@ import {
 import { tokens } from '../../../shared/theme';
 import type { SupplierData } from '../../suppliers/types/supplier';
 import Header from '../../../shared/components/layout/Header';
-import CustomSnackbar from '../../../shared/components/global/CustomSnackbar';
-import { useSnackbar } from '../../../shared/hooks/useSnackbar';
+import { useSnackbar } from '../../../shared/hooks/SnackbarContext';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import ErrorState from '../../../shared/components/messages/ErrorState';
@@ -45,7 +44,7 @@ const CreatePurchasePage = () => {
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [description, setDescription] = useState("");
 
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
+    const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const [rows, setRows] = useState<PurchaseRow[]>([]);
 
     // 仕入先選択用ハンドラー
@@ -246,14 +245,6 @@ const CreatePurchasePage = () => {
                 />
             )}
             <Box mt={3} minHeight="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
-
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />

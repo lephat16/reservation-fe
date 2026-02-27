@@ -28,10 +28,8 @@ import { useQuery } from "@tanstack/react-query";
 import { stockAPI } from "../api/stockAPI";
 import Header from "../../../shared/components/layout/Header";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import ErrorState from "../../../shared/components/messages/ErrorState";
-import { styledTable } from "../../../shared/styles/StyleTable"; 
+import { styledTable } from "../../../shared/styles/StyleTable";
 import type { TableCellProps } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import SearchBar from "../../../shared/components/global/SearchBar";
@@ -95,7 +93,6 @@ const StockMovementHistoryPage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
-    const { snackbar, closeSnackbar } = useSnackbar();
     const { isSM, isLG } = useScreen();
 
     const [page, setPage] = useState(0);
@@ -336,14 +333,6 @@ const StockMovementHistoryPage = () => {
                 minHeight="75vh"
                 height="auto"
             >
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
-
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />

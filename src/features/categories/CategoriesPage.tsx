@@ -8,12 +8,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { createContext, useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSnackbar } from "../../shared/hooks/useSnackbar";
-import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import NewLabelIcon from '@mui/icons-material/NewLabel';
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
-import { DeleteConfirmDialog } from "../../shared/components/global/DeleteConfirmDialog";
 import { categoryAPI } from "./api/categoryAPI";
 import { useCategorySummaries } from "./hooks/useCategorySummaries";
 import CategoryForm from "./components/CategoryForm";
@@ -21,6 +18,8 @@ import { useDeleteCategory } from "./hooks/useDeleteCategory";
 import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
+import { useSnackbar } from "../../shared/hooks/SnackbarContext";
+import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 
 interface ActionHandlers {
     deleteCategory: (id: GridRowId) => void;
@@ -100,15 +99,14 @@ const CategoriesPage = () => {
     const theme = useTheme();
     const { isSM } = useScreen();
     const navigate = useNavigate();
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
+    const { showSnackbar } = useSnackbar();
 
     const queryClient = useQueryClient();
+    const { confirmDelete } = useDialogs();
 
-    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
     const [openAddCategoryForm, setOpenAddCategoryForm] = useState(false);
 
-    const [selectedCategory, setSelectedCategory] =
-        useState<CategorySummariesData | null>(null);
+    useState<CategorySummariesData | null>(null);
 
     const { isLoading, error, data } = useCategorySummaries();
 
@@ -126,12 +124,16 @@ const CategoriesPage = () => {
         }
     });
 
-    const handleDeleteSuccess = () => {
-        setOpenDeleteConfirm(false);
-        setSelectedCategory(null);
-    };
+    const deleteMutation = useDeleteCategory(showSnackbar);
 
-    const deleteMutation = useDeleteCategory(handleDeleteSuccess, showSnackbar);
+    const handleDelete = async (category: CategorySummariesData) => {
+        const ok = await confirmDelete(
+            `カテゴリー「${category.categoryName}」を削除しますか？`
+        );
+        if (ok) {
+            deleteMutation.mutate(category.id || 0);
+        }
+    }
 
     const seeMoreCategory = (id: GridRowId) => {
         navigate(`/category/${id}`);
@@ -139,8 +141,7 @@ const CategoriesPage = () => {
     const deleteCategory = (id: GridRowId) => {
         const category = data?.find(c => c.id === id);
         if (!category) return;
-        setSelectedCategory(category);
-        setOpenDeleteConfirm(true)
+        handleDelete(category);
     }
 
     const actionHandlers = useMemo<ActionHandlers>(
@@ -176,13 +177,6 @@ const CategoriesPage = () => {
             </Box>
 
             <Box mt={3} height="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
 
                 {/* エラー表示 */}
                 {(error) && (
@@ -203,16 +197,7 @@ const CategoriesPage = () => {
                         />
                     </ActionHandlersContext.Provider>
                 )}
-                <DeleteConfirmDialog
-                    open={openDeleteConfirm}
-                    onClose={() => setOpenDeleteConfirm(false)}
-                    title="カテゴリー"
-                    targetName={selectedCategory?.categoryName}
-                    onDelete={() =>
-                        selectedCategory &&
-                        deleteMutation.mutate(selectedCategory?.id || 0)}
-                    isDeleting={deleteMutation.isPending}
-                />
+                
                 {openAddCategoryForm && (
                     <CategoryForm
                         open

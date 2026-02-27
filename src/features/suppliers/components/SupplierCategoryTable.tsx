@@ -13,7 +13,7 @@ import {
     Tooltip,
     useTheme
 } from "@mui/material";
-import { styledTable } from "../../../shared/styles/StyleTable"; 
+import { styledTable } from "../../../shared/styles/StyleTable";
 import { useNavigate } from "react-router-dom";
 import { useSupplierProducWithPriceHistory } from "../hooks/useSupplierProducWithPriceHistory";
 import { useState } from "react";
@@ -51,7 +51,7 @@ const SupplierCategoryTable = ({ categoryName, products, supplierId, supplierSta
 
     const updateMutation = useMutation({
         mutationFn: async (updateSupplierProduct: SupplierProductFormType) => {
-            const updatedRes = await supplierAPI.updateSupplierProduct(updateSupplierProduct, selectedSupplierProduct?.id ?? 0);
+            const updatedRes = await supplierAPI.updateSupplierProduct(updateSupplierProduct, selectedSupplierProduct?.sku ?? "");
             return updatedRes;
         },
         onSuccess: (response) => {

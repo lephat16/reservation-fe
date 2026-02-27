@@ -21,10 +21,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { type GridValueGetter } from "@mui/x-data-grid";
 import { jaJP } from "@mui/x-data-grid/locales";
-import { useSnackbar } from "../../shared/hooks/useSnackbar";
 import { useNavigate } from "react-router-dom";
-import { DeleteConfirmDialog } from "../../shared/components/global/DeleteConfirmDialog";
-import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import SupplierForm from "./components/SupplierForm";
 import AddHomeWorkIcon from '@mui/icons-material/AddHomeWork';
 import ErrorState from "../../shared/components/messages/ErrorState";
@@ -34,6 +31,8 @@ import { useAllSuppliers } from "./hooks/useAllSuppliers";
 import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
+import { useSnackbar } from "../../shared/hooks/SnackbarContext";
+import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 
 
 interface ActionHandlers {
@@ -130,10 +129,8 @@ const AllSupplierPage = () => {
     const queryClient = useQueryClient();
 
     const navigate = useNavigate();
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
-
-    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
-    const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
+    const { showSnackbar } = useSnackbar();
+    const { confirmDelete } = useDialogs();
 
     const [openAddSupplierForm, setOpenAddSupplierForm] = useState(false);
 
@@ -155,11 +152,7 @@ const AllSupplierPage = () => {
         mutationFn: async (id: number) => supplierAPI.deleteSupplier(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-            setOpenDeleteConfirm(false);
-            setSelectedSupplier(null);
             showSnackbar(SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-
         },
         onError: (error: unknown) => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
@@ -170,11 +163,15 @@ const AllSupplierPage = () => {
         navigate(`/suppliers/${id}`);
     }
 
-    const deleteSupplier = (id: GridRowId) => {
+    const deleteSupplier = async (id: GridRowId) => {
         const supplier = data?.find(c => c.id === id);
         if (!supplier) return;
-        setSelectedSupplier(supplier);
-        setOpenDeleteConfirm(true)
+        const ok = await confirmDelete(
+            `仕入先「${supplier.name}」を削除しますか`
+        );
+        if (ok) {
+            deleteMutation.mutate(Number(id));
+        }
     }
     const actionHandlers = useMemo<ActionHandlers>(
         () => ({
@@ -184,8 +181,6 @@ const AllSupplierPage = () => {
         [deleteSupplier, seeMoreSupplier],
     );
     return (
-
-
         <Box m={3}>
             <Box display="flex" justifyContent="space-between">
                 {isLoading ? (
@@ -207,14 +202,6 @@ const AllSupplierPage = () => {
                 </Box>
             </Box>
             <Box mt={3} height="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
-
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />
@@ -252,16 +239,6 @@ const AllSupplierPage = () => {
                         }}
                     />
                 )}
-                <DeleteConfirmDialog
-                    open={openDeleteConfirm}
-                    onClose={() => setOpenDeleteConfirm(false)}
-                    targetName={selectedSupplier?.name}
-                    onDelete={() =>
-                        selectedSupplier &&
-                        deleteMutation.mutate(selectedSupplier?.id || 0)}
-                    isDeleting={deleteMutation.isPending}
-                />
-
             </Box>
         </Box>
     )

@@ -22,8 +22,8 @@ export const SNACKBAR_MESSAGES = {
     },
     CHANGE_PASSWORD_SUCCESS: "パスワードが変更されました",
     CHANGE_PASSWORD_CREATE_FAILED: "パスワード変更に失敗しました",
-    SEND_REQUEST_SUCCESS: "",
-    SEND_REQUEST_FAILED: "",
+    SEND_REQUEST_SUCCESS: "リクエストが正常に送信されました",
+    SEND_REQUEST_FAILED: "リクエストの送信に失敗しました",
     RESET_PASSWORD_SUCCESS: "パスワードが変更されました",
     RESET_PASSWORD_CREATE_FAILED: "パスワード変更に失敗しました",
 };

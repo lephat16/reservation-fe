@@ -18,14 +18,12 @@ import {
 } from "@mui/material";
 import { tokens } from "../../shared/theme";
 import { useNavigate } from "react-router-dom";
-import { useSnackbar } from "../../shared/hooks/useSnackbar";
+import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "../../shared/components/layout/Header";
-import CustomSnackbar from "../../shared/components/global/CustomSnackbar";
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
-import { DeleteConfirmDialog } from "../../shared/components/global/DeleteConfirmDialog";
 import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { saleAPI } from "./api/saleAPI";
@@ -33,6 +31,7 @@ import { useSaleOrders } from "./hooks/useSaleOrders";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import useRoleFlags from "../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
+import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 
 const renderStatusChip = (status: string) => {
     const colorMap: Record<string, "secondary" | "primary" | "success" | "warning" | "error"> = {
@@ -65,11 +64,10 @@ const SellOrderPage = () => {
 
     const { isMD, isSM } = useScreen();
     const navigate = useNavigate();
+    const { confirmDelete } = useDialogs();
 
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
-    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
-    const [selectedSellOrderId, setSelectedSellOrderId] = useState(0);
-
+    const { showSnackbar } = useSnackbar();
+    
     const queryClient = useQueryClient();
     const { isAdmin, isStaff, isWarehouse } = useRoleFlags();
     const { isLoading, error, data } = useSaleOrders();
@@ -87,8 +85,6 @@ const SellOrderPage = () => {
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => saleAPI.deleteSellOrder(id),
         onSuccess: (response) => {
-            setOpenDeleteConfirm(false);
-            setSelectedSellOrderId(0);
             showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
 
@@ -98,9 +94,13 @@ const SellOrderPage = () => {
         }
     });
 
-    const handleDelete = (id: number) => {
-        setSelectedSellOrderId(id)
-        setOpenDeleteConfirm(true)
+    const handleDelete = async (id: number) => {
+        const ok = await confirmDelete(
+            `販売注文「${id}」を削除しますか`
+        );
+        if (ok) {
+            deleteMutation.mutate(id);
+        }
     }
     return (
         <Box m={3}>
@@ -124,14 +124,6 @@ const SellOrderPage = () => {
             </Box>
 
             <Box height="75vh">
-                {/* メッセージ表示 */}
-                <CustomSnackbar
-                    open={snackbar.open}
-                    message={snackbar.message}
-                    severity={snackbar.severity}
-                    onClose={closeSnackbar}
-                />
-
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />
@@ -267,16 +259,7 @@ const SellOrderPage = () => {
                         </Table>
                     </TableContainer>
                 )}
-                <DeleteConfirmDialog
-                    open={openDeleteConfirm}
-                    onClose={() => setOpenDeleteConfirm(false)}
-                    onDelete={() =>
-                        selectedSellOrderId &&
-                        deleteMutation.mutate(Number(selectedSellOrderId) || 0)}
-                    isDeleting={deleteMutation.isPending}
-                    targetName={`${selectedSellOrderId}の注文`}
-                    title="販売注文"
-                />
+                
             </Box>
 
         </Box>

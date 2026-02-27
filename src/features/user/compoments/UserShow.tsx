@@ -1,10 +1,11 @@
-import { Box, Button, Divider, Grid, Paper, Stack, Typography, useTheme } from "@mui/material"
+import { Box, Button, Chip, Divider, Grid, Paper, Stack, Typography, useTheme } from "@mui/material"
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import type { UserData } from "../types/user";
+import type { UserData, UserSession } from "../types/user";
 import { tokens } from "../../../shared/theme";
 import { ROLES } from "../../../constants/role";
+import { SESSION_STATUS } from "../../../constants/status";
 
 
 type UserShowProps = {
@@ -12,17 +13,21 @@ type UserShowProps = {
     onBack?: () => void;
     onEdit?: () => void;
     onDelete?: (user: UserData) => void;
+    session?: UserSession[];
+    onShowSessionTable?: () => void;
 }
 const UserShow = ({
     user,
     onBack,
     onEdit,
-    onDelete
+    onDelete,
+    session,
+    onShowSessionTable
 }: UserShowProps) => {
 
 
     const theme = useTheme();
-    const colors = tokens(theme.palette.mode)
+    const colors = tokens(theme.palette.mode);
 
     if (!user) {
         return (
@@ -36,33 +41,58 @@ const UserShow = ({
         <Box sx={{ flexGrow: 1, width: '100%' }}>
             <Grid container spacing={2} sx={{ width: '100%' }}>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[500] }}>
-                        <Typography variant="overline">ID</Typography>
-                        <Typography variant="body1" sx={{ mb: 1 }}>{user.userId}</Typography>
+                    <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[900] }}>
+                        <Typography fontSize="1.2rem">ID</Typography>
+                        <Typography fontSize="1.5rem" sx={{ mb: 1 }}>{user.userId}</Typography>
                     </Paper>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[500] }}>
-                        <Typography variant="overline">名前</Typography>
-                        <Typography variant="body1" sx={{ mb: 1 }}>{user.name}</Typography>
+                    <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[900] }}>
+                        <Typography fontSize="1.2rem">名前</Typography>
+                        <Typography fontSize="1.5rem" sx={{ mb: 1 }}>{user.name}</Typography>
                     </Paper>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[500] }}>
-                        <Typography variant="overline">メールアドレス</Typography>
-                        <Typography variant="body1" sx={{ mb: 1 }}>{user.email}</Typography>
+                    <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[900] }}>
+                        <Typography fontSize="1.2rem">メールアドレス</Typography>
+                        <Typography fontSize="1.5rem" sx={{ mb: 1 }}>{user.email}</Typography>
                     </Paper>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[500] }}>
-                        <Typography variant="overline">電話番号</Typography>
-                        <Typography variant="body1" sx={{ mb: 1 }}>{user.phoneNumber}</Typography>
+                    <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[900] }}>
+                        <Typography fontSize="1.2rem">電話番号</Typography>
+                        <Typography fontSize="1.5rem" sx={{ mb: 1 }}>{user.phoneNumber}</Typography>
                     </Paper>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[500] }}>
-                        <Typography variant="overline">役割</Typography>
-                        <Typography variant="body1" sx={{ mb: 1 }}>{ROLES[user.role].label}</Typography>
+                    <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[900] }}>
+                        <Typography fontSize="1.2rem">役割</Typography>
+                        <Typography fontSize="1.5rem" sx={{ mb: 1 }}>{ROLES[user.role].label}</Typography>
+                    </Paper>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                    <Paper
+                        sx={{
+                            px: 2,
+                            py: 1,
+                            backgroundColor: colors.primary[900],
+                            cursor: "pointer",
+                            "&:hover": {
+                                backgroundColor: colors.primary[700],
+                            },
+                        }}
+                        onClick={onShowSessionTable}
+                    >
+                        <Typography fontSize="1.2rem">セッション管理</Typography>
+                        <Typography fontSize="1.5rem" sx={{ mb: 1 }} display="flex" alignItems="center">
+                            {session?.filter(ss => ss.status === "ACTIVE").length ?? 0}
+                            <Chip
+                                label={SESSION_STATUS["ACTIVE"].label}
+                                color={SESSION_STATUS["ACTIVE"].color}
+                                size="small"
+                                sx={{ height: 16, ml: 1 }}
+                            />
+                        </Typography>
                     </Paper>
                 </Grid>
             </Grid>

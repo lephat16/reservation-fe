@@ -5,8 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import type { LoginRequest } from "../types/auth";
-import CustomSnackbar from "../../../shared/components/global/CustomSnackbar";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
+import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import type { AxiosError } from "axios";
 import { authAPI } from "../api/authAPI";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,7 +28,7 @@ const LoginPage = (): JSX.Element => {
     // ページ遷移用
     const navigate = useNavigate();
     // スナックバー状態管理
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
+    const { showSnackbar } = useSnackbar();
 
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch();
@@ -76,12 +75,7 @@ const LoginPage = (): JSX.Element => {
 
     return (
         <>
-            <CustomSnackbar
-                open={snackbar.open}
-                message={snackbar.message}
-                severity={snackbar.severity}
-                onClose={closeSnackbar}
-            />
+
             <AuthLayout>
                 <LoginCard
                     control={control}

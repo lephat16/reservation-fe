@@ -33,3 +33,21 @@ export interface SetPasswordRequest {
     token: string;
     password: string;
 };
+
+type RevokedReason = "USER_LOGOUT" | "ROTATED";
+type SessionStatus = "ACTIVE" | "EXPIRED" | "REVOKED";
+export interface UserSession {
+    id: number;
+    userId: string;
+    refreshToken: string;
+    ipAddress: string;
+    userAgent: string;
+    expiry: string;
+    createdAt: string;
+    revokedAt: string;
+    revokedReason: RevokedReason;
+    revoked: boolean;
+    device: string;
+    status: SessionStatus;
+    currentSession: boolean;
+}
