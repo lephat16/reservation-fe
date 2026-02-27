@@ -73,7 +73,7 @@ type InventoryByProduct = {
     stockInfo: StockInfo[];
 }
 
-type Order = 'asc' | 'desc';
+export type Order = 'asc' | 'desc';
 
 type Status = 'ACTIVE' | 'INACTIVE' | "";
 

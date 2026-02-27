@@ -16,6 +16,7 @@ import {
     TableHead,
     TablePagination,
     TableRow,
+    TableSortLabel,
     Tooltip,
     Typography,
     useTheme
@@ -23,11 +24,11 @@ import {
 import Header from "../../shared/components/layout/Header"
 import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { WarehouseFormData, WarehousesData, WarehouseWithTotalChangedQtyData } from "./types/stock";
+import type { StockData, WarehouseFormData, WarehousesData, WarehouseWithTotalChangedQtyData } from "./types/stock";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import AddIcon from '@mui/icons-material/Add';
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FirstPageIcon from '@mui/icons-material/FirstPage';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
@@ -53,6 +54,7 @@ import { STATUS } from "../../constants/status";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
+import { type Order } from "../products/AllProductsPage";
 
 
 interface TablePaginationActionsProps {
@@ -121,6 +123,7 @@ export function TablePaginationActions(props: TablePaginationActionsProps) {
     );
 }
 
+type OrderBy = 'productName' | 'sku' | 'quantity' | 'reservedQuantity' | 'available'
 const WarehousePage = () => {
 
     const theme = useTheme();
@@ -142,6 +145,9 @@ const WarehousePage = () => {
     const [selectedWarehouseWithTotal, setSelectedWarehouseWithTotal] = useState<WarehouseWithTotalChangedQtyData | undefined>(undefined);
     const [currentWarehouseIndex, setCurrentWarehouseIndex] = useState<number>(0);
     const [addedWarehouseIndex, setAddedWarehouseIndex] = useState<number | null>(null);
+
+    const [order, setOrder] = useState<Order>('asc');
+    const [orderBy, setOrderBy] = useState<OrderBy>('productName');
 
     const { isLoading: isLoadingWH, error: errorWH, data: dataWH } = useWarehouses();
     const { isLoading: isLoadingWHWithTotal, error: errorWHWithTotal, data: dataWHWithTotal } = useWarehouseWithTotalQty();
@@ -280,6 +286,35 @@ const WarehousePage = () => {
         : 0;
 
     const statusKey = (selectedWarehouse?.status ?? "UNKNOWN") as keyof typeof STATUS;
+
+    // ソート済みデータ
+    const sortedFilteredData = useMemo(() => {
+        const getValue = (item: StockData) => {
+            switch (orderBy) {
+                case 'productName':
+                    return item.productName;
+                case 'sku':
+                    return item.sku || '';
+                case 'quantity':
+                    return item.quantity;
+                case 'reservedQuantity':
+                    return item.reservedQuantity;
+                case 'available':
+                    return item.quantity - item.reservedQuantity;
+                default:
+                    return 0;
+            }
+        };
+
+        return [...stocks].sort((a, b) => {
+            const valA = getValue(a);
+            const valB = getValue(b);
+
+            if (valA < valB) return order === 'asc' ? -1 : 1;
+            if (valA > valB) return order === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }, [stocks, order, orderBy]);
     return (
         <Box m={3}>
             {isLoadingWH ? (
@@ -428,15 +463,74 @@ const WarehousePage = () => {
                                                 color: colors.grey[100]
                                             }}
                                         >
-                                            <TableCell>商品名</TableCell>
-                                            <TableCell>SKU</TableCell>
-                                            <TableCell>在庫数</TableCell>
-                                            <TableCell>予約数</TableCell>
-                                            <TableCell>出荷可能数</TableCell>
+                                            <TableCell sortDirection={orderBy === 'productName' ? order : false}>
+                                                <TableSortLabel
+                                                    active={orderBy === 'productName'}
+                                                    direction={orderBy === 'productName' ? order : 'asc'}
+                                                    onClick={() => {
+                                                        const isAsc = orderBy === 'productName' && order === 'asc';
+                                                        setOrder(isAsc ? 'desc' : 'asc');
+                                                        setOrderBy('productName');
+                                                    }}
+                                                >
+                                                    商品名
+                                                </TableSortLabel>
+                                            </TableCell>
+                                            <TableCell sortDirection={orderBy === 'sku' ? order : false}>
+                                                <TableSortLabel
+                                                    active={orderBy === 'sku'}
+                                                    direction={orderBy === 'sku' ? order : 'asc'}
+                                                    onClick={() => {
+                                                        const isAsc = orderBy === 'sku' && order === 'asc';
+                                                        setOrder(isAsc ? 'desc' : 'asc');
+                                                        setOrderBy('sku');
+                                                    }}
+                                                >
+                                                    SKU
+                                                </TableSortLabel></TableCell>
+                                            <TableCell sortDirection={orderBy === 'quantity' ? order : false}>
+                                                <TableSortLabel
+                                                    active={orderBy === 'quantity'}
+                                                    direction={orderBy === 'quantity' ? order : 'asc'}
+                                                    onClick={() => {
+                                                        const isAsc = orderBy === 'quantity' && order === 'asc';
+                                                        setOrder(isAsc ? 'desc' : 'asc');
+                                                        setOrderBy('quantity');
+                                                    }}
+                                                >
+                                                    在庫数
+                                                </TableSortLabel>
+                                            </TableCell>
+                                            <TableCell sortDirection={orderBy === 'reservedQuantity' ? order : false}>
+                                                <TableSortLabel
+                                                    active={orderBy === 'reservedQuantity'}
+                                                    direction={orderBy === 'reservedQuantity' ? order : 'asc'}
+                                                    onClick={() => {
+                                                        const isAsc = orderBy === 'reservedQuantity' && order === 'asc';
+                                                        setOrder(isAsc ? 'desc' : 'asc');
+                                                        setOrderBy('reservedQuantity');
+                                                    }}
+                                                >
+                                                    予約数
+                                                </TableSortLabel>
+                                            </TableCell>
+                                            <TableCell>
+                                                <TableSortLabel
+                                                    active={orderBy === 'available'}
+                                                    direction={orderBy === 'available' ? order : 'asc'}
+                                                    onClick={() => {
+                                                        const isAsc = orderBy === 'available' && order === 'asc';
+                                                        setOrder(isAsc ? 'desc' : 'asc');
+                                                        setOrderBy('available');
+                                                    }}
+                                                >
+                                                    出荷可能数
+                                                </TableSortLabel>
+                                            </TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {stocks
+                                        {sortedFilteredData
                                             .slice(
                                                 page * rowsPerPage,
                                                 rowsPerPage > 0 ? page * rowsPerPage + rowsPerPage : stocks.length
