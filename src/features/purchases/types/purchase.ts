@@ -1,11 +1,7 @@
+import type { ORDER_STATUS } from "../../../constants/status";
 import type { SupplierProductData } from "../../suppliers/types/supplier";
 
-export type OrderStatus =
-    | "NEW"
-    | "PROCESSING"
-    | "COMPLETED"
-    | "CANCELLED"
-    | "PENDING";
+export type OrderStatus = keyof typeof ORDER_STATUS;
 
 export interface PurchaseOrderDetailData {
     id: string,

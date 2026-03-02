@@ -59,7 +59,7 @@ import FilterDatePicker from "./FilterDatePicker";
  * - 週次・月次データ集計
  * - 商品別 / 倉庫別 / 利益分析データの算出
  */
-export type Type = "IN" | "OUT" | "ALL";
+export type Type = "IN" | "OUT";
 type Order = 'asc' | 'desc';
 type Column<T> = {
     key: keyof T;
@@ -113,12 +113,12 @@ const StockMovementHistoryPage = () => {
 
     // フィルター状態
     const [keyword, setKeyword] = useState("");
-    const [type, setType] = useState<Type>("ALL");
-    const [minQty, setMinQty] = useState(0);
+    const [type, setType] = useState<Type | "">("");
+    const [minQty, setMinQty] = useState<number | "">("");
 
     // Drawer用一時フィルター状態
-    const [tempType, setTempType] = useState<Type>("ALL");
-    const [tempMinQty, setTempMinQuty] = useState(0);
+    const [tempType, setTempType] = useState<Type | "">("");
+    const [tempMinQty, setTempMinQuty] = useState<number | "">("");
     // ソート状態
     const [order, setOrder] = useState<Order>('asc');
     const [orderBy, setOrderBy] = useState<keyof StockRow>("date");
@@ -201,7 +201,7 @@ const StockMovementHistoryPage = () => {
         return data.map(mapToStockRow)
             .filter(row => {
                 const matchesKeyword = !keyword || row.product.toLowerCase().includes(keyword.toLowerCase());
-                const matchesType = type === "ALL" || row.type === type;
+                const matchesType = type === "" || row.type === type;
                 const matchesQty = !minQty || Math.abs(Number(row.qty)) >= Number(minQty);
                 const matchesDate = (!startDate || dayjs(row.date).isAfter(startDate, "day")) &&
                     (!endDate || dayjs(row.date).isBefore(endDate, "day"));
@@ -209,6 +209,8 @@ const StockMovementHistoryPage = () => {
             });
 
     }, [data, keyword, type, minQty, startDate, endDate]);
+    // ページネーション用の空行数
+    const emptyRows = rowsPerPage - Math.min(rowsPerPage, filteredData.length - page * rowsPerPage);
 
     // ソート処理
     const sortedData = useMemo(() => {
@@ -1033,7 +1035,12 @@ const StockMovementHistoryPage = () => {
                                                 該当するデータがありません
                                             </TableCell>
                                         )}
-
+                                        {/** 空行の埋め合わせ */}
+                                        {emptyRows > 0 && Array.from(Array(emptyRows)).map((_, index) => (
+                                            <TableRow key={`empty-${index}`} style={{ height: 34 }}>
+                                                <TableCell colSpan={isLG ? 6 : 11} />
+                                            </TableRow>
+                                        ))}
                                     </TableBody>
 
                                     <TableFooter>

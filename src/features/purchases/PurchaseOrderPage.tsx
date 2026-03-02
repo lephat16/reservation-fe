@@ -1,18 +1,30 @@
 import {
     Box,
     Button,
+    Checkbox,
     Chip,
+    FormControl,
     IconButton,
+    InputLabel,
+    ListItemText,
+    MenuItem,
+    OutlinedInput,
     Paper,
+    Select,
     Skeleton,
+    Stack,
     Table,
     TableBody,
     TableCell,
     TableContainer,
+    TableFooter,
     TableHead,
+    TablePagination,
     TableRow,
+    TableSortLabel,
     Tooltip,
     useTheme,
+    type SelectChangeEvent,
     type SxProps,
     type Theme
 } from "@mui/material";
@@ -31,6 +43,15 @@ import { useScreen } from "../../shared/hooks/ScreenContext";
 import useRoleFlags from "../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
+import { blue, red } from "@mui/material/colors";
+import type { Order } from "../products/AllProductsPage";
+import { useMemo, useState, } from "react";
+import type { PurchaseOrderData } from "./types/purchase";
+import { styledSelect } from "../../shared/styles/styledSelect";
+import { TablePaginationActions } from "../../shared/components/pagination/PaginationAction";
+import { styledTable } from "../../shared/styles/StyleTable";
+import { ORDER_STATUS } from "../../constants/status";
+import SearchBar from "../../shared/components/global/SearchBar";
 
 /** 
  * 購入一覧ページコンポーネント
@@ -48,18 +69,31 @@ type PurchaseOrder = {
     createdAt: string;
 }
 
-// ステータスに応じたChipを表示する関数
-const renderStatusChip = (status: string) => {
-    const colorMap: Record<string, "secondary" | "primary" | "success" | "warning" | "error"> = {
-        NEW: "secondary",
-        PENDING: "warning",
-        PROCESSING: "primary",
-        COMPLETED: "success",
-        CANCELLED: "error",
+type SortableKey = 'id' | 'total' | 'createdAt';
+export type Column =
+    | {
+        key: SortableKey;
+        label: string;
+        width: string;
+        sortable: true;
+        align?: "right" | "center";
+        truncate?: boolean;
+        hideOnMobile?: boolean;
+    }
+    | {
+        key: string;
+        label: string;
+        width: string;
+        sortable?: false;
+        align?: "right" | "center";
+        truncate?: boolean;
+        hideOnMobile?: boolean;
     };
+// ステータスに応じたChipを表示する関数
+const renderStatusChip = (status: keyof typeof ORDER_STATUS) => {
     return <Chip
-        label={status}
-        color={colorMap[status] || "primary"}
+        label={ORDER_STATUS[status].label}
+        color={ORDER_STATUS[status].color}
         sx={{
             width: 100
         }}
@@ -74,30 +108,41 @@ const cellStyle = (align?: "right" | "center", truncate?: boolean): SxProps<Them
 });
 
 const PurchaseOrderPage = () => {
+
+    // フック
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    // 画面サイズに応じた表示制御
     const { isMD, isSM } = useScreen();
     const navigate = useNavigate();
-
+    const { isAdmin, isStaff, isWarehouse } = useRoleFlags();
     const { showSnackbar } = useSnackbar();
-
     const queryClient = useQueryClient();
     const { confirmDelete } = useDialogs();
 
-    const { isAdmin, isStaff, isWarehouse } = useRoleFlags();
+    // ソート用state
+    const [order, setOrder] = useState<Order>('desc');
+    const [orderBy, setOrderBy] = useState<'id' | 'total' | 'createdAt'>('createdAt');
 
+    // フィルターや選択状態のstate
+    const [suppliers, setSuppliers] = useState<string[]>([]);
+    const [selectedStatus, setSelectedStatus] = useState<keyof typeof ORDER_STATUS | "">("");
+    const [searchText, setSearchText] = useState<string>("");
+
+    // データを取得
     const { isLoading, error, data } = usePurchaseOrders();
+    // ページネーション
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     // テーブル列定義
-    const columns = [
-        { key: "id", label: "ID", width: isMD ? "10%" : "5%" },
+    const columns: Column[] = [
+        { key: "id", label: "ID", width: isMD ? "10%" : "5%", sortable: true },
         { key: "supplierName", label: "仕入先", width: isMD ? "35%" : "15%", truncate: true },
         { key: "status", label: "ステータス", width: isMD ? "30%" : "10%", align: "center", truncate: true },
         { key: "userName", label: "ユーザー", width: "15%", align: "center", truncate: true, hideOnMobile: true },
-        { key: "total", label: isMD ? "合計" : "合計金額", width: isMD ? "30%" : "10%", align: "right", truncate: true },
-        { key: "createdAt", label: "作成日", width: "15%", align: "center", truncate: true, hideOnMobile: true },
-        { key: "action", label: "操作", width: isMD ? "35%" : "10%", align: "center" },
+        { key: "total", label: isMD ? "合計" : "合計金額", width: isMD ? "30%" : "10%", align: "right", truncate: true, sortable: true },
+        { key: "createdAt", label: "作成日", width: "15%", align: "center", truncate: true, hideOnMobile: true, sortable: true },
+        { key: "action", label: "操作", width: isMD ? "35%" : "15%", align: "center" },
     ];
 
     // 削除ミューテーション
@@ -122,6 +167,72 @@ const PurchaseOrderPage = () => {
         }
     }
 
+    const uniqueSuppliers = useMemo(() => {
+        const map = new Map();
+        data?.forEach(s => {
+            map.set(s.supplierId, s);
+        });
+        return Array.from(map.values());
+    }, [data])
+
+    const handleChangeSuppliers = (event: SelectChangeEvent<typeof suppliers>) => {
+        const { target: { value } } = event;
+        const CLEAR = '__CLEAR__';
+        const values = typeof value === 'string' ? value.split(',') : value;
+        if (value.includes(CLEAR)) {
+            setSuppliers([]);
+            return
+        }
+        setSuppliers(values.filter(v => v != ''));
+    }
+
+    // 検索フィルター
+    const filterdSearch = data?.filter(item => {
+        if (searchText) {
+            return (
+                item.supplierName.toLowerCase().includes(searchText.toLowerCase()))
+        }
+        return true;
+    });
+
+    // 仕入先フィルター
+    const filteredSuppliersAndStatus = filterdSearch?.filter(item => {
+        const matchStatus =
+            selectedStatus === "" || item.status === selectedStatus;
+        const matchSupplier =
+            suppliers.length === 0 || suppliers.includes(item.supplierName);
+        return matchStatus && matchSupplier;
+    });
+
+    // ソート
+    const sortedData = useMemo(() => {
+        if (!filteredSuppliersAndStatus) return [];
+        const getValue = (item: PurchaseOrderData) => {
+            switch (orderBy) {
+                case 'id':
+                    return Number(item.id);
+                case 'total':
+                    return item.total;
+                case 'createdAt':
+                    return new Date(item.createdAt).getTime();
+                default:
+                    return 0;
+            }
+        }
+        return [...filteredSuppliersAndStatus].sort((a, b) => {
+            const valA = getValue(a);
+            const valB = getValue(b);
+
+            if (valA < valB) return order === 'asc' ? -1 : 1;
+            if (valA > valB) return order === 'asc' ? 1 : -1;
+            return 0;
+
+        })
+    }, [filteredSuppliersAndStatus, order, orderBy]);
+
+    // ページネーション用の空行数
+    const emptyRows = rowsPerPage - Math.min(rowsPerPage, sortedData.length - page * rowsPerPage);
+
     return (
         <Box m={3}>
             <Box display="flex" justifyContent="space-between">
@@ -143,149 +254,316 @@ const PurchaseOrderPage = () => {
                 </Box>
             </Box>
 
+            {/** メインコンテンツ領域 */}
             <Box height="75vh">
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />
                 )}
+                {isLoading ? (
+                    <Skeleton variant="text" width="80%" height={80} />
+                ) : (
+                    <Stack direction="row" justifyContent="space-between" >
+                        <Stack direction="row" gap={1}>
+                            <FormControl sx={{ m: 1, ml: 0, width: { lg: 150, xs: 120 } }}>
+                                <InputLabel
+                                    id="multiple-suppliers-label"
+                                    sx={{
+                                        color: colors.grey[100],
+                                        '&.Mui-focused': {
+                                            color: colors.grey[200],
+                                        },
+                                    }}
+                                >
+                                    仕入先
+                                </InputLabel>
+                                <Select
+                                    labelId="multiple-suppliers-label"
+                                    id="multiple-suppliers"
+                                    multiple
+                                    value={suppliers}
+                                    onChange={handleChangeSuppliers}
+                                    input={<OutlinedInput label="仕入先" />}
+                                    renderValue={(selected) => selected.join(', ')}
+                                    sx={styledSelect}
+                                    MenuProps={{
+                                        PaperProps: {
+                                            sx: {
+                                                backgroundColor: colors.blueAccent[800],
+                                                color: colors.grey[100],
+                                                minWidth: 200,
+                                                boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                            }
+                                        }
+                                    }}
+                                >
+                                    <MenuItem value='__CLEAR__'>
+                                        <em>未選択</em>
+                                    </MenuItem>
+                                    {uniqueSuppliers?.map(sup => (
+                                        <MenuItem key={sup.supplierId} value={sup.supplierName}>
+                                            <Checkbox
+                                                checked={suppliers.includes(sup.supplierName)}
+                                                sx={{
+                                                    '&.Mui-checked': {
+                                                        color: colors.grey[200],
+                                                    },
+                                                }}
+                                            />
+                                            <ListItemText primary={sup.supplierName} />
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
 
+                            {/** ステータスフィルター */}
+                            <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
+                                <InputLabel
+                                    id="multiple-status-label"
+                                    sx={{
+                                        color: colors.grey[100],
+                                        '&.Mui-focused': {
+                                            color: colors.grey[200],
+                                        },
+                                    }}
+                                >ステータス</InputLabel>
+                                <Select
+                                    labelId="multiple-status-label"
+                                    id="multiple-status"
+                                    value={selectedStatus}
+                                    onChange={(e) => {
+                                        const value = e.target.value ? e.target.value : "";
+                                        setSelectedStatus(value);
+                                    }}
+                                    input={<OutlinedInput label="ステータス" />}
+                                    sx={styledSelect}
+                                    MenuProps={{
+                                        PaperProps: {
+                                            sx: {
+                                                backgroundColor: colors.blueAccent[800],
+                                                color: colors.grey[100],
+                                                minWidth: 200,
+                                                boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                            }
+                                        }
+                                    }}
+                                >
+                                    <MenuItem value="">
+                                        <em>未選択</em>
+                                    </MenuItem>
+                                    {Object.values(ORDER_STATUS).map((status) => (
+                                        <MenuItem key={status.value} value={status.value}>
+                                            {status.label}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Stack>
+                        {/** 検索バー */}
+                        <SearchBar
+                            value={searchText}
+                            onChange={setSearchText}
+                            sx={{ pr: "0 !important" }}
+                        />
+                    </Stack>
+                )}
                 {isLoading ? (
                     // テーブル読み込みSkeleton
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
-                    <TableContainer
-                        component={Paper}
-                        sx={{
-                            mb: 3,
-                            maxHeight: '75vh',
-                            overflowY: 'auto',
-                        }}
-                    >
-                        <Table stickyHeader sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
-                            <colgroup>
-                                {columns.map(
-                                    (col) => (!isMD || !col.hideOnMobile ? <col key={col.key} style={{ width: col.width }} /> : null)
-                                )}
-                            </colgroup>
-
-                            <TableHead>
-                                <TableRow
-                                    sx={{
-                                        "& .MuiTableCell-root": {
-                                            fontWeight: "bold",
-                                            backgroundColor: colors.blueAccent[500],
-                                            color: colors.grey[100],
-                                        },
-
-                                    }}
-                                >
+                    <Box mt={1}>
+                        <TableContainer
+                            component={Paper}
+                            sx={{
+                                height: "100%"
+                            }}
+                        >
+                            <Table
+                                sx={{
+                                    tableLayout: "fixed",
+                                    ...styledTable(colors),
+                                }}
+                            >
+                                <colgroup>
                                     {columns.map(
-                                        (col) =>
-                                            !isMD || !col.hideOnMobile ? (
-                                                <TableCell key={col.key} sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}>
-                                                    {col.label}
-                                                </TableCell>
-                                            ) : null
+                                        (col) => (!isMD || !col.hideOnMobile ? <col key={col.key} style={{ width: col.width }} /> : null)
                                     )}
-                                </TableRow>
-                            </TableHead>
+                                </colgroup>
 
-                            <TableBody>
-                                {(data ?? []).length > 0 ? (
-                                    (data ?? []).map((order) => (
-                                        <TableRow key={order.id}>
-                                            {columns.map((col) => {
-                                                if (isMD && col.hideOnMobile) return null;
+                                <TableHead>
+                                    <TableRow
+                                        sx={{
+                                            "& .MuiTableCell-root": {
+                                                fontWeight: "bold",
+                                                backgroundColor: colors.blueAccent[500],
+                                                color: colors.grey[100],
+                                            },
 
-                                                let content;
-                                                switch (col.key) {
-                                                    case "status":
-                                                        content = renderStatusChip(order.status);
-                                                        break;
-                                                    case "action":
-                                                        content = (
-                                                            <>
-                                                                <Tooltip title="詳細">
-                                                                    <IconButton
-                                                                        aria-label="info"
-                                                                        sx={{
-                                                                            "&:hover": {
-                                                                                color: "lightblue",
-                                                                                backgroundColor: "transparent",
-                                                                            },
-                                                                            transition: "color 0.2s ease",
-                                                                        }}
-                                                                        onClick={() => navigate(`/purchase-order/${order.id}`)}
-                                                                    >
-                                                                        <InfoIcon />
-                                                                    </IconButton>
-                                                                </Tooltip>
-                                                                {!isMD && (
-                                                                    <Tooltip title={isWarehouse ? "管理者またはスタッフのみ削除可能" : "削除"}>
-                                                                        <span>
-                                                                            <IconButton
-                                                                                aria-label="delete"
-                                                                                sx={{
-                                                                                    "&:hover": {
-                                                                                        color: "red",
-                                                                                        backgroundColor: "transparent",
-                                                                                    },
-                                                                                    transition: "color 0.2s ease",
-                                                                                }}
-                                                                                disabled={isWarehouse}
-                                                                                onClick={() => handleDelete(Number(order.id))}
-                                                                            >
-                                                                                <DeleteIcon />
-                                                                            </IconButton>
-                                                                        </span>
-                                                                    </Tooltip>
-                                                                )}
-                                                            </>
-                                                        );
-                                                        break;
-                                                    case "total":
-                                                        content = `¥${order.total.toLocaleString()}`;
-                                                        break;
-                                                    case "createdAt":
-                                                        const createdAt = new Date(order.createdAt);
-                                                        content = createdAt.toLocaleDateString();
-
-                                                        return (
-                                                            <TableCell
-                                                                key={col.key}
-                                                                sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}
+                                        }}
+                                    >
+                                        {columns.map(
+                                            (col) =>
+                                                !isMD || !col.hideOnMobile ? (
+                                                    <TableCell
+                                                        key={col.key}
+                                                        sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}
+                                                        sortDirection={col.sortable && orderBy === col.key ? order : false}
+                                                    >
+                                                        {col.sortable ? (
+                                                            <TableSortLabel
+                                                                active={orderBy === col.key}
+                                                                direction={orderBy === col.key ? order : 'asc'}
+                                                                onClick={() => {
+                                                                    const isAsc = orderBy === col.key && order === 'asc';
+                                                                    setOrder(isAsc ? 'desc' : 'asc');
+                                                                    setOrderBy(col.key);
+                                                                }}
                                                             >
-                                                                <Tooltip title={createdAt.toLocaleString()}>
-                                                                    <span>{content}</span>
-                                                                </Tooltip>
-                                                            </TableCell>
-                                                        );
-                                                    default:
-                                                        content = order[col.key as keyof PurchaseOrder];
-                                                }
-
-                                                return (
-                                                    <TableCell key={col.key} sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}>
-                                                        {content}
+                                                                {col.label}
+                                                            </TableSortLabel>
+                                                        ) : (col.label)}
                                                     </TableCell>
-                                                );
-                                            })}
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={isMD ? 4 : 7} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                                            該当する商品がありません
-                                        </TableCell>
+                                                ) : null
+                                        )}
                                     </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                                </TableHead>
+
+                                <TableBody>
+
+                                    {sortedData
+                                        .slice(
+                                            page * rowsPerPage,
+                                            rowsPerPage > 0 ? page * rowsPerPage + rowsPerPage : sortedData.length
+                                        ).map((order) => (
+                                            <TableRow key={order.id}>
+                                                {columns.map((col) => {
+                                                    if (isMD && col.hideOnMobile) return null;
+                                                    let displayContent: React.ReactNode;
+                                                    let tooltipText: string = "";
+                                                    switch (col.key) {
+                                                        case "status":
+                                                            displayContent = renderStatusChip(order.status);
+                                                            tooltipText = order.status;
+                                                            break;
+                                                        case "action":
+                                                            displayContent = (
+                                                                <>
+                                                                    <Tooltip title="詳細">
+                                                                        <IconButton
+                                                                            aria-label="info"
+                                                                            sx={{
+                                                                                "&:hover": {
+                                                                                    color: theme.alpha(blue[800], 1),
+                                                                                    backgroundColor: "transparent",
+                                                                                },
+                                                                                transition: "color 0.2s ease",
+                                                                            }}
+                                                                            onClick={() => navigate(`/purchase-order/${order.id}`)}
+                                                                        >
+                                                                            <InfoIcon />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+                                                                    {!isMD && (
+                                                                        <Tooltip title={isWarehouse ? "管理者またはスタッフのみ削除可能" : "削除"}>
+                                                                            <span>
+                                                                                <IconButton
+                                                                                    aria-label="delete"
+                                                                                    sx={{
+                                                                                        "&:hover": {
+                                                                                            color: theme.alpha(red[800], 1),
+                                                                                            backgroundColor: "transparent",
+                                                                                        },
+                                                                                        transition: "color 0.2s ease",
+                                                                                    }}
+                                                                                    disabled={isWarehouse}
+                                                                                    onClick={() => handleDelete(Number(order.id))}
+                                                                                >
+                                                                                    <DeleteIcon />
+                                                                                </IconButton>
+                                                                            </span>
+                                                                        </Tooltip>
+                                                                    )}
+                                                                </>
+                                                            );
+                                                            break;
+                                                        case "total":
+                                                            displayContent = `¥${order.total.toLocaleString()}`;
+                                                            tooltipText = String(displayContent);;
+                                                            break;
+                                                        case "createdAt":
+                                                            const createdAt = new Date(order.createdAt);
+                                                            displayContent = createdAt.toLocaleDateString();
+                                                            tooltipText = createdAt.toLocaleString();
+                                                            break;
+                                                        default:
+                                                            displayContent = order[col.key as keyof PurchaseOrder];
+                                                            tooltipText = String(displayContent ?? "");
+                                                    }
+
+                                                    return (
+                                                        <TableCell key={col.key} sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}>
+                                                            {tooltipText ? (
+                                                                <Tooltip title={tooltipText}>
+                                                                    <span>{displayContent}</span>
+                                                                </Tooltip>
+                                                            ) : (
+                                                                displayContent
+                                                            )}
+                                                        </TableCell>
+                                                    );
+                                                })}
+                                            </TableRow>
+                                        ))
+                                    }
+                                    {/** データがない場合 */}
+                                    {sortedData.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={isMD ? 5 : 7} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                                                該当する商品がありません
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                    {/** 空行の埋め合わせ */}
+                                    {emptyRows > 0 && Array.from(Array(emptyRows)).map((_, index) => (
+                                        <TableRow key={`empty-${index}`} style={{ height: 47 }}>
+                                            <TableCell colSpan={isMD ? 5 : 7} />
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+
+                                {/** ページネーション */}
+                                <TableFooter>
+                                    <TableRow>
+                                        <TablePagination
+                                            rowsPerPageOptions={([5, 10])}
+                                            colSpan={7}
+                                            count={sortedData?.length || 0}
+                                            rowsPerPage={rowsPerPage}
+                                            page={page}
+                                            slotProps={{
+                                                select: {
+                                                    inputProps: {
+                                                        'aria-label': 'rows per page',
+                                                    },
+                                                    native: true,
+                                                },
+                                            }}
+                                            onPageChange={(_, newPage) => setPage(newPage)}
+                                            onRowsPerPageChange={(event) => {
+                                                setRowsPerPage(parseInt(event.target.value, 10));
+                                                setPage(0);
+                                            }}
+                                            ActionsComponent={TablePaginationActions}
+                                        />
+                                    </TableRow>
+                                </TableFooter>
+                            </Table>
+                        </TableContainer>
+                    </Box>
                 )}
 
             </Box>
-        </Box>
+        </Box >
     );
 };
 

@@ -113,7 +113,7 @@ const ProfilePage = () => {
     };
 
     return (
-        <Box mt={3} height="75vh">
+        <Box mt={3} height="75vh" width={{ lg: 900, md: 700 }} justifySelf="center">
 
             {/* ページタイトルとタブ */}
             <Box
@@ -139,7 +139,7 @@ const ProfilePage = () => {
                         <Tab icon={<HistoryIcon />} label="ロギング履歴" />
                     </Tabs>
 
-                     {/* タブごとの表示内容 */}
+                    {/* タブごとの表示内容 */}
                     {user && (
                         <>
                             {tabValue === 0 && (

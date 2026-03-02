@@ -32,3 +32,31 @@ export const SESSION_STATUS = {
         color: "error"
     },
 } as const;
+
+export const ORDER_STATUS = {
+    NEW: {
+        value: 'NEW',
+        label: "未処理",
+        color: "secondary"
+    },
+    PENDING: {
+        value: 'PENDING',
+        label: "承認待ち",
+        color: "warning"
+    },
+    PROCESSING: {
+        value: 'PROCESSING',
+        label: "作業中",
+        color: "primary"
+    },
+    COMPLETED: {
+        value: 'COMPLETED',
+        label: "完了",
+        color: "success"
+    },
+    CANCELLED: {
+        value: 'CANCELLED',
+        label: "取消",
+        color: "error"
+    },
+} as const;

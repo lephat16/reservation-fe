@@ -17,10 +17,10 @@ import { tokens } from "../../../shared/theme";
  */
 
 type FilterContentProps = {
-    type: Type;
-    setType: Dispatch<SetStateAction<Type>>;
-    minQty: number;
-    setMinQty: Dispatch<SetStateAction<number>>;
+    type: Type | "";
+    setType: Dispatch<SetStateAction<Type | "">>;
+    minQty: number | "";
+    setMinQty: Dispatch<SetStateAction<number | "">>;
     sx?: SxProps<Theme>;
 }
 
@@ -40,7 +40,7 @@ const FilterContent = ({
             {/* 区分フィルター */}
             <FormControl sx={sx}>
                 <InputLabel
-                    id="-types-label"
+                    id="types-label"
                     sx={{
                         color: colors.grey[100],
                         '&.Mui-focused': {
@@ -49,10 +49,11 @@ const FilterContent = ({
                     }}
                 >区分</InputLabel>
                 <Select
-                    labelId="-types-label"
+                    labelId="types-label"
                     value={type}
                     onChange={e => {
-                        setType(e.target.value as Type)
+                        const value = e.target.value ? e.target.value : "";
+                        setType(value as Type)
                     }}
                     input={<OutlinedInput label="区分" />}
                     MenuProps={{
@@ -66,8 +67,8 @@ const FilterContent = ({
                         }
                     }}
                 >
-                    <MenuItem value="ALL">
-                        <em>全て</em>
+                    <MenuItem value={0}>
+                        <em>未選択</em>
                     </MenuItem>
                     <MenuItem value="IN">入庫</MenuItem>
                     <MenuItem value="OUT">出庫</MenuItem>
@@ -77,7 +78,7 @@ const FilterContent = ({
             {/* 数量フィルター */}
             <FormControl sx={sx}>
                 <InputLabel
-                    id="multiple-qty-label"
+                    id="qty-label"
                     sx={{
                         color: colors.grey[100],
                         '&.Mui-focused': {
@@ -86,8 +87,8 @@ const FilterContent = ({
                     }}
                 >数量</InputLabel>
                 <Select
-                    labelId="multiple-qty-label"
-                    id="multiple-qty"
+                    labelId="qty-label"
+                    id="qty"
                     value={minQty}
                     onChange={(e) => {
                         const value = e.target.value ? e.target.value : "";

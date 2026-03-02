@@ -34,7 +34,6 @@ import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { Fragment, useMemo, useState } from "react";
-import { TablePaginationActions } from "../stocks/WarehousePage";
 import type { ProductStockData, SupplierProductStockData } from "../stocks/types/stock";
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -56,6 +55,7 @@ import { useScreen } from "../../shared/hooks/ScreenContext";
 import SearchBar from "../../shared/components/global/SearchBar";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
+import { TablePaginationActions } from "../../shared/components/pagination/PaginationAction";
 
 /**
  * 在庫テーブルの1行コンポーネント
@@ -494,7 +494,9 @@ const AllProductsPage = () => {
                                                 color: colors.grey[200],
                                             },
                                         }}
-                                    >カテゴリー</InputLabel>
+                                    >
+                                        カテゴリー
+                                    </InputLabel>
                                     <Select
                                         labelId="multiple-categories-label"
                                         id="multiple-categories"
@@ -540,7 +542,7 @@ const AllProductsPage = () => {
                                 {/** 在庫数フィルター */}
                                 <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
                                     <InputLabel
-                                        id="multiple-qty-label"
+                                        id="qty-label"
                                         sx={{
                                             color: colors.grey[100],
                                             '&.Mui-focused': {
@@ -549,8 +551,8 @@ const AllProductsPage = () => {
                                         }}
                                     >在庫数</InputLabel>
                                     <Select
-                                        labelId="multiple-qty-label"
-                                        id="multiple-qty"
+                                        labelId="qty-label"
+                                        id="qty"
                                         value={selectedQty}
                                         onChange={(e) => {
                                             const value = e.target.value ? e.target.value : "";
@@ -583,7 +585,7 @@ const AllProductsPage = () => {
                                 {/** ステータスフィルター */}
                                 <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
                                     <InputLabel
-                                        id="multiple-status-label"
+                                        id="status-label"
                                         sx={{
                                             color: colors.grey[100],
                                             '&.Mui-focused': {
@@ -592,8 +594,8 @@ const AllProductsPage = () => {
                                         }}
                                     >ステータス</InputLabel>
                                     <Select
-                                        labelId="multiple-status-label"
-                                        id="multiple-status"
+                                        labelId="status-label"
+                                        id="status"
                                         value={selectedStatus}
                                         onChange={(e) => {
                                             const value = e.target.value ? e.target.value : "";
@@ -785,7 +787,7 @@ const AllProductsPage = () => {
                 {isLoading ? (
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
-                    <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }} gap={4} >
+                    <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }}  >
                         <TableContainer component={Paper} sx={{ height: "100%", minWidth: { xs: 308, md: 600 } }}>
                             <Table
                                 sx={{
@@ -869,7 +871,7 @@ const AllProductsPage = () => {
                                     }
                                     {/** 空行の埋め合わせ */}
                                     {emptyRows > 0 && Array.from(Array(emptyRows)).map((_, index) => (
-                                        <TableRow key={`empty-${index}`} style={{ height: 53 }}>
+                                        <TableRow key={`empty-${index}`} style={{ height: 48 }}>
                                             <TableCell colSpan={isMD ? 4 : 7} />
                                         </TableRow>
                                     ))}
@@ -877,7 +879,7 @@ const AllProductsPage = () => {
                                     {filteredInventories.length === 0 && (
                                         <TableRow>
                                             <TableCell colSpan={isMD ? 4 : 7} align="center">
-                                                No data available
+                                                該当する商品がありません
                                             </TableCell>
                                         </TableRow>
                                     )}

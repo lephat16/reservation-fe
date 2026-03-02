@@ -129,16 +129,16 @@ const Sidebar = ({ onClose }: SidebarProps) => {
                     label: ({ active }) => {
                         return {
                             backgroundColor: "transparent !important",
-                            color: active ? "#6870fa" : undefined,
+                            color: active ? colors.blueAccent[500] : undefined,
                             "&:hover": {
-                                color: "#868dfb",
+                                color: colors.blueAccent[500],
                             },
                         };
                     },
                     icon: ({ active }) => ({
-                        color: isSM && active ? "#6870fa" : undefined,
+                        color: active && (isSM || isCollapsed) ? colors.blueAccent[500] : undefined,
                         "&:hover": {
-                            color: isSM ? "#868dfb" : undefined,
+                            color: isSM ? colors.blueAccent[500] : undefined,
                         },
                     }),
                 }}
