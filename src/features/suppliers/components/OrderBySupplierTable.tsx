@@ -21,9 +21,19 @@ import {
 import type { PurchaseOrderData } from "../../purchases/types/purchase";
 import { tokens } from "../../../shared/theme";
 import { useState } from "react";
-import { styledTable } from "../../../shared/styles/StyleTable"; 
+import { styledTable } from "../../../shared/styles/StyleTable";
 import InfoIcon from '@mui/icons-material/Info';
 import { useScreen } from "../../../shared/hooks/ScreenContext";
+
+/** 
+ * 注文履歴テーブルコンポーネント
+ * 
+ * 注文の基本情報、詳細を表示し、各注文の詳細を確認するためのダイアログを提供する
+ * 
+ * @param purchaseOrder - 注文データのリスト
+ * @param openPODialog - 注文詳細ダイアログを開くためのコールバック
+ * @param setSelectedPO - 選択した注文データを設定するコールバック
+ */
 
 type OrderBySupplierProps = {
     purchaseOrder: PurchaseOrderData[]
@@ -38,7 +48,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
     const [selectedPO, setSelectedPO] = useState<PurchaseOrderData | null>(null);
     return (
         <>
-
+            {/* 注文一覧のテーブル */}
             <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
                 <Table
                     stickyHeader
@@ -86,6 +96,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                     </TableHead>
 
                     <TableBody>
+                        {/* 注文データがある場合、テーブルに表示 */}
                         {(purchaseOrder) ? (
                             purchaseOrder.map(p => (
                                 <TableRow key={p.id}>
@@ -130,6 +141,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            {/* 注文詳細ダイアログ */}
             <Dialog
                 open={openPODialog}
                 onClose={() => setOpenPODialog(false)}
@@ -154,7 +166,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                         borderRadius={1}
                         sx={{ borderColor: colors.grey[400], overflowX: 'auto' }}
                     >
-                        {/* ヘッダー */}
+                        {/* 注文の詳細（ヘッダー） */}
                         <Stack direction="row" p={1} sx={{ fontWeight: "bold" }}>
                             <Box flex={3}>商品名</Box>
                             <Box flex={1} textAlign="right">数量</Box>
@@ -162,7 +174,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                             <Box flex={1} textAlign="right">小計</Box>
                         </Stack>
 
-                        {/* 注文行 */}
+                        {/* 注文アイテムの詳細行 */}
                         {selectedPO?.details.map((row, index) => (
                             <Stack
                                 key={index}
@@ -177,6 +189,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                             </Stack>
                         ))}
                     </Box>
+                    {/* 備考欄 */}
                     <Box
                         mt={2}
                         p={1}
@@ -195,6 +208,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                             {selectedPO?.description}
                         </Typography>
                     </Box>
+                    {/* 合計金額 */}
                     <Typography variant="h6" mt={2} textAlign="right">
                         合計金額: <strong>
                             {selectedPO?.details.reduce((total, po) =>
@@ -202,6 +216,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                         </strong>
                     </Typography>
                 </DialogContent>
+                {/* ダイアログのアクション（確認ボタン） */}
                 <DialogActions sx={{ mt: 2 }}>
                     <Button
                         variant="contained"

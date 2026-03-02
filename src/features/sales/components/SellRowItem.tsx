@@ -33,6 +33,13 @@ import type { ProductWithSkuByCategoryData } from "../../suppliers/types/supplie
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
 import { styledSelect } from "../../../shared/styles/styledSelect";
 
+/**
+ * 商品詳細カードコンポーネント
+ *
+ * 販売注文作成ページ内で使用される、商品のカテゴリー・商品名・SKU・数量・単価・合計・備考を表示するカードコンポーネントです。
+ * 在庫情報や引当済み数量も表示され、数量や単価の変更、備考入力が可能です。
+ * また行の削除や追加ボタンも提供します。
+ */
 
 type RowErrors = Record<string, string>;
 
@@ -69,6 +76,7 @@ const SellRowItem = ({
     const categoryId = row.category?.id;
     const { data: productData = [] } = useProductsByCategory(Number(categoryId));
 
+    // 合計や在庫計算
     const total = row.qty * row.price;
     const totalQuantity = selectedProduct?.totalQuantity ?? 0;        // 在庫数
     const reservedQuantity = selectedProduct?.totalReservedQuantity ?? 0; // 引当済み在庫
@@ -83,8 +91,7 @@ const SellRowItem = ({
             width={374}
             position="relative"
         >
-            {/* Category */}
-
+            {/* カテゴリー選択 */}
             <FormControl
                 fullWidth
                 sx={{ mb: 2 }}
@@ -128,7 +135,7 @@ const SellRowItem = ({
                     </Typography>}
             </FormControl>
 
-            {/* Product */}
+            {/* 商品選択 */}
             {categoryId && (
                 <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel
@@ -170,7 +177,7 @@ const SellRowItem = ({
                 </FormControl>
             )}
 
-            {/* SKU */}
+            {/* SKU選択 */}
             {row.productId && (
                 <FormControl
                     fullWidth sx={{ mb: 2 }}
@@ -218,7 +225,7 @@ const SellRowItem = ({
                 </FormControl>
             )}
 
-            {/* Qty & Price */}
+            {/* 数量・単価・合計・備考 */}
             {row.sku && (
                 <Box
                     border={1}
@@ -327,6 +334,7 @@ const SellRowItem = ({
                     </Box>
                 </Box>
             )}
+            {/* 削除・追加ボタン */}
             <Stack
                 direction="row"
                 position="absolute"

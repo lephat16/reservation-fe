@@ -7,6 +7,16 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useState } from "react";
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { isAxiosError } from "axios";
+
+/**
+ * パスワード変更カードコンポーネント
+ * 
+ * ユーザーが現在のパスワードを新しいパスワードに変更するためのフォームです。フォームにはバリデーションが設定されており、 
+ * 入力内容に対してリアルタイムでエラーメッセージを表示します。また、パスワードの表示・非表示を切り替えることができます。
+ * 
+ * @param onSubmit - パスワード変更を実行するためのコールバック関数。新しいパスワードのリクエストをサーバーに送信します。
+ */
 
 type ChangePasswordProps = {
     onSubmit?: (request: ChangePasswordRequest) => void;
@@ -79,20 +89,23 @@ const ChangePasswordCard = ({ onSubmit }: ChangePasswordProps) => {
                 newPassword: "",
                 confirmPassword: "",
             });
-        } catch (error: any) {
-            if (error.response?.data?.fieldErrors) {
-                Object.entries(error.response.data.fieldErrors)
-                    .forEach(([field, message]) => {
-                        setError(field as keyof ChangePasswordRequest, {
-                            type: "server",
-                            message: message as string
+        } catch (error: unknown) {
+            if (isAxiosError(error) && error.response?.data) {
+                const { fieldErrors, message } = error.response.data;
+                if (fieldErrors) {
+                    Object.entries(error.response.data.fieldErrors)
+                        .forEach(([field, message]) => {
+                            setError(field as keyof ChangePasswordRequest, {
+                                type: "server",
+                                message: message as string
+                            });
                         });
+                } else if (message) {
+                    setError("currentPassword", {
+                        type: "server",
+                        message: error.response.data.message
                     });
-            } else if (error.response?.data?.message) {
-                setError("currentPassword", {
-                    type: "server",
-                    message: error.response.data.message
-                });
+                }
             }
         }
     };

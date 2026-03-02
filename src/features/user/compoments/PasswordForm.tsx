@@ -10,6 +10,15 @@ import * as yup from "yup";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 
+/**
+ * パスワード作成・再設定フォームコンポーネント
+ * トークンを使用して新しいパスワードを設定する。
+ *
+ * @param token 認証用トークン
+ * @param title 画面タイトル
+ * @returns パスワード入力フォームのJSX要素
+ */
+
 type PasswordFormProps = {
     token: string;
     title: string;

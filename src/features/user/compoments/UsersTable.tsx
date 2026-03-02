@@ -1,16 +1,26 @@
-import { Box, IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from "@mui/material";
+import { Box, IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, type Theme } from "@mui/material";
 import type { UserData } from "../types/user";
 import { styledTable } from "../../../shared/styles/StyleTable";
 import { ROLES } from "../../../constants/role";
 import DeleteIcon from '@mui/icons-material/Delete';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import { blue, red } from "@mui/material/colors";
+import type { ColorTokens } from "../../../shared/types/shared";
+
+/**
+ * ユーザー一覧表示テーブルコンポーネント。
+ * 画面サイズに応じて表示カラムを動的に切り替え、
+ * 詳細表示および削除操作を提供する。
+ *
+ * @param props ユーザー一覧テーブルのプロパティ
+ * @returns ユーザー一覧テーブルのJSX要素
+ */
 
 type UsersTableProps = {
     users: UserData[];
     isMD: boolean;
-    colors: any;
-    theme: any;
+    colors: ColorTokens;
+    theme: Theme;
     onSelectUser: (user: UserData) => void;
     onDeleteUser?: (user: UserData) => void;
 }

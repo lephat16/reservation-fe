@@ -1,5 +1,14 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 
+/**
+ * 倉庫カードコンポーネント
+ * 
+ * アイコン、値、およびラベルを表示する
+ * 
+ * @param icon - アイコンコンポーネント
+ * @param value - 値（数値または文字列）
+ * @param label - ラベル名
+ */
 interface WarehouseCardProps {
     icon: React.ElementType;
     value: number | string;

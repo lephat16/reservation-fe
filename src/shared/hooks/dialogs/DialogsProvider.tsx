@@ -2,9 +2,10 @@ import { useCallback, useState, type ReactNode } from "react";
 import DialogsContext from "./DialogsContext";
 import { DeleteConfirmDialog, EditConfirmDialog } from "./useDialogs";
 
-interface ConfirmState {
+interface ConfirmState<T = unknown> {
     open: boolean;
     message: string;
+    data?: T;
     resolve?: (value: boolean) => void;
 }
 
@@ -12,11 +13,7 @@ export default function DialogsProvider({
     children
 }: { children: ReactNode }) {
     // DELETE STATE
-    const [deleteState, setDeleteState] = useState<{
-        open: boolean;
-        message: string;
-        resolve?: (value: boolean) => void;
-    }>({
+    const [deleteState, setDeleteState] = useState<ConfirmState<boolean>>({
         open: false,
         message: "",
     });

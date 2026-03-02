@@ -3,6 +3,19 @@ import type { Type } from "./StockMovementHistoryPage"
 import { FormControl, InputLabel, MenuItem, OutlinedInput, Select, useTheme, type SxProps, type Theme } from "@mui/material";
 import { tokens } from "../../../shared/theme";
 
+/** 
+ * 在庫移動履歴ページ用フィルターコンポーネント
+ * 
+ * - 「区分」フィルター：全て / 入庫 / 出庫
+ * - 「数量」フィルター：指定以上の数量を選択
+ * 
+ * @param type - 現在選択されている区分 (ALL, IN, OUT)
+ * @param setType - 区分を更新する関数
+ * @param minQty - 現在選択されている数量の最小値
+ * @param setMinQty - 数量の最小値を更新する関数
+ * @param sx - 追加のスタイル（MUI SxProps）
+ */
+
 type FilterContentProps = {
     type: Type;
     setType: Dispatch<SetStateAction<Type>>;
@@ -24,6 +37,7 @@ const FilterContent = ({
 
     return (
         <>
+            {/* 区分フィルター */}
             <FormControl sx={sx}>
                 <InputLabel
                     id="-types-label"
@@ -60,6 +74,7 @@ const FilterContent = ({
                 </Select>
             </FormControl>
 
+            {/* 数量フィルター */}
             <FormControl sx={sx}>
                 <InputLabel
                     id="multiple-qty-label"

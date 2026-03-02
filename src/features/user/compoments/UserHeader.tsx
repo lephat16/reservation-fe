@@ -4,6 +4,14 @@ import type { UserData } from "../types/user";
 import type { ReactNode } from "react";
 import ReplyIcon from '@mui/icons-material/Reply';
 
+/**
+ * ユーザー画面用ヘッダーコンポーネント。
+ * 現在のモードに応じてパンくずリストを動的生成し、
+ * セッション表示モード時には全セッション無効化ボタンを表示する。
+ *
+ * @param props ユーザーヘッダーのプロパティ
+ * @returns ヘッダーのJSX要素
+ */
 
 type UserHeaderProps = {
     user: UserData | null;

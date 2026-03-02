@@ -57,6 +57,17 @@ import SearchBar from "../../shared/components/global/SearchBar";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 
+/**
+ * 在庫テーブルの1行コンポーネント
+ *
+ * - メイン行に商品情報、在庫数、ステータスなどを表示
+ * - Collapse 行で仕入先ごとの SKU 在庫詳細を表示
+ *
+ * @param props
+ * @param {InventoryByProduct} props.row - 行に表示する商品と在庫情報
+ * @param {(product: ProductStockData) => void} props.onDelete - 削除ボタン押下時のコールバック
+ */
+
 type StockInfo = {
     stockId: number;
     warehouseName: string;
@@ -88,9 +99,10 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
     const navigate = useNavigate();
     return (
         <Fragment>
-            {/* メイン行 */}
+            {/** メイン行: 商品情報、合計在庫、ステータス、アクションボタン */}
             <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
                 {!isMD && <TableCell>
+                    {/** Collapse 開閉ボタン */}
                     <IconButton
                         aria-label="expand row"
                         size="small"
@@ -103,6 +115,7 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
                 </TableCell>}
+                {/** 詳細 / 削除ボタン */}
                 <TableCell>{row.product.productCode}</TableCell>
                 {!isMD && <TableCell>{row.product.name}</TableCell>}
                 <TableCell>{row.product.status}</TableCell>
@@ -161,6 +174,7 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                             >
                                 商品は、異なる仕入先がそれぞれ異なるSKUを提供するため、複数のSKUを持つことがあります。
                             </Typography>
+                            {/** 仕入先ごとのSKUテーブル */}
                             <Table
                                 size="small"
                                 aria-label="purchases"
@@ -175,6 +189,7 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                                 </TableHead>
                                 <TableBody>
                                     {row.supplierProduct.map((supplierProduct) => {
+                                        /** SKUごとの在庫合計 */
                                         const totalQuantity = row.stockInfo
                                             .filter(stock => stock.sku === supplierProduct.supplierSku
                                             ).reduce((sum, s) => sum + s.quantity, 0);
@@ -189,8 +204,7 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
 
                                             </TableRow>
                                         )
-                                    }
-                                    )}
+                                    })}
                                 </TableBody>
                             </Table>
                         </Box>
@@ -261,6 +275,7 @@ const AllProductsPage = () => {
         }
     });
 
+    // 削除処理
     const handleDelete = async (product: ProductStockData) => {
         const ok = await confirmDelete(
             `商品「${product.name}」を削除しますか`
@@ -415,6 +430,7 @@ const AllProductsPage = () => {
 
     return (
         <Box m={3}>
+            {/** ヘッダーと追加ボタン */}
             <Box display="flex" justifyContent="space-between">
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
@@ -424,6 +440,7 @@ const AllProductsPage = () => {
                         subtitle="商品情報の一覧表示"
                     />
                 )}
+                {/** 商品追加ボタン */}
                 <Box mt={4}>
                     <Tooltip title="追加">
                         <IconButton
@@ -437,6 +454,8 @@ const AllProductsPage = () => {
                     </Tooltip>
                 </Box>
             </Box>
+
+            {/** メインコンテンツ領域 */}
             <Box
                 mt={1}
                 minHeight="75vh"
@@ -451,7 +470,9 @@ const AllProductsPage = () => {
                     <Skeleton variant="text" width="80%" height={80} />
                 ) : (
                     <Stack direction="row" justifyContent="space-between" >
+                        {/** フィルターセクション */}
                         {isMD ? (
+                            // 小画面はDrawer開閉ボタンのみ
                             <IconButton
                                 color="primary"
                                 onClick={handleOpenDrawer}
@@ -460,8 +481,10 @@ const AllProductsPage = () => {
                                 <FilterListIcon />
                             </IconButton>
                         ) : (
-
+                            // 大画面はインラインでフィルター表示
                             <Stack direction="row" gap={1}>
+
+                                {/** カテゴリー選択 */}
                                 <FormControl sx={{ m: 1, ml: 0, width: { lg: 150, xs: 120 } }}>
                                     <InputLabel
                                         id="multiple-categories-label"
@@ -513,6 +536,8 @@ const AllProductsPage = () => {
                                         ))}
                                     </Select>
                                 </FormControl>
+
+                                {/** 在庫数フィルター */}
                                 <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
                                     <InputLabel
                                         id="multiple-qty-label"
@@ -554,6 +579,8 @@ const AllProductsPage = () => {
                                         <MenuItem value={20}>20以上</MenuItem>
                                     </Select>
                                 </FormControl>
+
+                                {/** ステータスフィルター */}
                                 <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
                                     <InputLabel
                                         id="multiple-status-label"
@@ -595,12 +622,13 @@ const AllProductsPage = () => {
                             </Stack>
                         )}
 
-
+                        {/** 検索バー */}
                         <SearchBar
                             value={searchText}
                             onChange={setSearchText}
                             sx={{ pr: "0 !important" }}
                         />
+                        {/** 小画面用Drawerフィルター */}
                         <Drawer
                             anchor="left"
                             open={openFilterDrawer}
@@ -624,7 +652,7 @@ const AllProductsPage = () => {
                                 </Box>
                                 <Divider sx={{ my: 1 }} />
 
-                                {/* Filter Options */}
+                                {/** Drawer 内のカテゴリー、在庫数、ステータスフィルター */}
                                 <FormControl sx={{ mt: 2 }}>
                                     <InputLabel
                                         sx={{
@@ -733,6 +761,7 @@ const AllProductsPage = () => {
                                     </Select>
                                 </FormControl>
 
+                                {/** Drawer フィルターの下部ボタン */}
                                 <Box mt="auto" display="flex" justifyContent="space-between" py={2}>
                                     <Button variant="outlined" onClick={() => setOpenFilterDrawer(false)}>キャンセル</Button>
                                     <Button
@@ -751,144 +780,148 @@ const AllProductsPage = () => {
                         </Drawer>
                     </Stack>
                 )}
-                {
-                    isLoading ? (
-                        <Skeleton variant="rectangular" height={400} />
-                    ) : (
-                        <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }} gap={4} >
-                            <TableContainer component={Paper} sx={{ height: "100%", minWidth: { xs: 308, md: 600 } }}>
-                                <Table
-                                    sx={{
-                                        tableLayout: "fixed",
-                                        ...styledTable(colors),
-                                    }}
-                                >
-                                    <colgroup>
-                                        {!isMD && <col style={{ width: "6%" }} />}
-                                        <col style={{ width: "28%" }} />
-                                        {!isMD && <col style={{ width: "30%" }} />}
-                                        <col style={{ width: "30%" }} />
-                                        <col style={{ width: "20%" }} />
-                                        {!isMD && <col style={{ width: "15%" }} />}
-                                        <col style={{ width: "22%" }} />
-                                    </colgroup>
-                                    <TableHead>
-                                        <TableRow>
-                                            {!isMD && <TableCell />}
-                                            <TableCell
-                                                sortDirection={orderBy === 'code' ? order : false}
+
+                {/** 商品テーブル */}
+                {isLoading ? (
+                    <Skeleton variant="rectangular" height={400} />
+                ) : (
+                    <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }} gap={4} >
+                        <TableContainer component={Paper} sx={{ height: "100%", minWidth: { xs: 308, md: 600 } }}>
+                            <Table
+                                sx={{
+                                    tableLayout: "fixed",
+                                    ...styledTable(colors),
+                                }}
+                            >
+                                {/** カラム幅調整 */}
+                                <colgroup>
+                                    {!isMD && <col style={{ width: "6%" }} />}
+                                    <col style={{ width: "28%" }} />
+                                    {!isMD && <col style={{ width: "30%" }} />}
+                                    <col style={{ width: "30%" }} />
+                                    <col style={{ width: "20%" }} />
+                                    {!isMD && <col style={{ width: "15%" }} />}
+                                    <col style={{ width: "22%" }} />
+                                </colgroup>
+                                {/** テーブルヘッダー */}
+                                <TableHead>
+                                    <TableRow>
+                                        {!isMD && <TableCell />}
+                                        <TableCell
+                                            sortDirection={orderBy === 'code' ? order : false}
+                                        >
+                                            <TableSortLabel
+                                                active={orderBy === 'code'}
+                                                direction={orderBy === 'code' ? order : 'asc'}
+                                                onClick={() => {
+                                                    const isAsc = orderBy === 'code' && order === 'asc';
+                                                    setOrder(isAsc ? 'desc' : 'asc');
+                                                    setOrderBy('code');
+                                                }}
                                             >
-                                                <TableSortLabel
-                                                    active={orderBy === 'code'}
-                                                    direction={orderBy === 'code' ? order : 'asc'}
-                                                    onClick={() => {
-                                                        const isAsc = orderBy === 'code' && order === 'asc';
-                                                        setOrder(isAsc ? 'desc' : 'asc');
-                                                        setOrderBy('code');
-                                                    }}
-                                                >
 
-                                                    コード
-                                                </TableSortLabel>
-                                            </TableCell>
-                                            {!isMD && <TableCell sortDirection={orderBy === 'name' ? order : false}>
-                                                <TableSortLabel
-                                                    active={orderBy === 'name'}
-                                                    direction={orderBy === 'name' ? order : 'asc'}
-                                                    onClick={() => {
-                                                        const isAsc = orderBy === 'name' && order === 'asc';
-                                                        setOrder(isAsc ? 'desc' : 'asc');
-                                                        setOrderBy('name')
-                                                    }}
-                                                >
-                                                    商品名
-                                                </TableSortLabel>
-                                            </TableCell>}
-                                            <TableCell>ステータス</TableCell>
-                                            <TableCell sortDirection={orderBy === 'qty' ? order : false}>
-                                                <TableSortLabel
-                                                    active={orderBy === 'qty'}
-                                                    direction={orderBy === 'qty' ? order : 'asc'}
-                                                    onClick={() => {
-                                                        const isAsc = orderBy === 'qty' && order === 'asc';
-                                                        setOrder(isAsc ? 'desc' : 'asc');
-                                                        setOrderBy('qty');
-                                                    }}
-                                                >
-                                                    在庫数
-                                                </TableSortLabel>
-                                            </TableCell>
-                                            {!isMD && <TableCell>カテゴリー</TableCell>}
-                                            <TableCell></TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {sortedFilteredInventories
-                                            .slice(
-                                                page * rowsPerPage,
-                                                rowsPerPage > 0 ? page * rowsPerPage + rowsPerPage : sortedFilteredInventories.length
-                                            ).map(row => (<Row
-                                                key={row.product.id}
-                                                row={row}
-                                                onDelete={(product: ProductStockData) => {
-                                                    handleDelete(product);
+                                                コード
+                                            </TableSortLabel>
+                                        </TableCell>
+                                        {!isMD && <TableCell sortDirection={orderBy === 'name' ? order : false}>
+                                            <TableSortLabel
+                                                active={orderBy === 'name'}
+                                                direction={orderBy === 'name' ? order : 'asc'}
+                                                onClick={() => {
+                                                    const isAsc = orderBy === 'name' && order === 'asc';
+                                                    setOrder(isAsc ? 'desc' : 'asc');
+                                                    setOrderBy('name')
                                                 }}
-                                            />))
-                                        }
-                                        {emptyRows > 0 && Array.from(Array(emptyRows)).map((_, index) => (
-                                            <TableRow key={`empty-${index}`} style={{ height: 53 }}>
-                                                <TableCell colSpan={isMD ? 4 : 7} />
-                                            </TableRow>
-                                        ))}
-                                        {filteredInventories.length === 0 && (
-                                            <TableRow>
-                                                <TableCell colSpan={isMD ? 4 : 7} align="center">
-                                                    No data available
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                    {!isSM && <TableFooter>
+                                            >
+                                                商品名
+                                            </TableSortLabel>
+                                        </TableCell>}
+                                        <TableCell>ステータス</TableCell>
+                                        <TableCell sortDirection={orderBy === 'qty' ? order : false}>
+                                            <TableSortLabel
+                                                active={orderBy === 'qty'}
+                                                direction={orderBy === 'qty' ? order : 'asc'}
+                                                onClick={() => {
+                                                    const isAsc = orderBy === 'qty' && order === 'asc';
+                                                    setOrder(isAsc ? 'desc' : 'asc');
+                                                    setOrderBy('qty');
+                                                }}
+                                            >
+                                                在庫数
+                                            </TableSortLabel>
+                                        </TableCell>
+                                        {!isMD && <TableCell>カテゴリー</TableCell>}
+                                        <TableCell></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {sortedFilteredInventories
+                                        .slice(
+                                            page * rowsPerPage,
+                                            rowsPerPage > 0 ? page * rowsPerPage + rowsPerPage : sortedFilteredInventories.length
+                                        ).map(row => (<Row
+                                            key={row.product.id}
+                                            row={row}
+                                            onDelete={(product: ProductStockData) => {
+                                                handleDelete(product);
+                                            }}
+                                        />))
+                                    }
+                                    {/** 空行の埋め合わせ */}
+                                    {emptyRows > 0 && Array.from(Array(emptyRows)).map((_, index) => (
+                                        <TableRow key={`empty-${index}`} style={{ height: 53 }}>
+                                            <TableCell colSpan={isMD ? 4 : 7} />
+                                        </TableRow>
+                                    ))}
+                                    {/** データがない場合 */}
+                                    {filteredInventories.length === 0 && (
                                         <TableRow>
-                                            <TablePagination
-                                                rowsPerPageOptions={[5, 10,]}
-                                                colSpan={isMD ? 4 : 7}
-                                                count={filteredInventories.length}
-                                                rowsPerPage={rowsPerPage}
-                                                page={page}
-                                                slotProps={{
-                                                    select: {
-                                                        inputProps: {
-                                                            'aria-label': 'rows per page',
-                                                        },
-                                                        native: true,
-                                                    },
-                                                }}
-                                                onPageChange={handleChangePage}
-                                                onRowsPerPageChange={handleChangeRowsPerPage}
-                                                ActionsComponent={TablePaginationActions}
-
-                                            />
+                                            <TableCell colSpan={isMD ? 4 : 7} align="center">
+                                                No data available
+                                            </TableCell>
                                         </TableRow>
-                                    </TableFooter>}
-                                </Table>
-                            </TableContainer>
-                        </Box>
-                    )
-                }
+                                    )}
+                                </TableBody>
+                                {/** ページネーション */}
+                                {!isSM && <TableFooter>
+                                    <TableRow>
+                                        <TablePagination
+                                            rowsPerPageOptions={[5, 10,]}
+                                            colSpan={isMD ? 4 : 7}
+                                            count={filteredInventories.length}
+                                            rowsPerPage={rowsPerPage}
+                                            page={page}
+                                            slotProps={{
+                                                select: {
+                                                    inputProps: {
+                                                        'aria-label': 'rows per page',
+                                                    },
+                                                    native: true,
+                                                },
+                                            }}
+                                            onPageChange={handleChangePage}
+                                            onRowsPerPageChange={handleChangeRowsPerPage}
+                                            ActionsComponent={TablePaginationActions}
 
-                {
-                    openAddProductForm && (
-                        <ProductForm
-                            open
-                            onClose={() => setOpenAddProductForm(false)}
-                            onSubmit={(data) => {
-                                addMutation.mutate(data)
-                            }}
-                            categories={data?.categories ?? []}
-                        />
-                    )
-                }
+                                        />
+                                    </TableRow>
+                                </TableFooter>}
+                            </Table>
+                        </TableContainer>
+                    </Box>
+                )}
+
+                {/* 新規商品追加フォーム */}
+                {openAddProductForm && (
+                    <ProductForm
+                        open
+                        onClose={() => setOpenAddProductForm(false)}
+                        onSubmit={(data) => {
+                            addMutation.mutate(data)
+                        }}
+                        categories={data?.categories ?? []}
+                    />
+                )}
             </Box >
         </Box >
     )

@@ -9,6 +9,16 @@ import { blueGrey } from '@mui/material/colors';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useEffect } from 'react';
 
+/**
+ * ユーザー登録・編集フォームコンポーネント。
+ * createモードとeditモードに応じて初期値を設定し、
+ * バリデーション後に親コンポーネントへデータを渡す。
+ *
+ * @param props ユーザーフォームのプロパティ
+ * @returns ユーザー入力フォームのJSX要素
+ */
+
+
 const CssTextField = styled(TextField)(() => ({
     '& .MuiInputBase-input': {
         fontSize: '1.5rem',

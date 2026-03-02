@@ -3,6 +3,18 @@ import { useVerifyResetToken } from "../hooks/useVerifyToken";
 import { useEffect } from "react";
 import { Typography } from "@mui/material";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
+/**
+ * パスワード再設定用トークンの検証を行うガードコンポーネント。
+ * URLクエリパラメータからtokenを取得し、
+ * 有効性を検証したうえで子コンポーネントへトークンを渡す。
+ *
+ * ・トークンが存在しない場合はログイン画面へリダイレクト
+ * ・トークンが無効または期限切れの場合もログイン画面へリダイレクト
+ * ・検証中はローディングメッセージを表示
+ *
+ * @param props TokenGuardのプロパティ
+ * @returns 子要素またはnull
+ */
 
 type TokenGuardProps = {
     children: (token: string) => React.ReactNode;

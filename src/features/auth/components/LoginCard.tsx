@@ -8,6 +8,20 @@ import { useState, type JSX } from 'react';
 import ForgotPassword from './ForgotPassword';
 import { AuthCard, AuthTextField } from '../styles/AuthCardStyle';
 
+/** 
+ * ログインカードコンポーネント
+ * 
+ * ユーザーがログインフォームに入力し、ログインを行うためのフォームを表示するコンポーネント。
+ * パスワードを忘れた場合のリンクや、ログイン状態を保持するオプションも提供。
+ * 
+ * @param control - react-hook-formの`control`オブジェクト
+ * @param errors - 入力フィールドのバリデーションエラー情報
+ * @param onSubmit - フォーム送信時に呼ばれる関数
+ * @param isLoading - ローディング状態を示すフラグ
+ * @param handleSubmit - react-hook-formの`handleSubmit`関数
+ * 
+ * @returns JSX.Element - ログインカードのUIコンポーネント
+ */
 
 type CardLoginProps = {
     control: Control<LoginRequest>;
@@ -32,14 +46,17 @@ const LoginCard = ({
 
     return (
         <AuthCard variant="outlined">
+            {/* ログインカードのタイトル */}
             <Typography textAlign="center" component="h1" variant="h4" sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}>
                 ログイン
             </Typography>
+            {/* フォームのラッパー */}
             <Box
                 component="form"
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleSubmit(onSubmit)} // フォーム送信時に`onSubmit`を呼び出す
                 sx={{ display: "flex", flexDirection: "column", width: "100%", gap: 1 }}
             >
+                {/* メールアドレス入力フィールド */}
                 <FormControl>
                     <FormLabel htmlFor="email">メールアドレス</FormLabel>
                     <Controller
@@ -61,6 +78,8 @@ const LoginCard = ({
                         )}
                     />
                 </FormControl>
+
+                {/* パスワード入力フィールド */}
                 <FormControl>
                     <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                         <FormLabel htmlFor="password">パスワード</FormLabel>
@@ -75,7 +94,6 @@ const LoginCard = ({
                             パスワードをお忘れですか？
                         </Link>
                     </Box>
-
                     <Controller
                         name="password"
                         control={control}
@@ -97,6 +115,7 @@ const LoginCard = ({
                     />
                 </FormControl>
 
+                {/* ログイン状態を保持するオプション */}
                 <Controller
                     name="remember"
                     control={control}
@@ -109,7 +128,9 @@ const LoginCard = ({
                     )}
                 />
 
+                {/* パスワードリセット用ダイアログ */}
                 <ForgotPassword open={open} handleClose={handleClose} />
+                {/* ログインボタン */}
                 <Button
                     type="submit"
                     fullWidth
@@ -120,7 +141,7 @@ const LoginCard = ({
                     {isLoading ? "ログイン中..." : "ログイン"}
                 </Button>
 
-
+                {/* 登録リンク */}
                 <Typography sx={{ textAlign: "center" }}>
                     アカウントを持っていませんか？{" "}
                     <Link component={RouterLink} to="/register">

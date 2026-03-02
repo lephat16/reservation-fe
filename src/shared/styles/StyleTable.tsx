@@ -1,6 +1,5 @@
-import type { tokens } from "../theme";
+import type { ColorTokens } from "../types/shared";
 
-type ColorTokens = ReturnType<typeof tokens>
 type StyledTableOptions = {
     cellPadding?: string;
     headerBg?: string;

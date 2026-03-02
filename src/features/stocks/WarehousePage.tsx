@@ -56,6 +56,16 @@ import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 import { type Order } from "../products/AllProductsPage";
 
+/**
+ * テーブルのページネーションアクションコンポーネント
+ * 
+ * ページ送り、前へ、次へ、最初、最後のページへのボタンを提供するコンポーネント
+ * 
+ * @param count - 総アイテム数
+ * @param page - 現在のページ番号
+ * @param rowsPerPage - 1ページあたりのアイテム数
+ * @param onPageChange - ページ変更時に呼び出されるコールバック関数
+ */
 
 interface TablePaginationActionsProps {
     count: number;
@@ -71,26 +81,31 @@ export function TablePaginationActions(props: TablePaginationActionsProps) {
     const theme = useTheme();
     const { count, page, rowsPerPage, onPageChange } = props;
 
+    // 最初のページに移動
     const handleFirstPageButtonClick = (
         event: React.MouseEvent<HTMLButtonElement>,
     ) => {
         onPageChange(event, 0);
     };
 
+    // 前のページに移動
     const handleBackButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         onPageChange(event, page - 1);
     };
 
+    // 次のページに移動
     const handleNextButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         onPageChange(event, page + 1);
     };
 
+    // 最後のページに移動
     const handleLastPageButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
     };
 
     return (
         <Box sx={{ flexShrink: 0, ml: 2.5 }}>
+            {/* 最初のページボタン */}
             <IconButton
                 onClick={handleFirstPageButtonClick}
                 disabled={page === 0}
@@ -98,6 +113,7 @@ export function TablePaginationActions(props: TablePaginationActionsProps) {
             >
                 {theme.direction === 'rtl' ? <LastPageIcon /> : <FirstPageIcon />}
             </IconButton>
+            {/* 前のページボタン */}
             <IconButton
                 onClick={handleBackButtonClick}
                 disabled={page === 0}
@@ -105,6 +121,7 @@ export function TablePaginationActions(props: TablePaginationActionsProps) {
             >
                 {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
             </IconButton>
+            {/* 次のページボタン */}
             <IconButton
                 onClick={handleNextButtonClick}
                 disabled={page >= Math.ceil(count / rowsPerPage) - 1}
@@ -112,6 +129,7 @@ export function TablePaginationActions(props: TablePaginationActionsProps) {
             >
                 {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
             </IconButton>
+            {/* 最後のページボタン */}
             <IconButton
                 onClick={handleLastPageButtonClick}
                 disabled={page >= Math.ceil(count / rowsPerPage) - 1}
@@ -126,32 +144,39 @@ export function TablePaginationActions(props: TablePaginationActionsProps) {
 type OrderBy = 'productName' | 'sku' | 'quantity' | 'reservedQuantity' | 'available'
 const WarehousePage = () => {
 
+    // フック
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
     const { showSnackbar } = useSnackbar();
     const queryClient = useQueryClient();
     const { confirmDelete } = useDialogs();
-
     const { isSM } = useScreen();
 
+    // ステート
+    // ページネーションの状態管理
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
+    // 倉庫の作成・編集フォームの開閉状態
     const [openCreateWarehouseForm, setOpenCreateWarehouseForm] = useState(false);
     const [openEditWarehouseForm, setOpenEditWarehouseForm] = useState(false);
 
+    // 選択中の倉庫情報とその在庫データ
     const [selectedWarehouse, setSelectedWarehouse] = useState<WarehousesData | undefined>(undefined);
     const [selectedWarehouseWithTotal, setSelectedWarehouseWithTotal] = useState<WarehouseWithTotalChangedQtyData | undefined>(undefined);
     const [currentWarehouseIndex, setCurrentWarehouseIndex] = useState<number>(0);
     const [addedWarehouseIndex, setAddedWarehouseIndex] = useState<number | null>(null);
 
+    // ソートの順番と基準
     const [order, setOrder] = useState<Order>('asc');
     const [orderBy, setOrderBy] = useState<OrderBy>('productName');
 
+    // 倉庫データの取得
     const { isLoading: isLoadingWH, error: errorWH, data: dataWH } = useWarehouses();
     const { isLoading: isLoadingWHWithTotal, error: errorWHWithTotal, data: dataWHWithTotal } = useWarehouseWithTotalQty();
 
+    // 倉庫の作成ミューテーション
     const createMutation = useMutation({
         mutationFn: async (data: WarehouseFormData) => {
             const resAddedWarehouse = await stockAPI.createWarehouse(data);
@@ -169,6 +194,7 @@ const WarehousePage = () => {
         }
     });
 
+    // 倉庫削除ミューテーション
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => {
             return stockAPI.deleteWarehouse(id);
@@ -183,6 +209,7 @@ const WarehousePage = () => {
         }
     });
 
+    // 倉庫削除処理
     const handleDelete = async () => {
         const ok = await confirmDelete(
             `倉庫「${selectedWarehouse?.name}」を削除しますか`
@@ -192,6 +219,7 @@ const WarehousePage = () => {
         }
     }
 
+    // 倉庫更新ミューテーション
     const updateMutation = useMutation({
         mutationFn: async ({ id, data }: { id: number; data: WarehouseFormData }) => {
             return stockAPI.updateWarehouse(id, data);
@@ -204,12 +232,14 @@ const WarehousePage = () => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
         }
     });
+    // 倉庫追加後のインデックス更新
     useEffect(() => {
         if (dataWH && addedWarehouseIndex) {
             const newIndex = dataWH.findIndex(w => w.id === addedWarehouseIndex);
             setCurrentWarehouseIndex(newIndex);
         }
-    }, [addedWarehouseIndex, dataWH])
+    }, [addedWarehouseIndex, dataWH]);
+    // 倉庫選択時の状態更新
     useEffect(() => {
         if (dataWH && dataWH.length > 0) {
             const firstWarehouse = dataWH[currentWarehouseIndex];
@@ -222,7 +252,7 @@ const WarehousePage = () => {
             }
         }
     }, [dataWH, dataWHWithTotal, currentWarehouseIndex]);
-
+    // 次の倉庫に移動
     const handleNextWarehouse = () => {
         if (dataWH && dataWH.length > 0) {
             const nextIndex = (currentWarehouseIndex + 1) % dataWH.length;
@@ -236,6 +266,7 @@ const WarehousePage = () => {
             setSelectedWarehouseWithTotal(nextWarehouseWithTotal);
         }
     };
+    // 前の倉庫に移動
     const handleBackWarehouse = () => {
         if (dataWH && dataWH.length > 0) {
             const prevIndex = (currentWarehouseIndex - 1 + dataWH.length) % dataWH.length;
@@ -250,7 +281,7 @@ const WarehousePage = () => {
         }
     };
     const stocks = selectedWarehouse?.stocks ?? [];
-
+    // ページネーションの処理
     const handleChangePage = (
         _: React.MouseEvent<HTMLButtonElement> | null,
         newPage: number,
@@ -264,13 +295,13 @@ const WarehousePage = () => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
-
+    // 空行の処理
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, stocks.length - page * rowsPerPage);
-
+    // 合計数量の計算
     const totalQuantity = selectedWarehouse?.stocks
         .map(stock => stock.quantity)
         .reduce((sum, qty) => sum + qty, 0);
-
+    // 他の指標（受領PO、出荷SO）の計算
     const totalReceivedPO = selectedWarehouseWithTotal?.totalReceivedPo ?? 0
     const totalReceivedPO7d = selectedWarehouseWithTotal?.totalReceivedPoInWeek ?? 0
     const percentPO7d = totalReceivedPO > 0

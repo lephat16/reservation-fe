@@ -30,6 +30,7 @@ const ActionHandlersContext = createContext<ActionHandlers>({
     deleteCategory: () => { },
     seeMoreCategory: () => { },
 });
+// データグリッド内のアクション列レンダリング
 function ActionsCell(props: GridRenderCellParams) {
     const { deleteCategory, seeMoreCategory } =
         useContext(ActionHandlersContext);
@@ -49,6 +50,7 @@ function ActionsCell(props: GridRenderCellParams) {
         </GridActionsCell>
     );
 }
+// データグリッドのカラム定義
 const columns: GridColDef<CategorySummariesData>[] = [
     {
         field: "id",
@@ -103,13 +105,15 @@ const CategoriesPage = () => {
 
     const queryClient = useQueryClient();
     const { confirmDelete } = useDialogs();
-
+    // カテゴリ追加用フォームの開閉状態
     const [openAddCategoryForm, setOpenAddCategoryForm] = useState(false);
 
     useState<CategorySummariesData | null>(null);
 
+    // カテゴリ一覧データの取得
     const { isLoading, error, data } = useCategorySummaries();
 
+    // 新規カテゴリ作成用Mutation
     const createMutation = useMutation({
         mutationFn: async (data: FormData) => {
             const resCategory = await categoryAPI.addCategory(data);
@@ -124,8 +128,9 @@ const CategoriesPage = () => {
         }
     });
 
+    // 削除Mutation
     const deleteMutation = useDeleteCategory(showSnackbar);
-
+    // 削除処理
     const handleDelete = async (category: CategorySummariesData) => {
         const ok = await confirmDelete(
             `カテゴリー「${category.categoryName}」を削除しますか？`
@@ -134,16 +139,17 @@ const CategoriesPage = () => {
             deleteMutation.mutate(category.id || 0);
         }
     }
-
+    // 詳細ページへ遷移
     const seeMoreCategory = (id: GridRowId) => {
         navigate(`/category/${id}`);
     }
+    // 削除ボタン押下
     const deleteCategory = (id: GridRowId) => {
         const category = data?.find(c => c.id === id);
         if (!category) return;
         handleDelete(category);
     }
-
+    // コンテキストに操作ハンドラをまとめる
     const actionHandlers = useMemo<ActionHandlers>(
         () => ({
             deleteCategory,
@@ -153,6 +159,7 @@ const CategoriesPage = () => {
     );
     return (
         <Box m={3}>
+            {/* ヘッダーと追加ボタン */}
             <Box display="flex" justifyContent="space-between">
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
@@ -175,7 +182,7 @@ const CategoriesPage = () => {
                     </Tooltip>
                 </Box>
             </Box>
-
+            {/* データグリッド表示 */}
             <Box mt={3} height="75vh">
 
                 {/* エラー表示 */}
@@ -197,7 +204,8 @@ const CategoriesPage = () => {
                         />
                     </ActionHandlersContext.Provider>
                 )}
-                
+
+                {/* カテゴリ追加フォーム */}
                 {openAddCategoryForm && (
                     <CategoryForm
                         open

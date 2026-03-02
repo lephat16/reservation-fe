@@ -16,6 +16,18 @@ import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import type { SupplierData } from "../types/supplier";
 
+/** 
+ * 仕入先情報フォームコンポーネント
+ * 
+ * 仕入先の登録・編集を行うフォーム。仕入先名、住所、メール、電話番号、ステータスを入力・編集できる。
+ * 入力内容の検証（バリデーション）が行われ、エラーメッセージが表示される。
+ * 
+ * @param open - フォームの表示/非表示を制御するフラグ
+ * @param onClose - フォームを閉じるコールバック関数
+ * @param onSubmit - フォームのデータを送信するコールバック関数
+ * @param supplier - 編集する場合の既存の仕入先データ（省略可能）
+ */
+
 type SupplierFormProps = {
     open: boolean;
     onClose: () => void;

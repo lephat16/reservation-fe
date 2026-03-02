@@ -13,6 +13,16 @@ import EditIcon from '@mui/icons-material/Edit';
 import type { SupplierData } from '../types/supplier';
 import { STATUS } from '../../../constants/status';
 
+/** 
+ * サプライヤー詳細カードコンポーネント
+ * 
+ * サプライヤーの基本情報（名前、住所、メール、携帯電話）を表示し、削除および編集機能を提供する
+ * 
+ * @param supplier - サプライヤーのデータ
+ * @param openDeleteDialog - 削除ダイアログを開くためのコールバック
+ * @param openEditDialog - 編集ダイアログを開くためのコールバック
+ */
+
 type SupplierDetailCardProps = {
   supplier: SupplierData,
   openDeleteDialog: () => void,

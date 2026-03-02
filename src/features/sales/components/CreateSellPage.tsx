@@ -28,6 +28,16 @@ import { useCategorySummaries } from "../../categories/hooks/useCategorySummarie
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 
+/** 
+ * 新規販売注文作成ページコンポーネント
+ *
+ * 顧客名、販売商品行（SKU、数量、単価、メモ）を入力し、
+ * 保存または即時販売を行うことができる
+ * 
+ * バリデーションにはYupスキーマを使用しており、行ごとのエラー管理も実施
+ * 注文確定時には確認ダイアログを表示してユーザーに確認を求める
+ */
+
 export type SellRow = {
     category: CategorySummariesData | null
     productId: number | null;
@@ -67,17 +77,20 @@ const rowsSchema = yup.array().of(sellRowSchema);
 
 const CreateSellPage = () => {
 
+    // フック
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-
     const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
-    const [customerName, setCustomerName] = useState<string>("");
-
     const { isSM } = useScreen();
-    const [errorsByRow, setErrorsByRow] = useState<Record<number, Record<string, string>>>({});
+    const queryClient = useQueryClient();
 
+    // ステート
+    const [customerName, setCustomerName] = useState<string>("");
+    const [errorsByRow, setErrorsByRow] = useState<Record<number, Record<string, string>>>({});
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [description, setDescription] = useState("");
+
+    // デフォルトの販売行データ
     const defaultItem: SellRow = {
         category: null,
         productId: null,
@@ -86,17 +99,20 @@ const CreateSellPage = () => {
         price: 0,
         note: ""
     }
+
     const [rows, setRows] = useState<SellRow[]>([defaultItem]);
     const [dialogMode, setDialogMode] = useState<DialogMode>("save");
 
+    // カテゴリー一覧データ取得
     const { isLoading, error, data: categories = [] } = useCategorySummaries();
 
-    const queryClient = useQueryClient();
-
+    // 指定行を更新
     const updateRow = (index: number, patch: Partial<SellRow>) => {
+        // 行データの更新
         setRows(prev =>
             prev.map((r, i) => (i === index ? { ...r, ...patch } : r))
         );
+        // エラー状態のクリア
         setErrorsByRow(prev => {
             const newErrors = { ...prev };
             if (!newErrors[index]) return newErrors;
@@ -128,6 +144,7 @@ const CreateSellPage = () => {
             return newErrors;
         });
     };
+    // 新しい販売行を追加
     const addRow = async () => {
         if (!(await validateRows())) return;
         setRows(prev => [
@@ -136,6 +153,7 @@ const CreateSellPage = () => {
         ]);
     };
 
+    // 指定行を削除
     const deleteRow = (index: number) => {
         if (rows.length === 1) {
             showSnackbar("最低1つの商品が必要です", "warning");
@@ -144,6 +162,7 @@ const CreateSellPage = () => {
         setRows(prev => prev.filter((_, i) => i !== index));
     };
 
+    // 入力中のデータからSellOrderItemを構築
     const buildSellItem = (): SellOrderItem | null => {
         if (!customerName.trim()) {
             showSnackbar("顧客名を入力してください", "error");
@@ -295,6 +314,8 @@ const CreateSellPage = () => {
                 {(error) && (
                     <ErrorState />
                 )}
+
+                {/* 顧客名入力欄 */}
                 {isLoading ? (
                     <Skeleton variant="rectangular" height={200} />
                 ) : (
@@ -316,6 +337,8 @@ const CreateSellPage = () => {
                         />
                     </Box>
                 )}
+
+                {/* 商品行リスト */}
                 {isLoading ? (
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
@@ -337,6 +360,7 @@ const CreateSellPage = () => {
                         ))}
                     </Grid>
                 )}
+
                 {/* ボタン操作 */}
                 <Stack
                     textAlign="center"
@@ -349,7 +373,6 @@ const CreateSellPage = () => {
                         // display: productData?.length === 0 ? 'none' : 'flex'
                     }}
                 >
-
                     <Button variant="contained" color="secondary" onClick={async () => {
                         if (!(await validateRows())) return;
                         setDialogMode("save")
@@ -364,10 +387,10 @@ const CreateSellPage = () => {
 
                     <Button variant="contained" color="warning" onClick={handleCancel}>キャンセル</Button>
                 </Stack>
-            </Box>
+            </Box >
 
             {/* 注文確認ダイアログ */}
-            <Dialog
+            < Dialog
                 open={openConfirmDialog}
                 onClose={() => setOpenConfirmDialog(false)}
                 maxWidth="sm"
@@ -385,7 +408,6 @@ const CreateSellPage = () => {
                 <DialogTitle>注文内容の確認 ({dialogMode === "save" ? "保存用" : "販売用"})</DialogTitle>
 
                 <DialogContent dividers>
-
                     <Typography variant="h6" mb={1}>
                         販売商品一覧
                     </Typography>
@@ -455,8 +477,8 @@ const CreateSellPage = () => {
                         {dialogMode === "save" ? "保存" : "販売"}
                     </Button>
                 </DialogActions>
-            </Dialog>
-        </Box>
+            </Dialog >
+        </Box >
     )
 }
 

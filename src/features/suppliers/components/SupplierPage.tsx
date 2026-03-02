@@ -39,9 +39,27 @@ import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 
+/** 
+ * 仕入先ページコンポーネント
+ * 
+ * 仕入先の詳細情報、在庫商品、最近の注文などを表示します。仕入先の編集や削除、商品追加の操作が可能です。
+ * カテゴリ別の商品リストや注文履歴も表示され、商品や仕入先情報を効率的に管理できます。
+ * 
+ * @param openEditSupplierForm - 仕入先情報を編集するためのフォームが開いているかどうかを制御する状態
+ * @param openSupplierProductDialog - 商品追加のダイアログが開いているかどうかを制御する状態
+ * @param allProducts - すべての商品データ（商品追加時に使用）
+ * @param selectedCategoryId - 現在選択されているカテゴリのID
+ * @param supplierId - 仕入先のID（URLパラメータから取得）
+ * @param data - 仕入先の詳細情報および在庫商品データ
+ * @param dataPO - 仕入先に関連する最近の注文データ
+ * 
+ * 仕入先の情報を表示し、カテゴリごとに商品リストを管理。編集、削除、商品追加などの操作を提供します。
+ * 仕入先情報の更新、商品情報の追加などを行うためのフォームも提供します。
+ */
 
 const SupplierPage = () => {
 
+    // フック
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const { supplierId } = useParams<{ supplierId: string }>();
@@ -49,15 +67,17 @@ const SupplierPage = () => {
     const navigate = useNavigate();
     const { showSnackbar } = useSnackbar();
     const { confirmDelete } = useDialogs();
+    const { isSM } = useScreen();
+    const queryClient = useQueryClient();
 
+    // ステート
     const [openEditSupplierForm, setOpenEditSupplierForm] = useState(false);
     const [openSupplierProductDialog, setOpenSupplierProductDialog] = useState(false);
 
-    const { isSM } = useScreen();
-    const queryClient = useQueryClient();
     const [allProducts, setAllproducts] = useState<ProductData[] | null>(null);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null | "">(null);
 
+    // データを取得
     const { isLoading, error, data } = useSupplierProductsWithStock(Number(supplierId));
     const { isLoading: isLoadingPO, error: errorPO, data: dataPO = [] } = usePurchasesOrderBySupplier(Number(supplierId));
     const { data: dataAllProducts = [], refetch: refetchAllProducts } = useProducts({
@@ -148,7 +168,7 @@ const SupplierPage = () => {
         setAllproducts(products);
         setOpenSupplierProductDialog(true);
     };
-    
+
     return (
         <Box m={3}>
             {isLoading ? (

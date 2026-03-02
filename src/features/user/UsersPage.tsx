@@ -22,6 +22,12 @@ import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 import { useUserSessions } from "./hooks/useUserSessions";
 import SessionTable from "./compoments/SessionTable";
 
+/**
+ * ユーザー管理画面コンテナコンポーネント。
+ * 
+ * ユーザー一覧表示、詳細表示、作成・編集、セッション管理を
+ * mode状態により切り替えて制御する。
+ */
 
 const UsersPage = () => {
 
@@ -36,7 +42,6 @@ const UsersPage = () => {
   const { confirmDelete } = useDialogs();
   const { isLoading, error, data } = useAllUsers();
   const { isLoading: isLoadingUserSession, error: errorUserSession, data: dataUserSession } = useUserSessions(selectedUser?.id);
-  console.log(dataUserSession);
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: UserRequestData }) => {
       return userAPI.updateUserById(id, data);

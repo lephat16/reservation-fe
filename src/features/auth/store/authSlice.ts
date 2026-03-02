@@ -2,6 +2,12 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { UserData } from '../../user/types/user';
 
+/**
+ * 認証状態管理用Redux slice
+ *
+ * ユーザー情報（ログインユーザー）を保持し、ログイン・ログアウト操作を管理する。
+ */
+
 // 認証情報の状態を定義
 type AuthState = {
     user: UserData | null;

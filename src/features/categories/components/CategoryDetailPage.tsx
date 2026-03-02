@@ -40,6 +40,12 @@ import { styledTable } from "../../../shared/styles/StyleTable";
 import { STATUS } from "../../../constants/status";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
+/**
+ * カテゴリー詳細ページ
+ *
+ * 指定カテゴリーの情報、関連商品の在庫情報、仕入先情報を表示。
+ * カテゴリー編集・削除操作も可能。
+ */
 
 interface ProductRowProps {
     product: ProductStockData;
@@ -49,12 +55,13 @@ function ProductRow({ product }: ProductRowProps) {
 
     const [open, setOpen] = useState(false);
 
+    // 合計在庫数を計算
     const totalStock =
         product.stocks?.reduce((sum, s) => sum + s.quantity, 0) ?? 0;
 
     return (
         <>
-            {/* MAIN ROW */}
+            {/* メイン行 */}
             <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
                 <TableCell>
                     <IconButton
@@ -75,14 +82,13 @@ function ProductRow({ product }: ProductRowProps) {
                 <TableCell sx={{ borderBottom: 'none' }} align="right">{totalStock}</TableCell>
             </TableRow>
 
-            {/* EXPAND ROW */}
+            {/* 展開行：仕入先・在庫詳細 */}
             <TableRow >
                 <TableCell colSpan={4} style={{ padding: 0 }} >
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box display="flex" >
 
-                            {/* SUPPLIERS TABLE */}
-
+                            {/* 仕入先テーブル */}
                             <Table
                                 size="small"
                             >
@@ -104,7 +110,7 @@ function ProductRow({ product }: ProductRowProps) {
                                 </TableBody>
                             </Table>
 
-                            {/* STOCK TABLE */}
+                            {/* 在庫テーブル */}
                             {(product.stocks && product.stocks.length > 0) ? (
                                 <Table size="small">
                                     <TableHead>
@@ -146,6 +152,10 @@ function ProductRow({ product }: ProductRowProps) {
         </>
     );
 }
+
+/**
+ * カテゴリー詳細ページ
+ */
 const CategoryDetailPage = () => {
 
     const theme = useTheme();
@@ -160,8 +170,10 @@ const CategoryDetailPage = () => {
 
     const [showMore, setShowMore] = useState(false);
 
+    // カテゴリー情報取得カスタムフック
     const { isLoading, error, data } = useInfoCategory(Number(categoryId))
 
+    // カテゴリー更新用Mutation
     const updateMutation = useMutation({
         mutationFn: async ({ id, data }: { id: number; data: FormData }) => {
             return categoryAPI.updateCategory(id, data);
@@ -174,15 +186,8 @@ const CategoryDetailPage = () => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
         }
     });
-    const getAllSuppliers = (products?: ProductStockData[]): string => {
-        if (!products || products.length === 0) return "";
-        const suppliers = products.flatMap(p =>
-            p.suppliers?.map(s => s.supplierName) ?? []
-        );
 
-        return Array.from(new Set(suppliers)).join(", ");
-    };
-
+    // カテゴリー削除処理
     const deleteMutation = useDeleteCategory(showSnackbar);
     const handleDelete = async (category: CategoryData) => {
         const ok = await confirmDelete(
@@ -193,6 +198,16 @@ const CategoryDetailPage = () => {
             deleteMutation.mutate(Number(categoryId));
         }
     }
+
+    // 商品に関連するすべての仕入先名を取得
+    const getAllSuppliers = (products?: ProductStockData[]): string => {
+        if (!products || products.length === 0) return "";
+        const suppliers = products.flatMap(p =>
+            p.suppliers?.map(s => s.supplierName) ?? []
+        );
+
+        return Array.from(new Set(suppliers)).join(", ");
+    };
     const mappedCategoryFormData: CategoryFormData = {
         name: data?.categoryInfo.name ?? '',
         status: data?.categoryInfo.status ?? 'INACTIVE',
@@ -201,6 +216,7 @@ const CategoryDetailPage = () => {
     }
     return (
         <Box m={3}>
+            {/* ヘッダー表示 */}
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
@@ -216,6 +232,7 @@ const CategoryDetailPage = () => {
                     <ErrorState />
                 )}
 
+                {/* カテゴリー情報表示 */}
                 {data && (
                     <>
                         {isLoading ? (
@@ -230,6 +247,7 @@ const CategoryDetailPage = () => {
                                     overflow: 'hidden',
                                 }}>
 
+                                {/* カテゴリー情報 */}
                                 <Box
                                     sx={{
                                         display: 'flex',
@@ -245,7 +263,7 @@ const CategoryDetailPage = () => {
                                             {data.categoryInfo.name}
                                         </Typography>
 
-
+                                        {/* ステータス・編集・削除ボタン */}
                                         <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} mt={1}>
                                             <Chip
                                                 label={STATUS[data.categoryInfo.status].label}
@@ -288,6 +306,8 @@ const CategoryDetailPage = () => {
                                                 </IconButton>
                                             </Tooltip>
                                         </Stack>
+
+                                        {/* 説明文 */}
                                         <Typography
                                             variant="body2"
                                             sx={{
@@ -314,6 +334,8 @@ const CategoryDetailPage = () => {
                                         </Typography>
                                     </CardContent>
                                 </Box>
+
+                                {/* カテゴリー画像 */}
                                 <CardMedia
                                     component="img"
                                     sx={{ width: 180, height: 180, objectFit: 'cover' }}
@@ -322,6 +344,8 @@ const CategoryDetailPage = () => {
                                 />
                             </Card>
                         )}
+
+                        {/* 商品テーブル */}
                         {isLoading ? (
                             <Skeleton variant="rectangular" height={400} />
                         ) : (
@@ -364,7 +388,7 @@ const CategoryDetailPage = () => {
 
                 )}
 
-
+                {/* カテゴリー編集フォーム */}
                 {openEditCategoryForm && (
                     <CategoryForm
                         open

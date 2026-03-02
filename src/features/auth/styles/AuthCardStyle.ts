@@ -3,6 +3,19 @@ import MuiCard from "@mui/material/Card";
 import TextField from "@mui/material/TextField";
 import { blue, blueGrey } from "@mui/material/colors";
 
+/**
+ * 認証用スタイルコンポーネント
+ *
+ * AuthCard: ログイン・登録フォームを包むカードコンポーネント
+ * AuthTextField: フォーム入力用のカスタムTextField
+ */
+
+
+/**
+ * 認証フォーム用カード
+ *
+ * 背景色、シャドウ、レスポンシブ幅などを設定。
+ */
 export const AuthCard = styled(MuiCard)(({ theme }) => ({
     display: "flex",
     flexDirection: "column",
@@ -24,6 +37,12 @@ export const AuthCard = styled(MuiCard)(({ theme }) => ({
     }),
 }));
 
+
+/**
+ * 認証フォーム用カスタムTextField
+ *
+ * フォーカス時のアウトラインや枠線のスタイルをカスタマイズ
+ */
 export const AuthTextField = styled(TextField)(({ theme }) => ({
     marginTop: theme.spacing(0.2),
 

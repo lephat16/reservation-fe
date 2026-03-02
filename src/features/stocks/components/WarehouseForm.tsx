@@ -16,8 +16,16 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import type { WarehouseFormData } from "../types/stock";
 import { useEffect } from "react";
 
-
-
+/**
+ * 倉庫作成・編集フォーム
+ * 
+ * 倉庫情報（名前、住所、在庫上限、ステータス）を入力し、作成または編集を行うフォーム
+ * 
+ * @param open - ダイアログが開いているかどうか
+ * @param onClose - ダイアログを閉じるコールバック
+ * @param onSubmit - フォームが送信されたときに呼ばれるコールバック
+ * @param warehouse - 編集対象の倉庫情報（新規作成の場合は省略可）
+ */
 
 type WarehouseFormProps = {
     open: boolean;
@@ -45,6 +53,7 @@ const WarehouseForm = ({
             .required("ステータスは必須です"),
     });
 
+    // フォームの状態とバリデーションを管理
     const { control, handleSubmit, formState: { errors }, reset } = useForm<WarehouseFormData>({
         resolver: yupResolver(schema),
         defaultValues: {
@@ -55,12 +64,14 @@ const WarehouseForm = ({
         }
     });
 
+    // 編集モード時にフォームを初期化
     useEffect(() => {
         if (warehouse) {
             reset(warehouse);
         }
     }, [warehouse, reset]);
 
+    // フォーム送信時の処理
     const handleFormSubmit = (data: WarehouseFormData) => {
         onSubmit(data);
         onClose();
@@ -83,6 +94,7 @@ const WarehouseForm = ({
             <DialogTitle fontSize={20} textAlign="center">倉庫を作成</DialogTitle>
             <DialogContent>
                 <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} mt={2}>
+                    {/* 倉庫名の入力フィールド */}
                     <Controller
                         name="name"
                         control={control}
@@ -98,7 +110,7 @@ const WarehouseForm = ({
                             />
                         )}
                     />
-
+                    {/* 住所の入力フィールド */}
                     <Controller
                         name="location"
                         control={control}
@@ -116,6 +128,7 @@ const WarehouseForm = ({
                     />
 
                     <Stack direction="row" gap={2}>
+                        {/* ステータスの選択フィールド */}
                         <Controller
                             name="status"
                             control={control}
@@ -134,6 +147,7 @@ const WarehouseForm = ({
                                 </TextField>
                             )}
                         />
+                        {/* 在庫上限の入力フィールド */}
                         <Controller
                             name="stockLimit"
                             control={control}
@@ -150,6 +164,7 @@ const WarehouseForm = ({
                             )}
                         />
                     </Stack>
+                    {/* ボタン群 */}
                     <Stack direction="row" gap={2} justifyContent="flex-end">
                         <Button
                             type="submit"

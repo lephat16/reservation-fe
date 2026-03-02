@@ -6,6 +6,15 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { SESSION_STATUS } from "../../../constants/status";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
+/**
+ * ユーザーセッション一覧を表示するテーブルコンポーネント。
+ * セッション情報（デバイス、IPアドレス、作成日時、有効期限、ステータス）を表示し、
+ * 必要に応じてセッションの無効化操作を行う。
+ *
+ * @param props ユーザーセッションテーブルのプロパティ
+ * @returns セッション一覧テーブルのJSX要素
+ */
+
 type UserSessionProps = {
     onBack?: () => void;
     session?: UserSession[];

@@ -29,6 +29,18 @@ import ErrorState from "../../../shared/components/messages/ErrorState";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
 
+/** 
+ * サプライヤーカテゴリーテーブルコンポーネント
+ * 
+ * サプライヤーの商品情報（SKU、単価、在庫、ステータスなど）を表示し、商品の詳細情報や注文操作を提供する
+ * 
+ * @param categoryName - 商品カテゴリ名
+ * @param products - 商品データのリスト
+ * @param supplierId - サプライヤーID
+ * @param supplierStatus - サプライヤーのステータス（"ACTIVE" または "INACTIVE"）
+ * @param showSnackbar - スナックバーを表示するコールバック（成功メッセージやエラーメッセージ）
+ */
+
 type SupplierCategoryTableProps = {
     categoryName: string | undefined;
     products: SupplierProductData[];

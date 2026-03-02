@@ -31,6 +31,16 @@ import ErrorState from "../../../shared/components/messages/ErrorState";
 import { stockAPI } from "../api/stockAPI";
 import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
+
+/** 
+ * 在庫取引履歴ページコンポーネント
+ * 
+ * - 各在庫取引の概要を DataGrid で表示
+ * - 行をクリックすると詳細ダイアログが開く
+ * - 取引ごとの商品情報、数量、単価、合計金額、メモを表示
+ * - レスポンシブ対応: 中画面以下でフルスクリーンダイアログ
+ */
+
 // 在庫変動履歴
 type StockHistoryItem = {
     stockId: number;
@@ -69,19 +79,20 @@ const QtyChip = styled(Chip)(({ theme }) => ({
 
 const StockHistoriesPage = () => {
 
-
+    // フック
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-
     const { isSM } = useScreen();
 
+    // ステート
     const [selectedRow, setSelectedRow] = useState<StockHistoryGroupRow | null>(null);
     const [open, setOpen] = useState(false);
     const handleClose = () => {
         setOpen(false);
     };
 
+    // データ取得
     const { isLoading, error, data } = useQuery<StockHistoriesWithDetailData[]>({
         queryKey: ["stock-histories-with-details"],
         queryFn: async () => {
@@ -90,14 +101,13 @@ const StockHistoriesPage = () => {
         }
     });
 
+    // 列定義
     const columns: GridColDef<StockHistoryGroupRow>[] = [
-
         {
             field: "id",
             headerName: "注文 ID",
             flex: 0.3
         },
-
         {
             field: "refType",
             headerName: "タイプ",
@@ -134,7 +144,6 @@ const StockHistoriesPage = () => {
             headerName: "担当者",
             flex: 0.6,
         },
-
         {
             field: "createdAt",
             headerName: "作成日",
@@ -171,7 +180,11 @@ const StockHistoriesPage = () => {
 
     ];
 
-
+    /**
+     * 取得データを DataGrid 用に整形
+     * - 同じ refId のデータをまとめて items 配列に格納
+     * - 作成日で降順ソート
+     */
     const rows: StockHistoryGroupRow[] = useMemo(() => {
         if (!data || !Array.isArray(data)) return [];
         const map = new Map<number, StockHistoryGroupRow>();
@@ -232,6 +245,7 @@ const StockHistoriesPage = () => {
                         mode={theme.palette.mode}
                     />
                 )}
+                 {/* 詳細ダイアログ */}
                 <Dialog
                     open={open}
                     onClose={handleClose}

@@ -1,5 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Box, Button, Card, CardContent, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, useTheme } from "@mui/material";
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Paper,
+    Skeleton,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Tooltip,
+    Typography,
+    useTheme
+} from "@mui/material";
 import Header from "../../../shared/components/layout/Header";
 import { tokens } from "../../../shared/theme";
 import { useNavigate, useParams } from "react-router-dom";
@@ -24,23 +41,40 @@ import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 
+/**
+ * 商品詳細カードコンポーネント
+ *
+ * 商品の基本情報、ステータス、カテゴリー、週間売上などを表示する
+ * また、編集・削除の操作も可能
+ *
+ * @param {Object} props - コンポーネントのプロパティ
+ * @param {Product} props.product - 表示する商品データ
+ * @param {()  void} props.openEditDialog - 編集ダイアログを開くコールバック関数
+ * @param {()  void} props.openDeleteDialog - 削除確認ダイアログを開くコールバック関数
+ */
+
 const ProductPage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
+    // 編集フォームの開閉状態を管理
     const [openEditProductForm, setOpenEditProductForm] = useState(false);
 
     const queryClient = useQueryClient();
     const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const navigate = useNavigate();
-    const { confirmDelete } = useDialogs();
+    const { confirmDelete } = useDialogs(); // 削除確認ダイアログ
 
     const { isSM } = useScreen();
     const { productId } = useParams<{ productId: string }>();
 
+    // 商品詳細とカテゴリを取得するカスタムフック
     const { isLoading, error, data } = useProductDetailAndCategories(Number(productId));
+    // 商品別週間売上データ取得
     const { data: WeeklySalesByProduct } = useWeeklySalesByProduct(Number(productId));
     const { productDetail, categories } = data ?? {};
+
+    // 商品情報更新のMutation
     const updateMutation = useMutation({
         mutationFn: async (updateProduct: FormData) => {
             const updatedRes = await productAPI.updateProduct(updateProduct, Number(productId));
@@ -57,6 +91,8 @@ const ProductPage = () => {
         },
 
     });
+
+    // 商品削除のMutation
     const deleteMutation = useMutation({
         mutationFn: async () => productAPI.deleteProduct(Number(productDetail?.product.id)),
         onSuccess: (response) => {
@@ -70,14 +106,17 @@ const ProductPage = () => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
         }
     });
+
+    // 削除ボタン押下時の処理
     const handleDelete = async () => {
         const ok = await confirmDelete(
             `商品「${productDetail?.product.productName}」を削除しますか`
         );
         if (ok) {
-            deleteMutation.mutate();
+            deleteMutation.mutate(); // 削除実行
         }
     }
+    // 仕入先数と平均価格計算
     const totalSuppliers = productDetail?.supplier.length || 0;
     const averagePrice = productDetail?.supplier && totalSuppliers > 0
         ? productDetail.supplier.reduce((sum, sp) => sum + (sp.price ?? 0), 0)
@@ -89,19 +128,21 @@ const ProductPage = () => {
     const year = today.getFullYear();
     const monthIndex = today.getMonth();
 
-    const currentMonth = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
-    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-    const currentWeek = Math.ceil((today.getDate() * 4) / daysInMonth);
+    const currentMonth = `${year}-${String(monthIndex + 1).padStart(2, '0')}`; // YYYY-MM形式
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();  // 今月の日数
+    const currentWeek = Math.ceil((today.getDate() * 4) / daysInMonth); // 4週間換算で今週番号
 
     let compareMonth = currentMonth;
     let compareWeek = currentWeek - 1;
 
+    // 今週が第1週の場合、前月の第4週を比較対象にする
     if (currentWeek === 1) {
         const prevMonthDate = new Date(year, monthIndex - 1, 1);
         compareMonth = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
         compareWeek = 4;
     }
 
+    // 今週と先週の売上データ取得
     const thisWeekData =
         WeeklySalesByProduct?.find(
             item => item.month === currentMonth && item.week === currentWeek
@@ -112,6 +153,7 @@ const ProductPage = () => {
             item => item.month === compareMonth && item.week === compareWeek
         ) ?? null;
 
+    // 売上と数量の増減計算
     const revenueChange =
         lastWeekData ? thisWeekData.weeklySales - lastWeekData.weeklySales : 0;
 
@@ -128,17 +170,21 @@ const ProductPage = () => {
             ? (qtyChange / lastWeekData.weeklyQty) * 100
             : null;
 
+    // 売上と数量の増減フラグ
     const isRevenueUp =
         lastWeekData ? thisWeekData.weeklySales > lastWeekData.weeklySales : null;
 
     const isQtyUp =
         lastWeekData ? thisWeekData.weeklyQty > lastWeekData.weeklyQty : null;
 
+    // 円表示フォーマット
     const yenFormatter = new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' });
 
+    // 過去4週間の売上データ取得関数
     function getLast4WeeksData(productId: number, data: typeof WeeklySalesByProduct) {
         const productData = (data ?? []).filter(item => item.productId === productId);
 
+        // 日付順にソート
         const sorted = productData.sort((a, b) => {
             const [aYear, aMonth] = a.month.split('-').map(Number);
             const [bYear, bMonth] = b.month.split('-').map(Number);
@@ -148,9 +194,9 @@ const ProductPage = () => {
             return a.week - b.week;
         });
 
-        const last4Weeks = sorted.slice(-4);
+        const last4Weeks = sorted.slice(-4); // 最新4週間
 
-        const chartData = last4Weeks.map(item => item.weeklySales);
+        const chartData = last4Weeks.map(item => item.weeklySales); // チャート用データ
 
         const xAxisLabels = last4Weeks.map(item => {
             const month = new Date(item.month + "-01").toLocaleString('default', { month: 'short' });
@@ -159,6 +205,7 @@ const ProductPage = () => {
 
         return { chartData, xAxisLabels };
     }
+    // チャート用データ取得
     const { chartData, xAxisLabels } = getLast4WeeksData(Number(productId), WeeklySalesByProduct);
 
     return (
@@ -190,6 +237,7 @@ const ProductPage = () => {
                 {/* メイン表示 */}
                 {(!isLoading && !error && data) ? (
                     <>
+                        {/* 商品情報カード */}
                         <Box>
                             <ProductDetailCard
                                 product={data.productDetail.product}
@@ -204,6 +252,7 @@ const ProductPage = () => {
                             gap={4}
                         >
                             <Box flex={2}>
+                                {/** 仕入先テーブル */}
                                 <TableContainer component={Paper} sx={{ mb: 2, backgroundColor: colors.primary[400] }}>
                                     <Table
                                         sx={{
@@ -223,6 +272,7 @@ const ProductPage = () => {
 
                                         <TableBody>
                                             {productDetail?.supplier.length === 0 ? (
+                                                /** 仕入先が存在しない場合の表示 */
                                                 <TableRow>
                                                     <TableCell
                                                         colSpan={4}
@@ -233,6 +283,7 @@ const ProductPage = () => {
                                                     </TableCell>
                                                 </TableRow>
                                             ) : (
+                                                /** 仕入先データ表示 */
                                                 productDetail?.supplier.map(s => (
                                                     <TableRow key={s.supplierId}>
                                                         <TableCell>{s.supplierName}</TableCell>
@@ -262,6 +313,7 @@ const ProductPage = () => {
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
+                                {/** 在庫テーブル */}
                                 <TableContainer component={Paper} sx={{ mb: 2, backgroundColor: colors.primary[400] }}>
                                     <Table
                                         sx={{
@@ -279,6 +331,7 @@ const ProductPage = () => {
                                         </TableHead>
                                         <TableBody>
                                             {productDetail?.inventoryStock.length === 0 ? (
+                                                /** 在庫情報がない場合 */
                                                 <TableRow>
                                                     <TableCell
                                                         colSpan={2}
@@ -289,6 +342,7 @@ const ProductPage = () => {
                                                     </TableCell>
                                                 </TableRow>
                                             ) : (
+                                                /** 在庫データ表示 */
                                                 productDetail?.inventoryStock.map((i, idx) => (
                                                     <TableRow key={idx}>
                                                         <TableCell>{i.warehouseName}</TableCell>
@@ -299,6 +353,7 @@ const ProductPage = () => {
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
+                                {/** 在庫履歴テーブル */}
                                 <TableContainer
                                     component={Paper}
                                     sx={{
@@ -323,6 +378,7 @@ const ProductPage = () => {
                                         </TableHead>
                                         <TableBody>
                                             {productDetail?.stockHistory.length === 0 ? (
+                                                /** 履歴データがない場合 */
                                                 <TableRow>
                                                     <TableCell
                                                         colSpan={3}
@@ -336,7 +392,7 @@ const ProductPage = () => {
                                                     </TableCell>
                                                 </TableRow>
                                             ) : (
-
+                                                /** 履歴データ表示 */
                                                 productDetail?.stockHistory.map((h, idx) => (
                                                     <TableRow key={idx}>
                                                         <TableCell>{h.createdAt.slice(0, 10)}</TableCell>
@@ -357,12 +413,14 @@ const ProductPage = () => {
                                 flexDirection={{ xl: 'column', md: 'row' }}
                                 justifyContent="space-between"
                             >
+                                {/** 上段カード群 */}
                                 <Box
                                     display='flex'
                                     gap={2}
                                     flexDirection={{ xl: 'column', lg: 'row', xs: 'column' }}
                                 >
                                     <Stack flex={1} direction="row" gap={2} justifyContent="space-between">
+                                        {/** 取引先数カード */}
                                         <Card
                                             sx={{
                                                 backgroundColor: colors.primary[400],
@@ -414,6 +472,7 @@ const ProductPage = () => {
                                                 </CardContent>
                                             </Box>
                                         </Card>
+                                        {/** 平均仕入価格カード */}
                                         <Card
                                             sx={{
                                                 backgroundColor: colors.primary[400],
@@ -468,7 +527,9 @@ const ProductPage = () => {
                                             </Box>
                                         </Card>
                                     </Stack>
+                                    {/** 今週の売上カードと今週の取引数カード */}
                                     <Stack flex={1} direction="row" gap={2} justifyContent="space-between">
+                                        {/** 今週の売上カード */}
                                         <Card
                                             sx={{
                                                 backgroundColor: colors.primary[400],
@@ -531,6 +592,7 @@ const ProductPage = () => {
                                                 </CardContent>
                                             </Box>
                                         </Card>
+                                        {/** 今週の取引数カード */}
                                         <Card
                                             sx={{
                                                 backgroundColor: colors.primary[400],
@@ -590,6 +652,7 @@ const ProductPage = () => {
                                     </Stack>
 
                                 </Box>
+                                {/** 過去4週間売上チャート */}
                                 <Box display="flex">
                                     <Stack
                                         width="100%"
@@ -621,7 +684,7 @@ const ProductPage = () => {
                             </Box>
                         </Box>
 
-
+                        {/* 編集フォーム表示 */}
                         {openEditProductForm && (
                             <ProductForm
                                 open

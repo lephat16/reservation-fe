@@ -28,30 +28,48 @@ import { PurchaseConfirmDialog } from './PurchaseConfirmDialog';
 import { styledSelect } from '../../../shared/styles/styledSelect';
 import { useScreen } from '../../../shared/hooks/ScreenContext';
 
+/**
+ * CreatePurchasePage コンポーネント
+ *
+ * 仕入先を選択し、商品の購入注文を作成・保存・即時発注するページ。
+ * 
+ * 主な機能:
+ * - 仕入先選択
+ * - 商品選択・数量・メモ管理
+ * - 注文の保存または即時発注
+ * - 注文合計金額の計算
+ * - 商品行の追加・削除
+ *
+ * @component
+ */
+
 export type DialogMode = "save" | "purchase";
 
 const CreatePurchasePage = () => {
 
+    //フック
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const { isSM } = useScreen();
     const location = useLocation();
+    const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const { preselectedSupplierId, preselectedSku } = location.state || {};
+
     // ステート管理
+    const [rows, setRows] = useState<PurchaseRow[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
     const [openSelectSupplier, setOpenSelectSupplier] = useState(false);
 
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [description, setDescription] = useState("");
+    const [dialogMode, setDialogMode] = useState<DialogMode>("save");
 
-    const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
-    const [rows, setRows] = useState<PurchaseRow[]>([]);
+
 
     // 仕入先選択用ハンドラー
     const handleCloseSelectSupplier = () => setOpenSelectSupplier(false);
     const handleOpenSelectSupplier = () => setOpenSelectSupplier(true);
 
-    const [dialogMode, setDialogMode] = useState<DialogMode>("save");
 
     // APIクエリ: 仕入先一覧取得
     const { isLoading, error, data } = useAllSuppliers();
@@ -60,6 +78,7 @@ const CreatePurchasePage = () => {
     // 選択した仕入先に紐づく商品の取得
     const { isLoading: isLoadingProducts, error: productError, data: productData } = useSupplierProductsWithLeadTime(selectedSupplier)
 
+    // ページロード時にプリセットされた仕入先を選択
     useEffect(() => {
         if (!data || !preselectedSupplierId) return;
 
@@ -67,6 +86,8 @@ const CreatePurchasePage = () => {
         setSelectedSupplier(preSupplier);
 
     }, [data, preselectedSupplierId]);
+
+    // ページロード時にプリセットされたSKUの行を追加
     useEffect(() => {
         if (!productData || !preselectedSku) return;
 
@@ -88,7 +109,6 @@ const CreatePurchasePage = () => {
     // 商品選択変更
     const handleProductChange = (index: number, productId: number) => {
         const product = productData?.find(p => p.id === productId) || null;
-
         setRows(prev =>
             prev.map((row, i) =>
                 i === index ? { ...row, product } : row

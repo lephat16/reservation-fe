@@ -9,6 +9,20 @@ import { tokens } from '../../../shared/theme';
 import type { CategoryData } from '../../categories/types/category';
 import { StyledSelectTextField } from '../../../shared/styles/StyledSelectTextField';
 
+/** 
+ * 商品フォームコンポーネント
+ * 
+ * 新規商品作成または既存商品の編集を行うフォーム
+ * React Hook Form + Yupバリデーションを使用
+ * 
+ * @param open - フォームダイアログの開閉状態
+ * @param onClose - ダイアログを閉じるコールバック
+ * @param onSubmit - 新規商品の送信コールバック
+ * @param onUpdate - 既存商品の更新コールバック
+ * @param product - 編集対象の商品データ（省略可能）
+ * @param categories - カテゴリ一覧データ
+ */
+
 type ProductFormProps = {
     open: boolean;
     onClose: () => void;
@@ -60,6 +74,7 @@ const ProductForm = ({
             .min(3, "カテゴリ名は3文字以上でなければなりません"),
     });
 
+    /** React Hook Formの初期化 */
     const { control, handleSubmit, formState: { errors }, reset } = useForm<ProductFormData>({
         resolver: yupResolver(schema),
         defaultValues: {
@@ -72,23 +87,27 @@ const ProductForm = ({
         }
     });
 
+    /** 編集モードの場合、フォームに既存の商品データをセット */
     useEffect(() => {
         if (product) {
             reset(product);
         }
     }, [product, reset]);
 
+    /** フォーム送信処理 */
     const handleFormSubmit = (data: ProductFormData) => {
         if (product) {
+            // 編集モードの場合FormDataで送信
             const formData = new FormData();
             Object.entries(data).forEach(([key, value]) => {
                 formData.append(key, String(value));
             });
             onUpdate?.(formData);
-        } else onSubmit?.(data);
+        } else onSubmit?.(data); // 新規作成モード
         onClose();
     }
     return (
+        /** 商品追加/編集ダイアログ */
         <Dialog
             open={open}
             onClose={(_e, reason) => {
@@ -105,6 +124,7 @@ const ProductForm = ({
         >
             <DialogTitle fontSize={20} textAlign="center">商品を追加</DialogTitle>
             <DialogContent>
+                {/** フォーム全体 */}
                 <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} mt={2}>
                     <Controller
                         name="name"
@@ -121,8 +141,9 @@ const ProductForm = ({
                             />
                         )}
                     />
-                    <Stack direction="row" gap={3}>
 
+                    {/** 商品コードとステータスを横並びで入力 */}
+                    <Stack direction="row" gap={3}>
                         <Controller
                             name="productCode"
                             control={control}
@@ -159,8 +180,9 @@ const ProductForm = ({
                             )}
                         />
                     </Stack>
-                    <Stack direction="row" gap={3}>
 
+                    {/** カテゴリーと単位を横並びで入力 */}
+                    <Stack direction="row" gap={3}>
                         <Controller
                             name="categoryName"
                             control={control}
@@ -187,7 +209,6 @@ const ProductForm = ({
                                 </StyledSelectTextField>
                             )}
                         />
-
                         <Controller
                             name="unit"
                             control={control}
@@ -205,6 +226,8 @@ const ProductForm = ({
                             )}
                         />
                     </Stack>
+
+                    {/** 説明入力フィールド（複数行） */}
                     <Controller
                         name="description"
                         control={control}
@@ -222,6 +245,8 @@ const ProductForm = ({
                             />
                         )}
                     />
+
+                    {/** フォーム操作ボタン */}
                     <Stack direction="row" gap={2} justifyContent="flex-end">
                         <Button
                             type="submit"

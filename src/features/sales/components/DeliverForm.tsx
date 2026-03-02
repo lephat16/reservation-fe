@@ -1,4 +1,18 @@
-import { Box, IconButton, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, useTheme } from '@mui/material';
+import {
+    Box,
+    IconButton,
+    Paper,
+    Skeleton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Tooltip,
+    Typography,
+    useTheme
+} from '@mui/material';
 import { useState } from 'react'
 import { tokens } from '../../../shared/theme';
 import { useParams } from 'react-router-dom';
@@ -23,21 +37,28 @@ import { useSnackbar } from '../../../shared/hooks/SnackbarContext';
 
 const DeliverForm = () => {
 
+    // フック
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const { soId } = useParams<{ soId: string }>();
-
     const { isStaff } = useRoleFlags();
-
     const queryClient = useQueryClient();
     const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
 
+    // ステート
     const [openDeliverForm, setOpenDeliverForm] = useState(false);
     const [selectedRemains, setSelectedRemains] = useState<number | null>(null);
     const [selectedSku, setSelectedSku] = useState<string | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<{
+        productName: string;
+        detailId: string;
+    } | null>(null);
 
+    // 受注情報取得
     const { isLoading: isLoadingSOD, error: errorSOD, data: dataSOD } = useSaleOrderDetail(Number(soId));
+    // 在庫履歴取得
     const { isLoading: isLoadingStock, error: errorStock, data: dataStock } = useInventoryHistoryBySaleOrder(Number(soId));
+    // 選択SKUに基づく倉庫データ取得
     const { data: whData } = useQuery<WarehouseWithLocationData[]>({
         queryKey: ["selectedSku"],
         queryFn: async () => {
@@ -47,6 +68,7 @@ const DeliverForm = () => {
         },
         enabled: !!selectedSku
     });
+    // 出荷処理
     const deliverMutation = useMutation({
         mutationFn: async (data: { deliverItem: DeliverStockItem[], soId: number }) => {
             return stockAPI.deliverStock(data.deliverItem, data.soId);
@@ -61,12 +83,6 @@ const DeliverForm = () => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.SELL.DELIVER_FAILED, "error");
         }
     });
-
-    const [selectedProduct, setSelectedProduct] = useState<{
-        productName: string;
-        detailId: string;
-    } | null>(null);
-
 
     // DataGrid行データ作成
     const rows = dataStock?.map((row, index) => ({
@@ -154,6 +170,7 @@ const DeliverForm = () => {
                                     const remains = detail.qty - detail.deliveredQty;
                                     return (
                                         <TableRow key={index}>
+                                            {/* 出荷ボタン / 受領済みアイコン */}
                                             <TableCell>
                                                 {remains === 0 ? (
                                                     <Tooltip title="商品はすでに受領済み">

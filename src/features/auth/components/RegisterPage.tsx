@@ -11,6 +11,15 @@ import { authAPI } from "../api/authAPI";
 import RegisterCard from "./RegisterCard";
 import AuthLayout from "./AuthLayout";
 
+/**
+ * 登録ページコンポーネント
+ *
+ * ユーザーが名前・メールアドレス・パスワード・電話番号を入力して新規登録を行うページ。
+ * 登録成功時にはスナックバーで通知し、ログインページへ遷移。
+ *
+ * @returns JSX.Element - 登録ページ全体のUIコンポーネント
+ */
+
 // yupを使ったフォームバリデーションスキーマ
 const schema = yup.object({
     name: yup
@@ -38,7 +47,7 @@ const RegisterPage = (): JSX.Element => {
     // スナックバー状態管理
     const { showSnackbar } = useSnackbar();
 
-    // React Hook Form初期化
+    // react-hook-formのセットアップとYupバリデーション
     const {
         control,
         handleSubmit,
@@ -53,6 +62,7 @@ const RegisterPage = (): JSX.Element => {
         }
     });
 
+    // 登録API呼び出し用mutation
     const mutation = useMutation({
         mutationFn: async (data: RegisterRequest) => {
             // APIに登録クエスト
@@ -79,8 +89,9 @@ const RegisterPage = (): JSX.Element => {
 
     return (
         <>
-
+            {/* 認証用レイアウトでラップ */}
             <AuthLayout>
+                {/* 登録フォームカード */}
                 <RegisterCard
                     control={control}
                     errors={errors}

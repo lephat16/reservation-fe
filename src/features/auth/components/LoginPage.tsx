@@ -14,6 +14,16 @@ import LoginCard from "./LoginCard";
 import type { RootState } from "../store";
 import AuthLayout from "./AuthLayout";
 
+/** 
+ * ログインページコンポーネント
+ * 
+ * ユーザーがメールアドレスとパスワードを入力してログインするページ。
+ * ログイン成功時にはユーザー情報をReduxに保存し、スナックバーで通知。
+ * 未ログイン時にページを訪れた場合、ログインフォームを表示。
+ * 
+ * @returns JSX.Element - ログインページ全体のUIコンポーネント
+ */
+
 // yupを使ったフォームバリデーションスキーマ
 const schema = yup.object({
     email: yup
@@ -33,35 +43,41 @@ const LoginPage = (): JSX.Element => {
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch();
 
+    // ユーザーが既にログインしている場合、倉庫一覧ページにリダイレクト
     useEffect(() => {
         if (user) {
             navigate("/warehouses");
         }
     }, [user, navigate]);
 
+    // react-hook-formのセットアップとYupバリデーション
     const {
         control,
         handleSubmit,
         formState: { errors }, reset
     } = useForm<LoginRequest>({
         resolver: yupResolver(schema),
-        mode: "onBlur",
+        mode: "onBlur", // フォーカスが外れたタイミングでバリデーション
         defaultValues: {
             email: "",
             password: ""
         }
     });
 
+    // ログインAPI呼び出し用のmutation
     const mutation = useMutation({
         mutationFn: async (data: LoginRequest) => {
             const response = await authAPI.loginUser(data);
             return response;
         },
         onSuccess: (response) => {
+            // Reduxにユーザー情報を保存
             dispatch(setUser(response.data.user || null));
+            // 成功スナックバーを表示
             showSnackbar("ログインしました。", "success");
         },
         onError: (error: AxiosError<{ message: string }>) => {
+            // エラースナックバーを表示
             showSnackbar(error.response?.data?.message ||
                 "ログインに失敗しました。", "error"
             );
@@ -69,20 +85,22 @@ const LoginPage = (): JSX.Element => {
         }
     });
 
+    // フォーム送信時の処理
     const onSubmit = (data: LoginRequest) => {
-        mutation.mutate(data);
+        mutation.mutate(data); // mutationを実行
     };
 
     return (
         <>
-
+            {/* 認証用レイアウトでラップ */}
             <AuthLayout>
+                {/* ログインフォームカード */}
                 <LoginCard
-                    control={control}
-                    errors={errors}
-                    onSubmit={onSubmit}
-                    handleSubmit={handleSubmit}
-                    isLoading={mutation.isPending}
+                    control={control} // フォームコントロール
+                    errors={errors} // バリデーションエラー
+                    onSubmit={onSubmit}  // フォーム送信時のコールバック
+                    handleSubmit={handleSubmit} // react-hook-formのhandleSubmit
+                    isLoading={mutation.isPending} // ローディング状態
                 />
             </AuthLayout>
 

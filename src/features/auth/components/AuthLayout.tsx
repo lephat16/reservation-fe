@@ -1,6 +1,14 @@
 import { CssBaseline, Stack } from "@mui/material";
 import { type JSX, type ReactNode } from "react";
 
+/** 
+ * 認証レイアウトコンポーネント
+ * 
+ * @param children - レイアウト内に表示されるコンポーネントの子要素
+ * 
+ * @returns JSX.Element - 認証画面のレイアウトを提供するコンポーネント
+ */
+
 type Props = {
     children: ReactNode;
 };
@@ -36,6 +44,7 @@ const AuthLayout = ({ children }: Props): JSX.Element => {
                     }),
                 ]}
             >
+                {/* レスポンシブ対応のStackコンテナ。モバイルでは縦、PCでは横並び */}
                 <Stack
                     direction={{ xs: "column-reverse", md: "row" }}
                     sx={{
@@ -44,7 +53,7 @@ const AuthLayout = ({ children }: Props): JSX.Element => {
                         mx: "auto",
                     }}
                 >
-                    {children}
+                    {children} {/* 子コンポーネントをレンダリング */}
                 </Stack>
             </Stack>
         </>

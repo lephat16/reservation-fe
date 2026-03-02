@@ -45,6 +45,21 @@ import useRoleFlags from "../../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 
+/**
+ * 受領確認ダイアログコンポーネント
+ *
+ * 指定した注文（PO）に対する受領数量を確認するダイアログを表示する
+ *
+ * @param open - ダイアログの表示・非表示
+ * @param onClose - キャンセルボタンや背景クリックで閉じる際のコールバック
+ * @param onConfirm - 確認ボタン押下時のコールバック
+ * @param supplier - 仕入先名
+ * @param poId - 注文番号（Purchase Order ID）
+ * @param warehouse - 倉庫名
+ * @param quantity - 受領数量
+ * @param isPending - 確認処理中かどうか。true の場合ボタンは無効化され「確認中…」と表示
+ */
+
 // 購入確認ダイアログ
 interface ReceiveConfirmDialogProps {
     open: boolean;
@@ -69,7 +84,6 @@ export const ReceiveConfirmDialog = ({
 }: ReceiveConfirmDialogProps) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-
 
     return (
         <Dialog
@@ -106,6 +120,26 @@ export const ReceiveConfirmDialog = ({
         </Dialog>
     )
 }
+
+/**
+ * 受領・配送フォームダイアログコンポーネント
+ *
+ * 指定した商品の受領または配送数量を入力して確認するためのダイアログ。
+ * フォームには商品名（読み取り専用）、倉庫選択、数量、メモを入力できる。
+ * 入力後、確認ダイアログを表示して親コンポーネントに送信する。
+ *
+ * @param open - ダイアログの表示・非表示
+ * @param onClose - キャンセルまたは閉じる操作時のコールバック
+ * @param onReceive - 受領処理時のコールバック。フォームの入力値を受け取る
+ * @param onDeliver - 配送処理時のコールバック。フォームの入力値を受け取る
+ * @param product - 対象商品のデータ（productName, detailIdなど）
+ * @param poId - 注文番号（Purchase Order ID）
+ * @param supplier - 仕入先名
+ * @param warehouses - 選択可能な倉庫の配列
+ * @param isPending - 処理中フラグ。true の場合ボタンを無効化
+ * @param remains - 残り数量。数量フィールドの最大値として使用
+ * @param title - ダイアログタイトル。受領か配送かを示す
+ */
 
 // 受領フォームダイアログ
 interface ReceiveFormDialogProps {

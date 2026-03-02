@@ -48,6 +48,17 @@ import { LineChart, } from "@mui/x-charts";
 import FilterContent from "./FilterContent";
 import FilterDatePicker from "./FilterDatePicker";
 
+/**
+ * 在庫移動履歴ページコンポーネント
+ *
+ * 【主な機能】
+ * - 在庫移動履歴の一覧表示
+ * - キーワード / 区分 / 数量 / 日付によるフィルタリング
+ * - カラムソート機能
+ * - ページネーション
+ * - 週次・月次データ集計
+ * - 商品別 / 倉庫別 / 利益分析データの算出
+ */
 export type Type = "IN" | "OUT" | "ALL";
 type Order = 'asc' | 'desc';
 type Column<T> = {
@@ -90,28 +101,36 @@ const columns: Column<StockRow>[] = [
 
 const StockMovementHistoryPage = () => {
 
+    // フック
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-
     const { isSM, isLG } = useScreen();
 
+    // ステート
+    // ページネーション状態
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
+    // フィルター状態
     const [keyword, setKeyword] = useState("");
     const [type, setType] = useState<Type>("ALL");
     const [minQty, setMinQty] = useState(0);
 
+    // Drawer用一時フィルター状態
     const [tempType, setTempType] = useState<Type>("ALL");
     const [tempMinQty, setTempMinQuty] = useState(0);
+    // ソート状態
     const [order, setOrder] = useState<Order>('asc');
     const [orderBy, setOrderBy] = useState<keyof StockRow>("date");
 
+    // フィルタードロワー開閉
     const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
 
+    // 日付フィルタ
     const [startDate, setStartDate] = useState<Dayjs | null>(null);
     const [endDate, setEndDate] = useState<Dayjs | null>(null);
 
+    // データ取得
     const { isLoading, error, data } = useQuery<StockHistoriesWithDetailData[]>({
         queryKey: ["stock-histories-with-details"],
         queryFn: async () => {
@@ -127,7 +146,7 @@ const StockMovementHistoryPage = () => {
         setTempMinQuty(minQty);
         setOpenFilterDrawer(true);
     };
-
+    //  APIデータを表示用のStockRowへ変換
     const mapToStockRow = (row: StockHistoriesWithDetailData): StockRow => ({
         id: row.id,
         date: new Date(row.createdAt).toLocaleString(),
@@ -147,6 +166,8 @@ const StockMovementHistoryPage = () => {
         totalRaw: (row.price * row.changeQty),
         user: row.userName,
     });
+
+    // ソート対象の値を取得
     const getSortValue = (row: StockRow, key: keyof StockRow) => {
         switch (key) {
             case "date":
@@ -165,6 +186,7 @@ const StockMovementHistoryPage = () => {
                 return "";
         }
     }
+    // カラムソート処理
     const handleSort = (key: keyof StockRow) => {
         setOrder(prev =>
             orderBy === key
@@ -173,7 +195,7 @@ const StockMovementHistoryPage = () => {
         );
         setOrderBy(key);
     }
-
+    // フィルタリング処理
     const filteredData = useMemo(() => {
         if (!data) return [];
         return data.map(mapToStockRow)
@@ -188,6 +210,7 @@ const StockMovementHistoryPage = () => {
 
     }, [data, keyword, type, minQty, startDate, endDate]);
 
+    // ソート処理
     const sortedData = useMemo(() => {
         return [...filteredData].sort((a, b) => {
             let valA = getSortValue(a, orderBy);
@@ -207,10 +230,13 @@ const StockMovementHistoryPage = () => {
         })
     }, [filteredData, orderBy, order]);
 
+    // ページネーション適用
     const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) ?? [];
+    // フィルター変更時はページをリセット
     useEffect(() => {
         setPage(0);
     }, [filteredData, sortedData]);
+    // 週次集計
     dayjs.extend(isoWeek);
 
     const dataWithWeek = data?.map(row => ({
@@ -219,6 +245,7 @@ const StockMovementHistoryPage = () => {
         year: dayjs(row.createdAt).year(),
     }));
 
+    // 週単位でIN/OUT数量を集計
     const weeklyTotals = _(dataWithWeek)
         .groupBy(row => `${row.year}-W${row.week}`)
         .map((rows, week) => {
@@ -291,6 +318,7 @@ const StockMovementHistoryPage = () => {
         })
         .value();
 
+    // 月次利益計算
     const monthlyProfit = _(data)
         .groupBy(row => dayjs(row.createdAt).format('YYYY-MM'))
         .map((rows, month) => {
@@ -312,11 +340,11 @@ const StockMovementHistoryPage = () => {
         .orderBy(['month'], ['asc'])
         .value();
 
+    // グラフ用データセット
     const profitByMonthDataset = monthlyProfit.map(item => ({
         date: dayjs(item.month, 'YYYY-MM').toDate(),
         profit: item.profit
     }));
-    profitByMonthDataset.forEach(d => console.log(d.date, d.date instanceof Date));
 
     return (
         <Box m={3}>
@@ -350,7 +378,7 @@ const StockMovementHistoryPage = () => {
                     <Box flex={2}>
                         <Box display="flex" gap={1} justifyContent="stretch">
                             <Box display="flex" gap={1} sx={{ flexDirection: { xs: "column", md: "row" } }}>
-
+                                {/* 入庫合計のカード */}
                                 <Card
                                     sx={{
                                         backgroundColor: colors.primary[400],
@@ -378,6 +406,7 @@ const StockMovementHistoryPage = () => {
                                                 height: '100%'
                                             }}
                                         >
+                                            {/* 上部のアイコンと変化率表示 */}
                                             <Stack
                                                 direction="row"
                                                 sx={{
@@ -396,6 +425,7 @@ const StockMovementHistoryPage = () => {
                                                     }}
                                                     color="info" />
                                                 <Stack direction="column">
+                                                    {/* 変化率表示（上昇/下降） */}
                                                     <Stack direction="row" gap={1}>
                                                         {inPercentChange >= 0 ? (
                                                             <MovingIcon color="success" sx={{ fontSize: { md: 24, xs: 18 } }} />
@@ -411,6 +441,7 @@ const StockMovementHistoryPage = () => {
                                                             {inPercentChange >= 0 ? `+${inPercentChange.toFixed(1)}%` : `${inPercentChange.toFixed(1)}%`}
                                                         </Typography>
                                                     </Stack>
+                                                    {/* 今週の入庫数量 */}
                                                     <Typography
                                                         textAlign="center"
                                                         sx={{
@@ -421,7 +452,9 @@ const StockMovementHistoryPage = () => {
                                                                 xs: '0.6rem'
                                                             }
                                                         }}
-                                                    >今週</Typography>
+                                                    >
+                                                        今週
+                                                    </Typography>
                                                     <Typography
                                                         textAlign="center"
                                                         sx={{
@@ -437,6 +470,7 @@ const StockMovementHistoryPage = () => {
                                                     </Typography>
                                                 </Stack>
                                             </Stack>
+                                            {/* 下部の累計入庫数 */}
                                             <Stack alignItems="center">
                                                 <Typography
                                                     component="div"
@@ -468,6 +502,7 @@ const StockMovementHistoryPage = () => {
                                         </CardContent>
                                     </Box>
                                 </Card>
+                                {/* 出庫合計のカード */}
                                 <Card
                                     sx={{
                                         backgroundColor: colors.primary[400],
@@ -495,6 +530,7 @@ const StockMovementHistoryPage = () => {
                                                 height: "100%"
                                             }}
                                         >
+                                            {/* 上部のアイコンと変化率表示 */}
                                             <Stack
                                                 direction="row"
                                                 sx={{
@@ -514,12 +550,14 @@ const StockMovementHistoryPage = () => {
 
                                                     color="info" />
                                                 <Stack direction="column">
+                                                    {/* 変化率表示（上昇/下降） */}
                                                     <Stack direction="row" gap={1}>
                                                         {outPercentChange >= 0 ? (
                                                             <MovingIcon color="success" sx={{ fontSize: { md: 24, xs: 18 } }} />
                                                         ) : (
                                                             <TrendingDownIcon color="error" sx={{ fontSize: { md: 24, xs: 18 } }} />
                                                         )}
+                                                        {/* 今週の出庫数量 */}
                                                         <Typography
                                                             alignContent="center"
                                                             variant="subtitle2"
@@ -539,7 +577,9 @@ const StockMovementHistoryPage = () => {
                                                                 xs: '0.6rem'
                                                             }
                                                         }}
-                                                    >今週</Typography>
+                                                    >
+                                                        今週
+                                                    </Typography>
                                                     <Typography
                                                         textAlign="center"
                                                         sx={{
@@ -556,6 +596,7 @@ const StockMovementHistoryPage = () => {
 
                                                 </Stack>
                                             </Stack>
+                                            {/* 下部の累計出庫数 */}
                                             <Stack alignItems="center">
                                                 <Typography
                                                     component="div"
@@ -616,6 +657,7 @@ const StockMovementHistoryPage = () => {
                                                 height: '100%'
                                             }}
                                         >
+                                            {/* 商品カテゴリのアイコンと商品コードを表示*/}
                                             <Stack
                                                 direction="row"
                                                 sx={{
@@ -650,6 +692,7 @@ const StockMovementHistoryPage = () => {
                                                         }
                                                     }}
                                                 >
+                                                    {/* 商品コードを表示 */}
                                                     <Typography
                                                         variant="h6"
                                                         sx={{
@@ -667,6 +710,7 @@ const StockMovementHistoryPage = () => {
                                                     </Typography>
                                                 </Tooltip>
                                             </Stack>
+                                            {/* 最大入庫数量を表示 */}
                                             <Stack alignItems="center">
                                                 <Typography
                                                     component="div"
@@ -831,34 +875,6 @@ const StockMovementHistoryPage = () => {
                                         />
                                     </Stack>
                                     <Stack direction="row">
-                                        {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DatePicker
-                                                label="開始日"
-                                                value={startDate}
-                                                onChange={(newValue) => setStartDate(newValue)}
-                                                sx={{ m: 1, maxWidth: 160, }}
-                                                slotProps={{
-                                                    desktopPaper: {
-                                                        style: {
-                                                            backgroundColor: colors.blueAccent[800],
-                                                        },
-                                                    }
-                                                }}
-                                            />
-                                            <DatePicker
-                                                label="終了日"
-                                                value={endDate}
-                                                onChange={(newValue) => setEndDate(newValue)}
-                                                sx={{ m: 1, maxWidth: 160 }}
-                                                slotProps={{
-                                                    desktopPaper: {
-                                                        style: {
-                                                            backgroundColor: colors.blueAccent[800],
-                                                        },
-                                                    }
-                                                }}
-                                            />
-                                        </LocalizationProvider> */}
                                         <FilterDatePicker
                                             startDate={startDate}
                                             endDate={endDate}
@@ -924,123 +940,122 @@ const StockMovementHistoryPage = () => {
                                 </Box>
                             </Drawer>
                         </Box>
-                        {
-                            isLoading ? (
-                                <Skeleton variant="rectangular" height={400} />
-                            ) : (
-                                <TableContainer
-                                    component={Paper}
+                        {isLoading ? (
+                            <Skeleton variant="rectangular" height={400} />
+                        ) : (
+                            <TableContainer
+                                component={Paper}
+                                sx={{
+                                    maxHeight: "75vh",
+                                    minWidth: { xs: 308, lg: 600 },
+                                }}>
+                                <Table
                                     sx={{
-                                        maxHeight: "75vh",
-                                        minWidth: { xs: 308, lg: 600 },
-                                    }}>
-                                    <Table
-                                        sx={{
-                                            tableLayout: "fixed",
-                                            ...styledTable(colors),
-                                            "& .qty-in": {
-                                                color: theme.palette.success.main,
-                                                fontWeight: 600,
-                                            },
-                                            "& .qty-out": {
-                                                color: theme.palette.error.main,
-                                                fontWeight: 600,
-                                            },
-                                        }}
-                                    >
-                                        <TableHead>
-                                            <TableRow>
-                                                {columns.map(col => (
-                                                    (isLG && col.hideOnMobile) ? null : (
-                                                        <TableCell
-                                                            key={col.key}
-                                                            align={col.align}
-                                                            width={col.width}
-                                                            sortDirection={orderBy === col.key ? order : false}
-                                                        >
-                                                            {col.sortable ? (
-                                                                <TableSortLabel
-                                                                    active={orderBy === col.key}
-                                                                    direction={orderBy === col.key ? order : "asc"}
-                                                                    onClick={() => handleSort(col.key)}
+                                        tableLayout: "fixed",
+                                        ...styledTable(colors),
+                                        "& .qty-in": {
+                                            color: theme.palette.success.main,
+                                            fontWeight: 600,
+                                        },
+                                        "& .qty-out": {
+                                            color: theme.palette.error.main,
+                                            fontWeight: 600,
+                                        },
+                                    }}
+                                >
+                                    <TableHead>
+                                        <TableRow>
+                                            {columns.map(col => (
+                                                (isLG && col.hideOnMobile) ? null : (
+                                                    <TableCell
+                                                        key={col.key}
+                                                        align={col.align}
+                                                        width={col.width}
+                                                        sortDirection={orderBy === col.key ? order : false}
+                                                    >
+                                                        {col.sortable ? (
+                                                            <TableSortLabel
+                                                                active={orderBy === col.key}
+                                                                direction={orderBy === col.key ? order : "asc"}
+                                                                onClick={() => handleSort(col.key)}
+                                                            >
+                                                                {col.label}
+                                                            </TableSortLabel>
+                                                        ) : (
+                                                            col.label
+                                                        )}
+                                                    </TableCell>
+                                                )
+                                            ))}
+                                        </TableRow>
+                                    </TableHead>
+
+                                    <TableBody>
+                                        {paginatedData.length > 0 ? (
+                                            paginatedData.map(row => {
+                                                return (
+                                                    <TableRow key={row.id} hover>
+                                                        {columns.map(col =>
+                                                            (isLG && col.hideOnMobile) ? null : (
+                                                                <TableCell
+                                                                    key={col.key}
+                                                                    align={col.align}
+                                                                    className={
+                                                                        col.key === "qty"
+                                                                            ? (row.type === "IN" ? "qty-in" : "qty-out")
+                                                                            : undefined
+                                                                    }
                                                                 >
-                                                                    {col.label}
-                                                                </TableSortLabel>
-                                                            ) : (
-                                                                col.label
-                                                            )}
-                                                        </TableCell>
-                                                    )
-                                                ))}
-                                            </TableRow>
-                                        </TableHead>
+                                                                    <Tooltip title={String(row[col.key])}>
+                                                                        <Box
+                                                                            sx={{
+                                                                                overflow: "hidden",
+                                                                                textOverflow: "ellipsis",
+                                                                                whiteSpace: "nowrap",
+                                                                            }}
+                                                                        >
+                                                                            {row[col.key] === "type"
+                                                                                ? (row.type === "IN" ? "入庫" : "出庫")
+                                                                                : row[col.key]}
+                                                                        </Box>
+                                                                    </Tooltip>
+                                                                </TableCell>
+                                                            )
+                                                        )}
+                                                    </TableRow>
+                                                )
+                                            })
+                                        ) : (
+                                            <TableCell
+                                                colSpan={isLG ? 6 : 11}
+                                                align="center"
+                                                sx={{ py: 4, color: "text.secondary" }}>
+                                                該当するデータがありません
+                                            </TableCell>
+                                        )}
 
-                                        <TableBody>
-                                            {paginatedData.length > 0 ? (
-                                                paginatedData.map(row => {
-                                                    return (
-                                                        <TableRow key={row.id} hover>
-                                                            {columns.map(col =>
-                                                                (isLG && col.hideOnMobile) ? null : (
-                                                                    <TableCell
-                                                                        key={col.key}
-                                                                        align={col.align}
-                                                                        className={
-                                                                            col.key === "qty"
-                                                                                ? (row.type === "IN" ? "qty-in" : "qty-out")
-                                                                                : undefined
-                                                                        }
-                                                                    >
-                                                                        <Tooltip title={String(row[col.key])}>
-                                                                            <Box
-                                                                                sx={{
-                                                                                    overflow: "hidden",
-                                                                                    textOverflow: "ellipsis",
-                                                                                    whiteSpace: "nowrap",
-                                                                                }}
-                                                                            >
-                                                                                {row[col.key] === "type"
-                                                                                    ? (row.type === "IN" ? "入庫" : "出庫")
-                                                                                    : row[col.key]}
-                                                                            </Box>
-                                                                        </Tooltip>
-                                                                    </TableCell>
-                                                                )
-                                                            )}
-                                                        </TableRow>
-                                                    )
-                                                })
-                                            ) : (
-                                                <TableCell
-                                                    colSpan={isLG ? 6 : 11}
-                                                    align="center"
-                                                    sx={{ py: 4, color: "text.secondary" }}>
-                                                    該当するデータがありません
-                                                </TableCell>
-                                            )}
+                                    </TableBody>
 
-                                        </TableBody>
+                                    <TableFooter>
+                                        <TableRow>
+                                            <TablePagination
+                                                count={sortedData?.length || 0}
+                                                page={page}
+                                                rowsPerPage={rowsPerPage}
+                                                onPageChange={(_, newPage) => setPage(newPage)}
+                                                onRowsPerPageChange={(e) => {
+                                                    setRowsPerPage(parseInt(e.target.value, 10));
+                                                    setPage(0);
+                                                }}
+                                                rowsPerPageOptions={[10, 20, 50]}
+                                                colSpan={isLG ? 6 : 11}
+                                            />
+                                        </TableRow>
+                                    </TableFooter>
 
-                                        <TableFooter>
-                                            <TableRow>
-                                                <TablePagination
-                                                    count={sortedData?.length || 0}
-                                                    page={page}
-                                                    rowsPerPage={rowsPerPage}
-                                                    onPageChange={(_, newPage) => setPage(newPage)}
-                                                    onRowsPerPageChange={(e) => {
-                                                        setRowsPerPage(parseInt(e.target.value, 10));
-                                                        setPage(0);
-                                                    }}
-                                                    rowsPerPageOptions={[10, 20, 50]}
-                                                    colSpan={isLG ? 6 : 11}
-                                                />
-                                            </TableRow>
-                                        </TableFooter>
-
-                                    </Table>
-                                </TableContainer>
-                            )
+                                </Table>
+                            </TableContainer>
+                        )
                         }
                     </Box>
                     <Box flex={1}>
@@ -1071,7 +1086,6 @@ const StockMovementHistoryPage = () => {
                                 {
                                     dataKey: 'date',
                                     scaleType: 'time',
-                                    // tickNumber: profitByMonthDataset.length,
                                     valueFormatter: (date: Date, context) => {
                                         if (context.location === 'tick') {
                                             return date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short' });
@@ -1101,7 +1115,6 @@ const StockMovementHistoryPage = () => {
                         />
                     </Box>
                 </Box>
-
             </Box >
         </Box >
     )

@@ -8,8 +8,15 @@ import { useEffect, } from "react";
 import FileInput from "./FileInput";
 import type { CategoryFormData } from "../types/category";
 
-
-
+/**
+ * カテゴリー作成・編集用フォームモーダル
+ *
+ * Props:
+ * - open: モーダル開閉フラグ
+ * - onClose: 閉じる処理
+ * - onSubmit: FormData送信処理
+ * - category: 編集時の初期値
+ */
 
 type CategoryFormProps = {
     open: boolean;
@@ -50,6 +57,7 @@ const CategoryForm = ({
             )
     });
 
+    // React Hook Form初期化
     const { control, handleSubmit, formState: { errors }, reset } = useForm<CategoryFormData>({
         resolver: yupResolver(schema) as Resolver<CategoryFormData>,
         defaultValues: {
@@ -60,14 +68,16 @@ const CategoryForm = ({
         }
     });
 
+    // 編集時は初期値をフォームにセット
     useEffect(() => {
         if (category) {
             reset(category);
         }
     }, [category, reset]);
 
-
+    // フォーム送信処理
     const handleFormSubmit = (data: CategoryFormData) => {
+        // JSON部分をBlobに変換
         const categoryBlob = new Blob([JSON.stringify({
             name: data.name,
             status: data.status,
@@ -75,6 +85,7 @@ const CategoryForm = ({
             imageUrl: typeof data.imageUrl === "string" ? data.imageUrl : undefined
         })], { type: "application/json" });
 
+        // FormDataにまとめる
         const formData = new FormData();
         formData.append("category", categoryBlob);
         if (data.imageUrl instanceof File) {
@@ -101,6 +112,7 @@ const CategoryForm = ({
             <DialogTitle fontSize={20} textAlign="center">カテゴリーを作成</DialogTitle>
             <DialogContent>
                 <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} mt={2}>
+                    {/* カテゴリー名 */}
                     <Controller
                         name="name"
                         control={control}
@@ -116,7 +128,7 @@ const CategoryForm = ({
                             />
                         )}
                     />
-
+                    {/* ステータス */}
                     <Controller
                         name="status"
                         control={control}
@@ -136,6 +148,7 @@ const CategoryForm = ({
                             </TextField>
                         )}
                     />
+                    {/* 画像ファイル入力 */}
                     <Controller
                         name="imageUrl"
                         control={control}
@@ -147,6 +160,7 @@ const CategoryForm = ({
                             />
                         )}
                     />
+                    {/* 説明 */}
                     <Controller
                         name="description"
                         control={control}
@@ -164,6 +178,7 @@ const CategoryForm = ({
                             />
                         )}
                     />
+                    {/* ボタン */}
                     <Stack direction="row" gap={2} justifyContent="flex-end">
                         <Button
                             type="submit"

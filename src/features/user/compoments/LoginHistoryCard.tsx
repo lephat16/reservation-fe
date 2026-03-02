@@ -1,8 +1,17 @@
-import {  Card, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Typography, useTheme } from "@mui/material";
+import { Card, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Typography, useTheme } from "@mui/material";
 import type { LoginHistories } from "../types/user";
 import { styledTable } from "../../../shared/styles/StyleTable";
 import { tokens } from "../../../shared/theme";
 import { useState } from "react";
+
+/**
+ * 商品詳細カードコンポーネント
+ * 商品の基本情報、ステータス、カテゴリーを表示する。
+ *
+ * @param product 商品データ
+ * @param openDeleteDialog 削除ダイアログを開くコールバック関数
+ * @param openEditDialog 編集ダイアログを開くコールバック関数
+ */
 
 type LoginHistoriesCardProps = {
   loginHistories: LoginHistories[];
@@ -34,7 +43,7 @@ const LoginHistoriesCard = ({ loginHistories, isLoading, error }: LoginHistories
         variant="h4"
         align="center"
         fontWeight="bold"
-        sx={{ color: colors.grey[100], mb: 2, pt:3 }}
+        sx={{ color: colors.grey[100], mb: 2, pt: 3 }}
       >
         ログイン履歴
       </Typography>

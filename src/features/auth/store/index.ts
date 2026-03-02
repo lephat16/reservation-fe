@@ -2,6 +2,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 
+/**
+ * Redux Store 設定
+ *
+ * 認証情報を管理する auth slice を登録して、アプリ全体で利用できる Redux store を作成する。
+ */
+
 // Redux store を作成
 export const store = configureStore({
     reducer: {

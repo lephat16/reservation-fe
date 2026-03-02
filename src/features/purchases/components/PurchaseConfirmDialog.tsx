@@ -15,6 +15,22 @@ import { tokens } from "../../../shared/theme";
 import type { DialogMode } from "./CreatePurchasePage";
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
 
+/**
+ * 注文確認ダイアログコンポーネント
+ * 
+ * 注文行の一覧、合計金額、説明入力を表示し、
+ * 保存または即時注文を実行できる。
+ * 
+ * @param open - ダイアログの表示状態
+ * @param onClose - ダイアログを閉じるコールバック
+ * @param dialogMode - "save" または "purchase" のモード
+ * @param validRows - 注文対象の行データ配列
+ * @param totalAmount - 注文の合計金額
+ * @param description - 説明文の状態
+ * @param onDescriptionChange - 説明文変更時のコールバック
+ * @param onConfirmSave - 保存ボタン押下時のコールバック
+ * @param onConfirmPurchase - 注文ボタン押下時のコールバック
+ */
 
 type DialogProps = {
     open: boolean,

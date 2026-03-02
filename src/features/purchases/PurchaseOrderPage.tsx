@@ -32,6 +32,22 @@ import useRoleFlags from "../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 
+/** 
+ * 購入一覧ページコンポーネント
+ *
+ * 発注情報の一覧をテーブル形式で表示する
+ * ユーザー権限に応じて新規作成や削除、詳細確認が可能
+ * 
+ */
+type PurchaseOrder = {
+    id: number;
+    supplierName: string;
+    status: string;
+    userName: string;
+    total: number;
+    createdAt: string;
+}
+
 // ステータスに応じたChipを表示する関数
 const renderStatusChip = (status: string) => {
     const colorMap: Record<string, "secondary" | "primary" | "success" | "warning" | "error"> = {
@@ -245,7 +261,7 @@ const PurchaseOrderPage = () => {
                                                             </TableCell>
                                                         );
                                                     default:
-                                                        content = (order as any)[col.key];
+                                                        content = order[col.key as keyof PurchaseOrder];
                                                 }
 
                                                 return (

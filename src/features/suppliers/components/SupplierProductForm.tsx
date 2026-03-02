@@ -23,7 +23,7 @@ import {
     useTheme
 } from '@mui/material'
 import Dialog from '@mui/material/Dialog'
-import { styledTable } from '../../../shared/styles/StyleTable' 
+import { styledTable } from '../../../shared/styles/StyleTable'
 import type { SupplierProductFormType, SupplierProducWithPriceHistory } from '../types/supplier'
 import { tokens } from '../../../shared/theme'
 import * as yup from 'yup';
@@ -35,6 +35,23 @@ import CommentIcon from '@mui/icons-material/Comment';
 import type { ProductData } from '../../products/types/product'
 import { useNavigate } from 'react-router-dom'
 
+/** 
+ * 仕入先商品フォームコンポーネント
+ * 
+ * 仕入先の商品を追加または編集するためのフォーム。SKU、価格、リードタイム、ステータスなどの商品情報を管理します。
+ * 価格履歴を表示し、必要に応じて備考も追加可能です。フォームはバリデーションとエラーメッセージをサポートし、
+ * 仕入先商品の編集または新規追加を処理します。
+ * 
+ * @param open - ダイアログが開いているかどうかを制御するフラグ
+ * @param onClose - ダイアログを閉じるためのコールバック関数
+ * @param onSubmit - フォーム送信時に呼ばれるコールバック関数
+ * @param supplierProduct - 編集する商品データ（編集モードの場合）
+ * @param products - 商品データのリスト（新規商品追加時に使用）
+ * 
+ * フォームには、SKU、価格、リードタイム、ステータスのフィールドがあり、価格履歴も表示されます。
+ * 編集モードでは、商品情報の編集が可能で、備考の追加や変更も行えます。
+ * 新規商品追加時には商品を選択または新規作成することができます。
+ */
 
 type SupplierProductFormProps = {
     open: boolean;

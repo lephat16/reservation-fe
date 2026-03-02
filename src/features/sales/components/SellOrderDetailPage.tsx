@@ -33,6 +33,14 @@ import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 
+/**
+ * 販売注文詳細ページコンポーネント
+ *
+ * 指定された受注IDに基づき販売注文の詳細情報を取得し、
+ * 商品一覧、数量、単価、合計金額、注文説明を表示します。
+ * また、注文の編集・削除・受注確定・出荷操作を行うことができます。
+ */
+
 const descriptionSchema = yup.object({
     description: yup
         .string()
@@ -42,26 +50,28 @@ const descriptionSchema = yup.object({
 
 const SellOrderDetailPage = () => {
 
+    // フック
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const { soId } = useParams<{ soId: string }>();
-
     const { isStaff, isWarehouse } = useRoleFlags();
-
     const { isSM } = useScreen();
+    const queryClient = useQueryClient();
+    const navigate = useNavigate();
+    const { confirmDelete } = useDialogs();
+    const { showSnackbar, } = useSnackbar();  // スナックバー管理用カスタムフック
+
+    // /ステート
     const [details, setDetails] = useState<SaleOrderDetailData[]>([]);
     const [description, setDescription] = useState<string>("");
     const [descriptionError, setDescriptionError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [openSubmitConfirm, setOpenSubmitConfirm] = useState(false);
 
-    const queryClient = useQueryClient();
-    const { confirmDelete } = useDialogs();
-    const { showSnackbar, } = useSnackbar();  // スナックバー管理用カスタムフック
-    const navigate = useNavigate();
-
+    // 注文詳細取得
     const { isLoading, error, data } = useSaleOrderDetail(Number(soId));
 
+    // 注文詳細の初期セット
     useEffect(() => {
         if (data?.details) {
             setDetails(data.details);
@@ -71,10 +81,12 @@ const SellOrderDetailPage = () => {
         }
     }, [data?.details, data?.description]);
 
+    // 合計金額計算
     const totalAmount = useMemo(() => {
         return details.reduce((sum, item) => sum + item.qty * item.price, 0);
     }, [details]);
 
+    // 保存処理
     const handleSave = async () => {
         try {
             await descriptionSchema.validate({ description }, { abortEarly: false });
@@ -87,7 +99,7 @@ const SellOrderDetailPage = () => {
             showSnackbar(SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success");
             setIsEditing(false);
             setDescriptionError(null);
-        } catch (err: any) {
+        } catch (err: unknown) {
             if (err instanceof yup.ValidationError) {
                 setDescriptionError(err.message);
             }
@@ -95,6 +107,7 @@ const SellOrderDetailPage = () => {
         }
     };
 
+    // 削除処理
     const deleteMutation = useMutation({
         mutationFn: async () => saleAPI.deleteSellOrder(Number(soId)),
         onSuccess: (response) => {
@@ -117,6 +130,8 @@ const SellOrderDetailPage = () => {
             deleteMutation.mutate();
         }
     }
+
+    // 受注処理
     const submitMutation = useMutation({
         mutationFn: async () => saleAPI.prepareSaleOrder(Number(soId)),
         onSuccess: () => {
@@ -169,6 +184,7 @@ const SellOrderDetailPage = () => {
                             </TableHead>
 
                             <TableBody>
+                                {/* 注文行 */}
                                 {(data?.details ?? [].length > 0) ? (
                                     details.map((detail, index) => (
                                         <TableRow key={index}>
@@ -208,6 +224,7 @@ const SellOrderDetailPage = () => {
                                         </TableCell>
                                     </TableRow>
                                 )}
+                                {/* 合計金額 */}
                                 <TableRow>
                                     <TableCell colSpan={5} align="right" sx={{ fontWeight: 'bold' }}>
                                         合計金額:
@@ -221,6 +238,7 @@ const SellOrderDetailPage = () => {
                         </Table>
                     </TableContainer>
                 )}
+                {/* 注文説明 */}
                 {isLoading ? (
                     <Skeleton variant="rectangular" height={200} />
                 ) : (
@@ -251,11 +269,12 @@ const SellOrderDetailPage = () => {
                     </Box>
                 )}
             </Box>
+            {/* 操作ボタン */}
             <Stack
                 direction="row"
                 spacing={2}
             >
-
+                {/* 編集・保存 */}
                 {(data?.status === 'NEW' && !isWarehouse) && (isEditing ? (
                     <Button variant="contained" color="success" onClick={() => handleSave()}>
                         保存
@@ -266,6 +285,7 @@ const SellOrderDetailPage = () => {
                     </Button>
 
                 ))}
+                {/* 削除ボタン */}
                 <Tooltip title={isWarehouse ? "管理者またはスタッフのみ削除可能" : ""} arrow>
                     <span>
                         <Button disabled={isWarehouse} variant="contained" color="error" onClick={() => handleDelete()}>
@@ -273,6 +293,7 @@ const SellOrderDetailPage = () => {
                         </Button>
                     </span>
                 </Tooltip>
+                {/* 受注ボタン */}
                 {data?.status === 'NEW' && (
                     <Tooltip title={isWarehouse ? "管理者またはスタッフのみ受注可能" : ""} arrow>
                         <span>
@@ -282,6 +303,7 @@ const SellOrderDetailPage = () => {
                         </span>
                     </Tooltip>
                 )}
+                {/* 出荷ボタン */}
                 {(data?.status === 'PENDING' || data?.status === 'PROCESSING') && (
                     <Tooltip title={isStaff ? "管理者またはスタッフのみ出荷可能" : ""} arrow>
                         <span>
@@ -292,7 +314,7 @@ const SellOrderDetailPage = () => {
                     </Tooltip>
                 )}
             </Stack>
-
+            {/* 受注確認ダイアログ */}
             <SubmitConfirmDialog
                 open={openSubmitConfirm}
                 onClose={() => setOpenSubmitConfirm(false)}

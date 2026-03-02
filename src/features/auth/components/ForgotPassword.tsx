@@ -9,6 +9,17 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 
+/** 
+ * パスワードリセットダイアログコンポーネント
+ * 
+ * ユーザーがメールアドレスを入力してパスワードリセットリンクを送信するためのダイアログ。
+ * 
+ * @param open - ダイアログが開いているかどうかを示すフラグ
+ * @param handleClose - ダイアログを閉じるための関数
+ * 
+ * @returns JSX.Element - パスワードリセットフォームのダイアログコンポーネント
+ */
+
 type ForgotPasswordForm = {
     email: string;
 };
@@ -31,28 +42,32 @@ const ForgotPassword = ({ open, handleClose }: ForgotPasswordProps) => {
 
     const { showSnackbar } = useSnackbar();
 
+    // フォームの初期化とバリデーション設定
     const {
         control,
         handleSubmit,
         formState: { errors }, reset
     } = useForm<ForgotPasswordForm>({
         resolver: yupResolver(schema),
-        mode: "onBlur",
+        mode: "onBlur", // フォームフィールドのフォーカスが外れたタイミングでバリデーション
         defaultValues: {
             email: "",
         }
     });
 
+    // メール送信のmutation
     const sendMutation = useMutation({
         mutationFn: async (email: string) => {
             const response = await userAPI.sendPasswordTokenEmail(email);
             return response;
         },
         onSuccess: (response) => {
+            // 成功時にスナックバーで成功メッセージを表示
             showSnackbar(response.message || SNACKBAR_MESSAGES.SEND_REQUEST_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["category-summaries"] });
         },
         onError: (error: unknown) => {
+            // エラー時にスナックバーでエラーメッセージを表示
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.SEND_REQUEST_FAILED, "error");
         }
     });
@@ -66,8 +81,8 @@ const ForgotPassword = ({ open, handleClose }: ForgotPasswordProps) => {
                     onSubmit: handleSubmit((data) => {
                         sendMutation.mutate(data.email, {
                             onSuccess: () => {
-                                reset();
-                                handleClose();
+                                reset(); // フォームをリセット
+                                handleClose(); // ダイアログを閉じる
                             }
                         });
                     }),
@@ -79,11 +94,13 @@ const ForgotPassword = ({ open, handleClose }: ForgotPasswordProps) => {
             <DialogContent
                 sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}
             >
+                {/* ユーザーにパスワードリセット用リンクを送る説明 */}
                 <DialogContentText>
                     アカウントのメールアドレスを入力してください。リセット用のリンクをお送りします。
                 </DialogContentText>
                 <FormControl variant="outlined" fullWidth>
 
+                    {/* メールアドレス入力フィールド */}
                     <Controller
                         name="email"
                         control={control}
@@ -106,6 +123,8 @@ const ForgotPassword = ({ open, handleClose }: ForgotPasswordProps) => {
             </DialogContent>
             <DialogActions sx={{ pb: 3, px: 3 }}>
                 <Button onClick={handleClose}>キャンセル</Button>
+
+                {/* フォーム送信ボタン */}
                 <Button variant="contained" type="submit">
                     続行
                 </Button>

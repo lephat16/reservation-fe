@@ -1,5 +1,5 @@
 
-import axios from "axios";
+import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 import { logout } from "../../features/auth/store/authSlice";
 import { store } from "../../features/auth/store";
 
@@ -10,14 +10,17 @@ export const api = axios.create({
     withCredentials: true,
 });
 
+interface AxiosRequestConfigWithRetry extends InternalAxiosRequestConfig {
+    _retry?: boolean;
+}
 
 let isRefreshing = false;
 let failedQueue: {
-    resolve: (value?: any) => void;
-    reject: (error: any) => void;
+    resolve: (value?: AxiosResponse) => void;
+    reject: (error: AxiosError) => void;
 }[] = [];
 
-const processQueue = (error: any = null) => {
+const processQueue = (error: AxiosError | null = null) => {
     failedQueue.forEach(p => {
         if (error) p.reject(error);
         else p.resolve();
@@ -29,8 +32,8 @@ const processQueue = (error: any = null) => {
 // レスポンスインターセプター
 api.interceptors.response.use(
     (response) => response.data,
-    async (error) => {
-        const originalRequest = error.config;
+    async (error: AxiosError) => {
+        const originalRequest = error.config as AxiosRequestConfigWithRetry;
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             if (isRefreshing) {
@@ -43,8 +46,8 @@ api.interceptors.response.use(
                 await api.post("/auth/refresh");
                 processQueue();
                 return api(originalRequest);
-            } catch (refreshError) {
-                processQueue(refreshError);
+            } catch (refreshError: unknown) {
+                processQueue(refreshError as AxiosError);
                 store.dispatch(logout());
                 return Promise.reject(refreshError);
             } finally {

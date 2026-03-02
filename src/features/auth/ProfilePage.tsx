@@ -15,6 +15,12 @@ import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import HistoryIcon from '@mui/icons-material/History';
 import LoginHistoriesCard from "../user/compoments/LoginHistoryCard";
 import { userAPI } from "../user/api/userAPI";
+/**
+ * プロフィールページ
+ *
+ * ユーザーの個人情報表示・更新、パスワード変更、
+ * ログイン履歴の確認を行うページコンポーネント。
+ */
 
 type UpdateUserPayload = {
     id: number;
@@ -28,16 +34,21 @@ const ProfilePage = () => {
 
     const queryClient = useQueryClient(); // React Queryのクライアント取得
     const { showSnackbar } = useSnackbar(); // スナックバー管理用カスタムフック
+
+    // ユーザー情報用のローカルステート
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
 
     const { user } = useSelector((state: RootState) => state.auth);
 
+    // タブの管理
     const [tabValue, setTabValue] = useState(0);
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
     };
+
+    // Reduxのユーザー情報をローカルステートに反映
     useEffect(() => {
         if (user) {
             setName(user.name);
@@ -46,20 +57,23 @@ const ProfilePage = () => {
         }
     }, [user]);
 
+    // ログイン履歴の取得
     const { isLoading, error, data } = useQuery<LoginHistories[]>({
         queryKey: ["login-histories"],
         queryFn: async () => {
             const resloginHistories = await userAPI.getLoginHistories();
             return resloginHistories.data
         },
-        enabled: !!user
+        enabled: !!user // ユーザーがいる場合のみ実行
+
     });
 
+    // ユーザー情報更新用ミューテーション
     const updateUserMutation = useMutation({
         mutationFn: (payload: UpdateUserPayload) =>
             userAPI.updateUserById(payload.id, payload.data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["profile"] });
+            queryClient.invalidateQueries({ queryKey: ["profile"] }); // プロフィール情報を再取得
             showSnackbar("プロフィールが更新されました", "success");
         },
         onError: () => {
@@ -67,6 +81,7 @@ const ProfilePage = () => {
         },
     });
 
+    // パスワード変更用ミューテーション
     const changePasswordMutation = useMutation({
         mutationFn: async (data: ChangePasswordRequest) => {
             return userAPI.changePassword(Number(user?.id), data)
@@ -83,7 +98,7 @@ const ProfilePage = () => {
         },
     });
 
-
+    // プロフィール保存処理
     const handleSave = async () => {
         if (!user) return;
 
@@ -100,8 +115,7 @@ const ProfilePage = () => {
     return (
         <Box mt={3} height="75vh">
 
-            {/* ページタイトル */}
-
+            {/* ページタイトルとタブ */}
             <Box
                 sx={{
                     position: 'sticky',
@@ -124,9 +138,10 @@ const ProfilePage = () => {
                         <Tab icon={<GppGoodIcon />} label="パスワード変更" />
                         <Tab icon={<HistoryIcon />} label="ロギング履歴" />
                     </Tabs>
+
+                     {/* タブごとの表示内容 */}
                     {user && (
                         <>
-
                             {tabValue === 0 && (
                                 <ProfileCard
                                     name={name}

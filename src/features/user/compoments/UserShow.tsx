@@ -7,6 +7,14 @@ import { tokens } from "../../../shared/theme";
 import { ROLES } from "../../../constants/role";
 import { SESSION_STATUS } from "../../../constants/status";
 
+/**
+ * ユーザー詳細情報表示コンポーネント。
+ * ユーザーの基本情報（ID・名前・メール・電話番号・役割）を表示し、
+ * セッション管理および編集・削除操作を提供する。
+ *
+ * @param props ユーザー詳細表示のプロパティ
+ * @returns ユーザー詳細画面のJSX要素
+ */
 
 type UserShowProps = {
     user: UserData | null;

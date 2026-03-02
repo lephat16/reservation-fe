@@ -34,6 +34,12 @@ import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 
+/** 
+ * 仕入先一覧ページコンポーネント
+ * 
+ * 仕入先の情報を一覧表示し、新規追加、削除、詳細表示を行うページ。購入先の情報を表形式で表示し、削除や詳細表示の操作を提供します。
+ * 操作の際は確認ダイアログが表示され、追加や削除の処理後には画面上にスナックバーでメッセージが表示されます。
+ */
 
 interface ActionHandlers {
     deleteSupplier: (id: GridRowId) => void;

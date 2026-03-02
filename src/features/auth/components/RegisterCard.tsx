@@ -5,6 +5,20 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, FormControl, FormLabel, Link, Typography } from "@mui/material";
 import { AuthCard, AuthTextField } from "../styles/AuthCardStyle";
 
+/** 
+ * 登録カードコンポーネント
+ * 
+ * ユーザーが新しいアカウントを作成するための登録フォームを表示するコンポーネント。
+ * 名前、メールアドレス、パスワード、電話番号を入力し、登録を行う。
+ * 
+ * @param control - react-hook-formの`control`オブジェクト
+ * @param errors - 入力フィールドのバリデーションエラー情報
+ * @param onSubmit - フォーム送信時に呼ばれる関数
+ * @param isLoading - ローディング状態を示すフラグ
+ * @param handleSubmit - react-hook-formの`handleSubmit`関数
+ * 
+ * @returns JSX.Element - 登録カードのUIコンポーネント
+ */
 type CardRegisterProps = {
     control: Control<RegisterRequest>;
     errors: FieldErrors<RegisterRequest>;
@@ -23,12 +37,14 @@ const RegisterCard = ({
 
     return (
         <AuthCard variant="outlined">
+            {/* 登録カードのタイトル */}
             <Typography textAlign="center" component="h1" variant="h4" sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}>
                 登録
             </Typography>
+            {/* フォームのラッパー */}
             <Box
                 component="form"
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleSubmit(onSubmit)} // フォーム送信時に`onSubmit`を呼び出す
                 sx={{ display: "flex", flexDirection: "column", width: "100%", gap: 1 }}
             >
                 <FormControl>
@@ -52,6 +68,8 @@ const RegisterCard = ({
                         )}
                     />
                 </FormControl>
+
+                {/* メールアドレス入力フィールド */}
                 <FormControl>
                     <FormLabel htmlFor="email">メールアドレス</FormLabel>
                     <Controller
@@ -72,6 +90,8 @@ const RegisterCard = ({
                         )}
                     />
                 </FormControl>
+
+                {/* パスワード入力フィールド */}
                 <FormControl>
                     <FormLabel htmlFor="password">パスワード</FormLabel>
                     <Controller
@@ -93,6 +113,8 @@ const RegisterCard = ({
                         )}
                     />
                 </FormControl>
+
+                {/* 電話番号入力フィールド */}
                 <FormControl>
                     <FormLabel htmlFor="phoneNumber">電話番号</FormLabel>
                     <Controller
@@ -113,6 +135,8 @@ const RegisterCard = ({
                         )}
                     />
                 </FormControl>
+
+                {/* 登録ボタン */}
                 <Button
                     type="submit"
                     fullWidth
@@ -122,6 +146,7 @@ const RegisterCard = ({
                 >
                     {isLoading ? "登録中..." : "登録"}
                 </Button>
+
                 {/* ログインリンク */}
                 <Typography sx={{ textAlign: "center" }}>
                     すでに会員の方は{" "}

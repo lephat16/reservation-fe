@@ -4,6 +4,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { tokens } from "../../../shared/theme";
 
+/**
+ * 個人情報を表示・編集するプロフィールカードコンポーネント。
+ * 編集モード時のみ入力項目を編集可能とし、
+ * 保存またはキャンセルにより表示モードへ切り替える。
+ *
+ * @param props プロフィールカードのプロパティ
+ * @returns プロフィールカードのJSX要素
+ */
+
 type ProfileCardProps = {
     name: string;
     userId: string;

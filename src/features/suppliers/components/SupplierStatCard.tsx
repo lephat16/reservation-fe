@@ -10,6 +10,16 @@ import PaidIcon from '@mui/icons-material/Paid';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import { tokens } from "../../../shared/theme";
 import type { PurchaseOrderData } from "../../purchases/types/purchase";
+
+/** 
+ * 仕入先統計カードコンポーネント
+ * 
+ * 仕入先に関連する統計情報を表示するカードコンポーネント。購入注文の合計数、未処理の注文数、支出金額を表示します。
+ * 各カードは異なる統計情報を示しており、アイコンと共に視覚的に区別されています。表示される統計情報は、全体の注文数、未処理の注文数、および支出金額です。
+ * 
+ * @param purchaseOrder - 仕入先に関連する購入注文のデータ配列
+ */
+
 type SupplierStatCardProps = {
     purchaseOrder: PurchaseOrderData[]
 }

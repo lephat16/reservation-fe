@@ -20,6 +20,27 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
 import { styledSelect } from "../../../shared/styles/styledSelect";
 
+/**
+ * 注文作成ページ用の単一商品行コンポーネント
+ * 
+ * 選択された仕入先に紐づく商品を選択・表示し、
+ * 数量、合計、小計、備考を入力可能。
+ * 商品の追加・削除ボタンも提供。
+ * 
+ * @param index - 商品行のインデックス
+ * @param row - 行データ（商品・数量・備考）
+ * @param rows - 全商品行配列（追加/削除判断用）
+ * @param selectedSupplier - 選択中の仕入先情報
+ * @param productData - 選択可能な商品リスト
+ * @param isLoadingProducts - 商品データ取得中かどうか
+ * @param productError - 商品データ取得時のエラー情報
+ * @param onProductChange - 商品選択変更時コールバック (index, productId)
+ * @param onQtyChange - 数量変更時コールバック (index, qty)
+ * @param onNoteChange - 備考変更時コールバック (index, note)
+ * @param onAddRow - 新しい商品行追加コールバック
+ * @param onDeleteRow - 商品行削除コールバック (index)
+ */
+
 type PurchaseRow = {
     product: SupplierProductData | null;
     qty: number;

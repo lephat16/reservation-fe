@@ -6,6 +6,20 @@ import type { Dayjs } from "dayjs"
 import type { Dispatch, SetStateAction } from "react"
 import { tokens } from "../../../shared/theme";
 
+/** 
+ * 日付フィルターコンポーネント
+ * 
+ * - 開始日・終了日を選択可能
+ * - 親コンポーネントの状態 (startDate, endDate) を更新する
+ * - Dayjs を使用して日付を管理
+ * - MUI DatePicker にテーマカラーを適用
+ * 
+ * @param startDate - 選択中の開始日 (Dayjs または null)
+ * @param endDate - 選択中の終了日 (Dayjs または null)
+ * @param setStartDate - 開始日を更新する関数
+ * @param setEndDate - 終了日を更新する関数
+ */
+
 type FilterDatePickerProps = {
     startDate: Dayjs | null,
     endDate: Dayjs | null,
@@ -24,6 +38,7 @@ const FilterDatePicker = ({
 
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
+             {/* 開始日ピッカー */}
             <DatePicker
                 label="開始日"
                 value={startDate}
@@ -37,6 +52,7 @@ const FilterDatePicker = ({
                     }
                 }}
             />
+             {/* 終了日ピッカー */}
             <DatePicker
                 label="終了日"
                 value={endDate}

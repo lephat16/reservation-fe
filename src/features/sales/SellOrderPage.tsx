@@ -19,7 +19,6 @@ import {
 import { tokens } from "../../shared/theme";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "../../shared/components/layout/Header";
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -33,6 +32,23 @@ import useRoleFlags from "../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 
+/** 
+ * 販売注文一覧ページコンポーネント
+ * 販売注文のリスト表示、作成ボタン、詳細表示・削除操作を提供する
+ * 
+ * - 管理者・スタッフは新規販売注文作成が可能
+ * - 各注文のステータスはChipで色分け表示
+ * - 削除は確認ダイアログ経由で実行
+ */
+
+type SaleOrder = {
+    id: number;
+    customerName: string;
+    status: string;
+    userName: string;
+    total: number;
+    createdAt: string;
+}
 const renderStatusChip = (status: string) => {
     const colorMap: Record<string, "secondary" | "primary" | "success" | "warning" | "error"> = {
         NEW: "secondary",
@@ -59,19 +75,20 @@ const cellStyle = (align?: "right" | "center", truncate?: boolean): SxProps<Them
 
 const SellOrderPage = () => {
 
+    // フック
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-
     const { isMD, isSM } = useScreen();
     const navigate = useNavigate();
     const { confirmDelete } = useDialogs();
-
     const { showSnackbar } = useSnackbar();
-    
     const queryClient = useQueryClient();
     const { isAdmin, isStaff, isWarehouse } = useRoleFlags();
+
+    // SaleOrderデータの取得
     const { isLoading, error, data } = useSaleOrders();
 
+    // テーブルの列定義
     const columns = [
         { key: "id", label: "ID", width: isMD ? "10%" : "5%" },
         { key: "customerName", label: "顧客", width: isMD ? "35%" : "15%", truncate: true },
@@ -82,6 +99,7 @@ const SellOrderPage = () => {
         { key: "action", label: "操作", width: isMD ? "35%" : "10%", align: "center" },
     ];
 
+    // 販売注文削除用のMutation
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => saleAPI.deleteSellOrder(id),
         onSuccess: (response) => {
@@ -94,6 +112,7 @@ const SellOrderPage = () => {
         }
     });
 
+    // 削除処理
     const handleDelete = async (id: number) => {
         const ok = await confirmDelete(
             `販売注文「${id}」を削除しますか`
@@ -237,7 +256,7 @@ const SellOrderPage = () => {
                                                             </TableCell>
                                                         );
                                                     default:
-                                                        content = (order as any)[col.key];
+                                                        content = order[col.key as keyof SaleOrder];
                                                 }
 
                                                 return (
@@ -259,7 +278,7 @@ const SellOrderPage = () => {
                         </Table>
                     </TableContainer>
                 )}
-                
+
             </Box>
 
         </Box>
