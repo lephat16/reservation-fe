@@ -2,18 +2,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import type { ChangePasswordRequest, LoginHistories, UserData } from "../user/types/user";
 import { Box, Tab, Tabs, useTheme } from "@mui/material";
-import ProfileCard from "../user/compoments/ProfileCard";
+import ProfileCard from "../user/components/ProfileCard";
 import { useEffect, useState } from "react";
 import { tokens } from "../../shared/theme";
 import type { RootState } from "./store";
 import { useSelector, } from "react-redux";
-import ChangePasswordCard from "../user/compoments/ChangePasswordCard";
+import ChangePasswordCard from "../user/components/ChangePasswordCard";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import GppGoodIcon from '@mui/icons-material/GppGood';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import HistoryIcon from '@mui/icons-material/History';
-import LoginHistoriesCard from "../user/compoments/LoginHistoryCard";
+import LoginHistoriesCard from "../user/components/LoginHistoryCard";
 import { userAPI } from "../user/api/userAPI";
 /**
  * プロフィールページ

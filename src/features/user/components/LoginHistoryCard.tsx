@@ -3,6 +3,8 @@ import type { LoginHistories } from "../types/user";
 import { styledTable } from "../../../shared/styles/StyleTable";
 import { tokens } from "../../../shared/theme";
 import { useState } from "react";
+import { getCommonSlotProps } from "../../../shared/components/pagination/TablePaginationHelper";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 
 /**
  * 商品詳細カードコンポーネント
@@ -23,6 +25,7 @@ const LoginHistoriesCard = ({ loginHistories, isLoading, error }: LoginHistories
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
+  const { isSM } = useScreen();  // 画面サイズ判定
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -99,14 +102,7 @@ const LoginHistoriesCard = ({ loginHistories, isLoading, error }: LoginHistories
                 count={loginHistories.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
-                slotProps={{
-                  select: {
-                    inputProps: {
-                      'aria-label': 'rows per page',
-                    },
-                    native: true,
-                  },
-                }}
+                slotProps={getCommonSlotProps(isSM)}
                 onPageChange={(_, newPage) => { setPage(newPage) }}
                 onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))}
 

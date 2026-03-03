@@ -187,7 +187,7 @@ const AllSupplierPage = () => {
         [deleteSupplier, seeMoreSupplier],
     );
     return (
-        <Box m={3}>
+        <Box mx={3} mb={3}>
             <Box display="flex" justifyContent="space-between">
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />

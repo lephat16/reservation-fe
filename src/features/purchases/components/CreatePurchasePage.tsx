@@ -3,11 +3,13 @@ import {
     Button,
     FormControl,
     Grid,
+    IconButton,
     InputLabel,
     MenuItem,
     Select,
     Skeleton,
     Stack,
+    Tooltip,
     useTheme,
     type SelectChangeEvent
 } from '@mui/material';
@@ -27,7 +29,7 @@ import { PurchaseItemRow } from './PurchaseItemRow';
 import { PurchaseConfirmDialog } from './PurchaseConfirmDialog';
 import { styledSelect } from '../../../shared/styles/styledSelect';
 import { useScreen } from '../../../shared/hooks/ScreenContext';
-
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 /**
  * CreatePurchasePage コンポーネント
  *
@@ -64,12 +66,9 @@ const CreatePurchasePage = () => {
     const [description, setDescription] = useState("");
     const [dialogMode, setDialogMode] = useState<DialogMode>("save");
 
-
-
     // 仕入先選択用ハンドラー
     const handleCloseSelectSupplier = () => setOpenSelectSupplier(false);
     const handleOpenSelectSupplier = () => setOpenSelectSupplier(true);
-
 
     // APIクエリ: 仕入先一覧取得
     const { isLoading, error, data } = useAllSuppliers();
@@ -103,7 +102,6 @@ const CreatePurchasePage = () => {
         setSelectedSupplier(selectedSupplier);
         // 新しい仕入先選択時は最初の行を初期化
         setRows([{ product: null, qty: 1, note: "" }]);
-
     };
 
     // 商品選択変更
@@ -152,17 +150,14 @@ const CreatePurchasePage = () => {
             showSnackbar("仕入先を選択してください", "error");
             return false;
         }
-
         if (rows.length === 0) {
             showSnackbar("商品を追加してください", "error");
             return false;
         }
-
         if (rows.some(r => !r.product)) {
             showSnackbar("すべての商品を選択してください", "error");
             return false;
         }
-
         return true;
     };
 
@@ -255,15 +250,26 @@ const CreatePurchasePage = () => {
         );
     };
     return (
-        <Box m={3}>
-            {isLoading ? (
-                <Skeleton variant="text" width="80%" height={40} />
-            ) : (
-                !isSM && <Header
-                    title="新規注文作成"
-                    subtitle="新しい注文の詳細を入力してください"
-                />
-            )}
+        <Box mx={3} mb={3}>
+            <Box display="flex" justifyContent="space-between">
+                {isLoading ? (
+                    <Skeleton variant="text" width="80%" height={40} />
+                ) : (
+                    !isSM && <Header
+                        title="新規注文作成"
+                        subtitle="新しい注文の詳細を入力してください"
+                    />
+                )}
+                <Box mt={4}>
+                    <Tooltip title="元に戻す">
+                        <IconButton aria-label="元に戻す" color='info' onClick={() => {
+                            window.history.back()
+                        }}>
+                            <ArrowBackIcon fontSize="large" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
             <Box mt={3} minHeight="75vh">
                 {/* エラー表示 */}
                 {(error) && (
@@ -304,13 +310,11 @@ const CreatePurchasePage = () => {
                                 onChange={handleSupplierChange}
                                 sx={styledSelect}
                             >
-
                                 {data?.map((supplier) => (
                                     <MenuItem key={supplier.id} value={supplier.id}>
                                         {supplier.name}
                                     </MenuItem>
                                 ))}
-
                             </Select>
                         </FormControl>
                     </Box>
@@ -350,7 +354,6 @@ const CreatePurchasePage = () => {
                                 display: productData?.length === 0 ? 'none' : 'flex'
                             }}
                         >
-
                             <Button variant="contained" color="secondary" onClick={() => {
                                 if (!validateBeforeSave()) return;
                                 setDialogMode("save");
@@ -383,7 +386,7 @@ const CreatePurchasePage = () => {
                 onConfirmSave={handleConfirmSave}
                 onConfirmPurchase={handlePurchase}
             />
-        </Box>
+        </Box >
     )
 }
 

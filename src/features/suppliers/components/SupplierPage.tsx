@@ -38,6 +38,10 @@ import type { ProductData } from "../../products/types/product";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
+import ProductForm from "../../products/components/ProductForm";
+import { useAddProduct } from "../../products/hooks/useAddProduct";
+import { useCategorySummaries } from "../../categories/hooks/useCategorySummaries";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 /** 
  * 仕入先ページコンポーネント
@@ -73,9 +77,11 @@ const SupplierPage = () => {
     // ステート
     const [openEditSupplierForm, setOpenEditSupplierForm] = useState(false);
     const [openSupplierProductDialog, setOpenSupplierProductDialog] = useState(false);
-
+    const [openAddProductForm, setOpenAddProductForm] = useState(false);
     const [allProducts, setAllproducts] = useState<ProductData[] | null>(null);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null | "">(null);
+    const [newProductId, setNewProductId] = useState<number | null>(null);
+    const handleOpenAddProductForm = () => setOpenAddProductForm(true);
 
     // データを取得
     const { isLoading, error, data } = useSupplierProductsWithStock(Number(supplierId));
@@ -84,6 +90,9 @@ const SupplierPage = () => {
         enabled: false,
         staleTime: 5 * 60 * 1000,
     });
+    // カテゴリ一覧データの取得
+    const { data: categorySumaries } = useCategorySummaries();
+
     useEffect(() => {
         if ((data?.supplierProducts ?? []).length > 0 && selectedCategoryId === null) {
             setSelectedCategoryId(data?.supplierProducts[0].categoryId ?? null);
@@ -105,6 +114,15 @@ const SupplierPage = () => {
         }
     }
 
+    // 商品追加Mutation
+    const addProduct = useAddProduct(showSnackbar, {
+        onSuccess: async (createdProduct) => {
+            const res = await refetchAllProducts();
+            setAllproducts(res.data ?? []);
+            setNewProductId(createdProduct.data.id ?? null);
+        }
+    });
+
     const addMutation = useMutation({
         mutationFn: async (data: SupplierProductFormType) => {
             const addRes = await supplierAPI.addSupplierProduct(data, Number(supplierId));
@@ -119,7 +137,7 @@ const SupplierPage = () => {
         onError: (error: unknown) => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
         },
-    })
+    });
     const updateMutation = useMutation({
         mutationFn: async (updateSupplier: SupplierData) => {
             const updatedRes = await supplierAPI.updateSupplier(updateSupplier, Number(supplierId));
@@ -170,16 +188,28 @@ const SupplierPage = () => {
     };
 
     return (
-        <Box m={3}>
-            {isLoading ? (
-                <Skeleton variant="text" width="80%" height={40} />
-            ) : (
-                !isSM && <Header
-                    title="仕入先情報"
-                    subtitle="在庫と最近の注文を確認できます"
-                />
-            )}
-            <Box m={3} minHeight="75vh">
+        <Box mx={3} mb={3}>
+            <Box display="flex" justifyContent="space-between">
+                {isLoading ? (
+                    <Skeleton variant="text" width="80%" height={40} />
+                ) : (
+                    !isSM && <Header
+                        title="仕入先情報"
+                        subtitle="在庫と最近の注文を確認できます"
+                    />
+
+                )}
+                <Box mt={4}>
+                    <Tooltip title="元に戻す">
+                        <IconButton aria-label="元に戻す" color='info' onClick={() => {
+                            window.history.back()
+                        }}>
+                            <ArrowBackIcon fontSize="large" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
+            <Box minHeight="75vh">
                 {/* エラー表示 */}
                 {(error || errorPO) && (
                     <ErrorState />
@@ -337,8 +367,21 @@ const SupplierPage = () => {
                                         addMutation.mutate(data);
                                     }}
                                     products={allProducts ?? []}
+                                    openAddProductForm={handleOpenAddProductForm}
+                                    newlyCreatedProductId={newProductId}
                                 />
                             }
+                            {/* 新規商品追加フォーム */}
+                            {openAddProductForm && (
+                                <ProductForm
+                                    open
+                                    onClose={() => setOpenAddProductForm(false)}
+                                    onSubmit={(data) => {
+                                        addProduct.mutate(data)
+                                    }}
+                                    categories={categorySumaries ?? []}
+                                />
+                            )}
                         </>
                     )
                 )}

@@ -9,6 +9,7 @@ import type { ColorTokens } from "../../../shared/types/shared";
 import type { Order } from "../../products/AllProductsPage";
 import { useMemo, useState } from "react";
 import { TablePaginationActions } from "../../../shared/components/pagination/PaginationAction";
+import { getCommonSlotProps } from "../../../shared/components/pagination/TablePaginationHelper";
 
 /**
  * ユーザー一覧表示テーブルコンポーネント。
@@ -22,6 +23,8 @@ import { TablePaginationActions } from "../../../shared/components/pagination/Pa
 type UsersTableProps = {
     users: UserData[];
     isMD: boolean;
+    isSM: boolean;
+    isMdToLg?: boolean;
     colors: ColorTokens;
     theme: Theme;
     onSelectUser: (user: UserData) => void;
@@ -30,6 +33,8 @@ type UsersTableProps = {
 const UsersTable = ({
     users,
     isMD,
+    isSM,
+    isMdToLg,
     colors,
     theme,
     onSelectUser,
@@ -104,7 +109,7 @@ const UsersTable = ({
                                             setOrderBy('userId');
                                         }}
                                     >
-                                        ユーザーID
+                                        {isMdToLg ? 'ID' : 'ユーザーID'}
                                     </TableSortLabel>
                                 </TableCell>
                                 <TableCell sortDirection={orderBy === 'name' ? order : false}>
@@ -115,6 +120,11 @@ const UsersTable = ({
                                             const isAsc = orderBy === 'name' && order === 'asc';
                                             setOrder(isAsc ? 'desc' : 'asc');
                                             setOrderBy('name');
+                                        }}
+                                        sx={{
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
                                         }}
                                     >
                                         名前
@@ -130,10 +140,10 @@ const UsersTable = ({
                                             setOrderBy('email');
                                         }}
                                     >
-                                        メールアドレス
+                                        {isMdToLg ? 'メール' : 'メールアドレス'}
                                     </TableSortLabel>
                                 </TableCell>}
-                                {!isMD && <TableCell>電話番号</TableCell>}
+                                {!isMD && <TableCell>{isMdToLg ? '電話' : '電話番号'}</TableCell>}
                                 <TableCell>役割</TableCell>
                                 {!isMD && <TableCell sortDirection={orderBy === 'createdAt' ? order : false}>
                                     <TableSortLabel
@@ -144,8 +154,13 @@ const UsersTable = ({
                                             setOrder(isAsc ? 'desc' : 'asc');
                                             setOrderBy('createdAt');
                                         }}
+                                        sx={{
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
+                                        }}
                                     >
-                                        作成日時
+                                        {isMdToLg ? '日時' : '作成日時'}
                                     </TableSortLabel>
                                 </TableCell>}
                                 <TableCell></TableCell>
@@ -221,14 +236,7 @@ const UsersTable = ({
                                     count={sortedUser?.length || 0}
                                     rowsPerPage={rowsPerPage}
                                     page={page}
-                                    slotProps={{
-                                        select: {
-                                            inputProps: {
-                                                'aria-label': 'rows per page',
-                                            },
-                                            native: true,
-                                        },
-                                    }}
+                                    slotProps={getCommonSlotProps(isSM)}
                                     onPageChange={(_, newPage) => setPage(newPage)}
                                     onRowsPerPageChange={(event) => {
                                         setRowsPerPage(parseInt(event.target.value, 10));

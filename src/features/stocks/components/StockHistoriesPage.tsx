@@ -216,7 +216,7 @@ const StockHistoriesPage = () => {
         );
     }, [data]);
     return (
-        <Box m={3}>
+        <Box mx={3} mb={3}>
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (

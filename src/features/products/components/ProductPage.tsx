@@ -4,6 +4,7 @@ import {
     Button,
     Card,
     CardContent,
+    IconButton,
     Paper,
     Skeleton,
     Stack,
@@ -40,6 +41,8 @@ import { useScreen } from "../../../shared/hooks/ScreenContext";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 
 /**
  * 商品詳細カードコンポーネント
@@ -209,26 +212,27 @@ const ProductPage = () => {
     const { chartData, xAxisLabels } = getLast4WeeksData(Number(productId), WeeklySalesByProduct);
 
     return (
-        <Box
-            m={2}
-            p={1}
-            sx={{
-                borderRadius: 1
-            }}
-        >
-            {isLoading ? (
-                <Skeleton variant="text" width="80%" height={40} />
-            ) : (
-                !isSM && <Header
-                    title="商品情報"
-                    subtitle={productDetail?.product?.productName ?? "―"}
-                />
-            )}
-            <Box m="40px 0 0 0" minHeight="90vh">
-
-                {/* ローディング表示 */}
-
-
+        <Box mx={3} mb={3}>
+            <Box display="flex" justifyContent="space-between">
+                {isLoading ? (
+                    <Skeleton variant="text" width="80%" height={40} />
+                ) : (
+                    !isSM && <Header
+                        title="商品情報"
+                        subtitle={productDetail?.product?.productName ?? "―"}
+                    />
+                )}
+                <Box>
+                    <Tooltip title="元に戻す">
+                        <IconButton aria-label="元に戻す" color='info' onClick={() => {
+                            window.history.back()
+                        }}>
+                            <ArrowBackIcon fontSize="large" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
+            <Box minHeight="90vh">
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />
@@ -302,7 +306,7 @@ const ProductPage = () => {
                                                                         }
                                                                     });
                                                                 }}
-                                                                disabled={productDetail.product.status === "INACTIVE" || productDetail.product.totalStock <= 0}
+                                                                disabled={productDetail.product.status === "INACTIVE"}
                                                             >
                                                                 発注
                                                             </Button>

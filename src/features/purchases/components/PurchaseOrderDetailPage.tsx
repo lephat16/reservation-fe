@@ -247,7 +247,7 @@ const PurchaseOrderDetailPage = () => {
     }, [details, dataReceivedQty]);
 
     return (
-        <Box m={3}>
+        <Box mx={3} mb={3}>
             {/* ヘッダー表示 */}
             {(isLoading || isLoadingReceivedQty) ? (
                 <Skeleton variant="text" width="80%" height={40} />

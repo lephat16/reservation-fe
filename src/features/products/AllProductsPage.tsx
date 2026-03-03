@@ -33,7 +33,7 @@ import Header from "../../shared/components/layout/Header"
 import { tokens } from "../../shared/theme";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import type { ProductStockData, SupplierProductStockData } from "../stocks/types/stock";
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -50,12 +50,13 @@ import { styledSelect } from "../../shared/styles/styledSelect";
 import { styledTable } from "../../shared/styles/StyleTable";
 import AddCardIcon from '@mui/icons-material/AddCard';
 import ProductForm from "./components/ProductForm";
-import type { ProductFormData } from "./types/product";
 import { useScreen } from "../../shared/hooks/ScreenContext";
 import SearchBar from "../../shared/components/global/SearchBar";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 import { TablePaginationActions } from "../../shared/components/pagination/PaginationAction";
+import { useAddProduct } from "./hooks/useAddProduct";
+import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";
 
 /**
  * 在庫テーブルの1行コンポーネント
@@ -92,7 +93,7 @@ type Status = 'ACTIVE' | 'INACTIVE' | "";
 function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockData) => void; }) {
 
     const { row, onDelete } = props;
-    const { isMD, } = useScreen(); // 画面サイズ判定
+    const { isMD, isSM } = useScreen(); // 画面サイズ判定
 
     const [open, setOpen] = useState(false); // Collapseの開閉状態
 
@@ -117,7 +118,17 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                 </TableCell>}
                 {/** 詳細 / 削除ボタン */}
                 <TableCell>{row.product.productCode}</TableCell>
-                {!isMD && <TableCell>{row.product.name}</TableCell>}
+                {!isMD && <TableCell
+                    sx={{
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                    }}
+                >
+                    <Tooltip title={row.product.name}>
+                        <span>{row.product.name}</span>
+                    </Tooltip>
+                </TableCell>}
                 <TableCell>{row.product.status}</TableCell>
                 <TableCell>{row.totalQuantity}</TableCell>
                 {!isMD && <TableCell>{row.product.categoryName}</TableCell>}
@@ -157,7 +168,7 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                 </TableCell>
             </TableRow>
             {/* Collapse行: 仕入先ごとのSKU在庫情報 */}
-            <TableRow>
+            <TableRow >
                 <TableCell
                     style={{
                         padding: 0,
@@ -253,16 +264,7 @@ const AllProductsPage = () => {
     const { isLoading, error, data } = useStockWithSupplier();
 
     // 商品追加Mutation
-    const addMutation = useMutation({
-        mutationFn: async (data: ProductFormData) => productAPI.createProduct(data),
-        onSuccess: (response) => {
-            showSnackbar(response.message || SNACKBAR_MESSAGES.CREATE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["stock-with-supplier"] });
-        },
-        onError: (error: unknown) => {
-            showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.CREATE_FAILED, "error");
-        }
-    })
+    const addMutation = useAddProduct(showSnackbar);
     // 商品削除Mutation
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => productAPI.deleteProduct(id),
@@ -399,8 +401,12 @@ const AllProductsPage = () => {
                 return true;
             });
 
-    const filteredInventories = filteredInventoryByQtyAndStatus
+    const filteredInventories = filteredInventoryByQtyAndStatus;
 
+    // フィルター結果の件数が変わった場合、ページを先頭（0ページ目）にリセットする
+    useEffect(() => {
+        setPage(0);
+    }, [filteredInventories.length]);
     // ページネーション用の空行数
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, filteredInventories.length - page * rowsPerPage);
 
@@ -429,7 +435,7 @@ const AllProductsPage = () => {
 
 
     return (
-        <Box m={3}>
+        <Box mx={3} mb={3}>
             {/** ヘッダーと追加ボタン */}
             <Box display="flex" justifyContent="space-between">
                 {isLoading ? (
@@ -457,7 +463,6 @@ const AllProductsPage = () => {
 
             {/** メインコンテンツ領域 */}
             <Box
-                mt={1}
                 minHeight="75vh"
                 height="auto"
             >
@@ -807,7 +812,15 @@ const AllProductsPage = () => {
                                 </colgroup>
                                 {/** テーブルヘッダー */}
                                 <TableHead>
-                                    <TableRow>
+                                    <TableRow
+                                        sx={{
+                                            '& > th': {
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                            },
+                                        }}
+                                    >
                                         {!isMD && <TableCell />}
                                         <TableCell
                                             sortDirection={orderBy === 'code' ? order : false}
@@ -870,11 +883,15 @@ const AllProductsPage = () => {
                                         />))
                                     }
                                     {/** 空行の埋め合わせ */}
-                                    {emptyRows > 0 && Array.from(Array(emptyRows)).map((_, index) => (
-                                        <TableRow key={`empty-${index}`} style={{ height: 48 }}>
+                                    {emptyRows > 0 && (
+                                        <TableRow
+                                            style={{
+                                                height: emptyRows * 48.56,
+                                            }}
+                                        >
                                             <TableCell colSpan={isMD ? 4 : 7} />
                                         </TableRow>
-                                    ))}
+                                    )}
                                     {/** データがない場合 */}
                                     {filteredInventories.length === 0 && (
                                         <TableRow>
@@ -885,7 +902,7 @@ const AllProductsPage = () => {
                                     )}
                                 </TableBody>
                                 {/** ページネーション */}
-                                {!isSM && <TableFooter>
+                                <TableFooter>
                                     <TableRow>
                                         <TablePagination
                                             rowsPerPageOptions={[5, 10,]}
@@ -893,21 +910,13 @@ const AllProductsPage = () => {
                                             count={filteredInventories.length}
                                             rowsPerPage={rowsPerPage}
                                             page={page}
-                                            slotProps={{
-                                                select: {
-                                                    inputProps: {
-                                                        'aria-label': 'rows per page',
-                                                    },
-                                                    native: true,
-                                                },
-                                            }}
+                                            slotProps={getCommonSlotProps(isSM)}
                                             onPageChange={handleChangePage}
                                             onRowsPerPageChange={handleChangeRowsPerPage}
                                             ActionsComponent={TablePaginationActions}
-
                                         />
                                     </TableRow>
-                                </TableFooter>}
+                                </TableFooter>
                             </Table>
                         </TableContainer>
                     </Box>

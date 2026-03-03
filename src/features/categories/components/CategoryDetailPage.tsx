@@ -171,7 +171,13 @@ const CategoryDetailPage = () => {
     const [showMore, setShowMore] = useState(false);
 
     // カテゴリー情報取得カスタムフック
-    const { isLoading, error, data } = useInfoCategory(Number(categoryId))
+    const { isLoading, error, data } = useInfoCategory(Number(categoryId));
+
+    const categoryImageUrl = data?.categoryInfo.imageUrl
+        ? data.categoryInfo.imageUrl.startsWith("/uploads")
+            ? `${import.meta.env.VITE_IMG_URL}${data.categoryInfo.imageUrl}`
+            : data.categoryInfo.imageUrl
+        : import.meta.env.VITE_DEFAULT_CATEGORY_IMG;
 
     // カテゴリー更新用Mutation
     const updateMutation = useMutation({
@@ -215,7 +221,7 @@ const CategoryDetailPage = () => {
         imageUrl: data?.categoryInfo.imageUrl ?? null,
     }
     return (
-        <Box m={3}>
+        <Box mx={3} mb={3}>
             {/* ヘッダー表示 */}
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
@@ -339,7 +345,7 @@ const CategoryDetailPage = () => {
                                 <CardMedia
                                     component="img"
                                     sx={{ width: 180, height: 180, objectFit: 'cover' }}
-                                    image={`${import.meta.env.VITE_IMG_URL}${data.categoryInfo.imageUrl}`}
+                                    image={categoryImageUrl}
                                     alt={data.categoryInfo.name}
                                 />
                             </Card>

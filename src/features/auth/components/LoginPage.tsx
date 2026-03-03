@@ -57,7 +57,7 @@ const LoginPage = (): JSX.Element => {
         formState: { errors }, reset
     } = useForm<LoginRequest>({
         resolver: yupResolver(schema),
-        mode: "onBlur", // フォーカスが外れたタイミングでバリデーション
+        // mode: "onBlur", // フォーカスが外れたタイミングでバリデーション
         defaultValues: {
             email: "",
             password: ""

@@ -1,5 +1,6 @@
 
 import {
+    Autocomplete,
     Box,
     Button,
     DialogActions,
@@ -33,7 +34,6 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { StyledSelectTextField } from '../../../shared/styles/StyledSelectTextField'
 import CommentIcon from '@mui/icons-material/Comment';
 import type { ProductData } from '../../products/types/product'
-import { useNavigate } from 'react-router-dom'
 
 /** 
  * 仕入先商品フォームコンポーネント
@@ -52,13 +52,23 @@ import { useNavigate } from 'react-router-dom'
  * 編集モードでは、商品情報の編集が可能で、備考の追加や変更も行えます。
  * 新規商品追加時には商品を選択または新規作成することができます。
  */
+type ProductOption =
+    | ProductData
+    | {
+        id: number;
+        productName: string;
+        categoryName: string;
+        type: "create";
+    };
 
 type SupplierProductFormProps = {
     open: boolean;
     onClose: () => void;
     onSubmit: (data: SupplierProductFormType) => void;
     supplierProduct?: SupplierProducWithPriceHistory;
-    products?: ProductData[]
+    products?: ProductData[];
+    openAddProductForm?: () => void;
+    newlyCreatedProductId?: number | null;
 }
 
 const SupplierProductForm = ({
@@ -66,7 +76,9 @@ const SupplierProductForm = ({
     onClose,
     onSubmit,
     supplierProduct,
-    products
+    products,
+    openAddProductForm,
+    newlyCreatedProductId,
 }: SupplierProductFormProps) => {
 
     const theme = useTheme();
@@ -75,7 +87,6 @@ const SupplierProductForm = ({
     const [isEdit, setIsEdit] = useState(false);
     const [openNoteForm, setOpenNoteForm] = useState(false)
 
-    const navigate = useNavigate();
 
     const schema = useMemo(() => yup.object({
         supplierSku: yup
@@ -107,7 +118,7 @@ const SupplierProductForm = ({
             : yup.number().nullable(),
     }), []);
 
-    const { control, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<SupplierProductFormType>({
+    const { control, handleSubmit, formState: { errors, isSubmitting }, reset, setValue } = useForm<SupplierProductFormType>({
         resolver: yupResolver(schema) as Resolver<SupplierProductFormType>,
         defaultValues: {
             supplierSku: "",
@@ -126,11 +137,22 @@ const SupplierProductForm = ({
 
 
     const handleFormSubmit = (data: SupplierProductFormType) => {
-        onSubmit(data);
+        const submitData = {
+            ...data,
+            productId: data.productId ? Number(data.productId) : undefined
+        };
+
+        onSubmit(submitData);
         setIsEdit(false);
         setOpenNoteForm(false);
         onClose();
     };
+
+    useEffect(() => {
+        if (newlyCreatedProductId) {
+            setValue("productId", newlyCreatedProductId);
+        }
+    }, [newlyCreatedProductId, setValue]);
 
     return (
         <Dialog
@@ -178,53 +200,143 @@ const SupplierProductForm = ({
                                         cursor: "pointer",
                                     }
                                 }
-
                             }}
                             sx={{
                                 flex: 2,
                             }}
                         />
                         ) : (
+                            // <Controller
+                            //     name="productId"
+                            //     control={control}
+                            //     render={({ field }) => (
+                            //         <StyledSelectTextField
+                            //             label="商品"
+                            //             {...field}
+                            //             select
+                            //             fullWidth
+                            //             variant="filled"
+                            //             value={field.value ? String(field.value) : ""}
+                            //             onChange={(e) => {
+                            //                 const val = e.target.value;
+                            //                 if (val === "CREATE_NEW") {
+                            //                     openAddProductForm?.();
+                            //                     return;
+                            //                 }
+                            //                 field.onChange(val ? Number(val) : undefined);
+                            //             }}
+                            //             error={!!errors.productId}
+                            //             helperText={errors.productId ? errors.productId.message : ' '}
+                            //             bgColor={colors.blueAccent[900]}
+                            //             sx={{ flex: 1 }}
+                            //             maxHeight={200}
+                            //         >
+                            //             {products?.map(p => (
+                            //                 <MenuItem key={p.id} value={String(p.id)}>
+                            //                     {p.productName}
+                            //                 </MenuItem>
+                            //             ))}
+                            //             <Divider />
+                            //             <MenuItem value="CREATE_NEW">
+                            //                 <Typography variant="body2" color="primary">
+                            //                     こちらをクリックして新規作成
+                            //                 </Typography>
+                            //             </MenuItem>
+                            //         </StyledSelectTextField>
+                            //     )}
+                            // />
                             <Controller
                                 name="productId"
                                 control={control}
-                                render={({ field }) => (
-                                    <StyledSelectTextField
-                                        label="商品"
-                                        select
-                                        fullWidth
-                                        variant="filled"
-                                        {...field}
-                                        value={field.value || ""}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            if (val === "CREATE_NEW") {
-                                                navigate("/");
-                                                return;
+                                render={({ field }) => {
+                                    const createOption: ProductOption = {
+                                        id: -1,
+                                        productName: "＋ 新規作成",
+                                        categoryName: "",
+                                        type: "create",
+                                    };
+                                    const productOptions = [
+                                        ...(products ?? []),
+                                        createOption,
+                                    ];
+                                    return (
+                                        <Autocomplete<ProductOption>
+                                            sx={{ flex: 1 }}
+                                            options={productOptions}
+                                            groupBy={(option) =>
+                                                "type" in option ? "" : option.categoryName
                                             }
-                                            field.onChange(val ? Number(val) : undefined);
-                                        }}
-                                        error={!!errors.productId}
-                                        helperText={errors.productId ? errors.productId.message : ' '}
-                                        bgColor={colors.blueAccent[900]}
-                                        sx={{ flex: 1 }}
-                                    >
-                                        {products?.map(p => (
-                                            <MenuItem key={p.id} value={p.id}>
-                                                {p.productName}
-                                            </MenuItem>
-                                        ))}
+                                            getOptionLabel={(option) => option.productName}
+                                            value={
+                                                products?.find(p => p.id === field.value) ?? null
+                                            }
+                                            onChange={(_, value) => {
+                                                if (!value) return;
+                                                if ("type" in value && value.type === "create") {
+                                                    openAddProductForm?.();
+                                                    return;
+                                                }
+                                                field.onChange(value.id);
+                                            }}
+                                            slotProps={{
+                                                paper: {
+                                                    style: {
+                                                        backgroundColor: colors.blueAccent[900],
+                                                    },
+                                                },
+                                                listbox: {
+                                                    style: {
+                                                        backgroundColor: colors.blueAccent[900],
+                                                    },
+                                                }
 
-                                        <Divider />
+                                            }}
+                                            renderOption={(props, option) => (
+                                                <li {...props}>
+                                                    <Box sx={{ pl: 2 }}>
+                                                        {option.productName}
+                                                    </Box>
+                                                </li>
+                                            )}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label="商品"
+                                                    variant="filled"
+                                                    error={!!errors.productId}
+                                                    helperText={errors.productId?.message ?? ' '}
 
-                                        <MenuItem value="CREATE_NEW">
-                                            <Typography variant="body2" color="primary">
-                                                こちらをクリックして新規作成
-                                            </Typography>
-                                        </MenuItem>
+                                                />
+                                            )}
+                                            renderGroup={(params) => (
+                                                <li key={params.key}>
+                                                    <Box
+                                                        sx={{
+                                                            backgroundColor: colors.blueAccent[800],
+                                                            px: 2,
+                                                            py: 1,
+                                                            fontWeight: 600,
+                                                            color: colors.grey[100],
+                                                        }}
+                                                    >
+                                                        {params.group}
+                                                    </Box>
 
-                                    </StyledSelectTextField>
-                                )}
+                                                    <Box
+                                                        component="ul"
+                                                        sx={{
+                                                            backgroundColor: colors.blueAccent[900],
+                                                            m: 0,
+                                                            p: 0,
+                                                        }}
+                                                    >
+                                                        {params.children}
+                                                    </Box>
+                                                </li>
+                                            )}
+                                        />
+                                    )
+                                }}
                             />
                         )}
 

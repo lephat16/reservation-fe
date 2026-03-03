@@ -109,6 +109,15 @@ const LoginCard = ({
                                 color={errors.password ? "error" : "primary"}
                                 error={!!errors.password}
                                 helperText={errors.password ? errors.password.message : ' '}
+                                slotProps={{
+                                    htmlInput: {
+                                        sx: {
+                                            "::-ms-reveal": {
+                                                display: "none",
+                                            },
+                                        }
+                                    }
+                                }}
 
                             />
                         )}

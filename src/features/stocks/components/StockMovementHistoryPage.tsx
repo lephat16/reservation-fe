@@ -47,6 +47,8 @@ import _ from "lodash";
 import { LineChart, } from "@mui/x-charts";
 import FilterContent from "./FilterContent";
 import FilterDatePicker from "./FilterDatePicker";
+import { TablePaginationActions } from "../../../shared/components/pagination/PaginationAction";
+import { getCommonSlotProps } from "../../../shared/components/pagination/TablePaginationHelper";
 
 /**
  * 在庫移動履歴ページコンポーネント
@@ -349,7 +351,7 @@ const StockMovementHistoryPage = () => {
     }));
 
     return (
-        <Box m={3}>
+        <Box mx={3} mb={3}>
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
@@ -966,7 +968,15 @@ const StockMovementHistoryPage = () => {
                                     }}
                                 >
                                     <TableHead>
-                                        <TableRow>
+                                        <TableRow
+                                            sx={{
+                                                '& > th': {
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                },
+                                            }}
+                                        >
                                             {columns.map(col => (
                                                 (isLG && col.hideOnMobile) ? null : (
                                                     <TableCell
@@ -1056,6 +1066,8 @@ const StockMovementHistoryPage = () => {
                                                 }}
                                                 rowsPerPageOptions={[10, 20, 50]}
                                                 colSpan={isLG ? 6 : 11}
+                                                ActionsComponent={TablePaginationActions}
+                                                slotProps={getCommonSlotProps(isSM)}
                                             />
                                         </TableRow>
                                     </TableFooter>

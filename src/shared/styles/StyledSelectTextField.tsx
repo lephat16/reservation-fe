@@ -2,6 +2,7 @@ import React from "react";
 import { TextField } from "@mui/material";
 
 interface StyledSelectTextFieldProps extends React.ComponentProps<typeof TextField> {
+    maxHeight?: number;
     bgColor: string;
     readOnly?: boolean;
     inputFontSize?: string;
@@ -9,6 +10,7 @@ interface StyledSelectTextFieldProps extends React.ComponentProps<typeof TextFie
 }
 
 export const StyledSelectTextField: React.FC<StyledSelectTextFieldProps> = ({
+    maxHeight,
     bgColor,
     readOnly,
     inputFontSize,
@@ -23,6 +25,7 @@ export const StyledSelectTextField: React.FC<StyledSelectTextFieldProps> = ({
                         PaperProps: {
                             style: {
                                 backgroundColor: bgColor,
+                                maxHeight: maxHeight,
                             },
                         },
                     },

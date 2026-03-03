@@ -9,18 +9,18 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useState } from "react";
 import type { UserData, UserRequestData } from "./types/user";
 import { useDeleteUser } from "./hooks/useDeleteUser";
-import UserHeader from "./compoments/UserHeader";
-import UsersTable from "./compoments/UsersTable";
-import UserShow from "./compoments/UserShow";
+import UserHeader from "./components/UserHeader";
+import UsersTable from "./components/UsersTable";
+import UserShow from "./components/UserShow";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { userAPI } from "./api/userAPI";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
-import UserForm from "./compoments/UserForm";
+import UserForm from "./components/UserForm";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 import { useUserSessions } from "./hooks/useUserSessions";
-import SessionTable from "./compoments/SessionTable";
+import SessionTable from "./components/SessionTable";
 
 /**
  * ユーザー管理画面コンテナコンポーネント。
@@ -33,7 +33,7 @@ const UsersPage = () => {
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const { isSM, isMD } = useScreen();
+  const { isSM, isMD, isMdToLg } = useScreen();
   const { showSnackbar } = useSnackbar();
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [mode, setMode] = useState<"list" | "detail" | "edit" | "create" | "showSessions">("list");
@@ -108,7 +108,7 @@ const UsersPage = () => {
 
 
   return (
-    <Box m={3}>
+    <Box mx={3} mb={3}>
       <Box display="flex" justifyContent="space-between">
         {isLoading ? (
           <Skeleton variant="text" width="80%" height={40} />
@@ -164,7 +164,9 @@ const UsersPage = () => {
                 mode === "list" &&
                 <UsersTable
                   users={data ?? []}
+                  isSM={isSM}
                   isMD={isMD}
+                  isMdToLg={isMdToLg}
                   colors={colors}
                   theme={theme}
                   onSelectUser={(user) => {

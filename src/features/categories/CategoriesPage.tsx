@@ -158,7 +158,7 @@ const CategoriesPage = () => {
         [deleteCategory, seeMoreCategory],
     );
     return (
-        <Box m={3}>
+        <Box mx={3} mb={3}>
             {/* ヘッダーと追加ボタン */}
             <Box display="flex" justifyContent="space-between">
                 {isLoading ? (

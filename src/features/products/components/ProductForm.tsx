@@ -6,7 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import { Box, Button, Dialog, DialogContent, DialogTitle, MenuItem, Stack, TextField, useTheme } from '@mui/material';
 import { tokens } from '../../../shared/theme';
-import type { CategoryData } from '../../categories/types/category';
+import type { CategoryData, CategorySummariesData } from '../../categories/types/category';
 import { StyledSelectTextField } from '../../../shared/styles/StyledSelectTextField';
 
 /** 
@@ -29,7 +29,7 @@ type ProductFormProps = {
     onSubmit?: (data: ProductFormData) => void;
     onUpdate?: (data: FormData) => void;
     product?: ProductFormData;
-    categories: CategoryData[];
+    categories: CategoryData[] | CategorySummariesData[];
 }
 
 const ProductForm = ({
@@ -44,6 +44,9 @@ const ProductForm = ({
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
+    const getCategoryName = (cat: CategoryData | CategorySummariesData) =>
+        "categoryName" in cat ? cat.categoryName : cat.name;
+
     const schema = yup.object({
         name: yup.string()
             .required("名前は必須です")
@@ -52,9 +55,9 @@ const ProductForm = ({
 
         productCode: yup.string()
             .required("商品コードは必須です")
-            .matches(/^[A-Za-z0-9]+$/, "商品コードは英数字のみを含むことができます")
-            .max(10, "単位は5文字以内で入力してください")
-            .min(3, "単位は1文字以上で入力してください"),
+            .matches(/^[A-Za-z0-9\-]+$/, "商品コードは英数字とハイフンのみを含むことができます")
+            .max(10, "商品コードは5文字以内で入力してください")
+            .min(3, "商品コードは1文字以上で入力してください"),
         description: yup.string()
             .trim()
             .required("説明は必須です")
@@ -201,9 +204,9 @@ const ProductForm = ({
                                     {categories.map(cat => (
                                         <MenuItem
                                             key={cat.id}
-                                            value={cat.name}
+                                            value={getCategoryName(cat)}
                                         >
-                                            {cat.name}
+                                            {getCategoryName(cat)}
                                         </MenuItem>
                                     ))}
                                 </StyledSelectTextField>

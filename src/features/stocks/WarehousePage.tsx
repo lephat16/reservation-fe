@@ -52,6 +52,7 @@ import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 import { type Order } from "../products/AllProductsPage";
 import { TablePaginationActions } from "../../shared/components/pagination/PaginationAction";
+import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";
 
 
 type OrderBy = 'productName' | 'sku' | 'quantity' | 'reservedQuantity' | 'available'
@@ -260,7 +261,7 @@ const WarehousePage = () => {
         });
     }, [stocks, order, orderBy]);
     return (
-        <Box m={3}>
+        <Box mx={3} mb={3}>
             {isLoadingWH ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
@@ -391,7 +392,16 @@ const WarehousePage = () => {
                         </Box>
                         <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }} gap={4} >
                             <TableContainer component={Paper} sx={{ height: "100%", minWidth: 650 }}>
-                                <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
+                                <Table
+                                    sx={{
+                                        backgroundColor: colors.primary[400],
+                                        tableLayout: "fixed",
+                                        '& .MuiTableCell-root': {
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                        },
+                                    }}>
                                     <colgroup>
                                         <col style={{ width: "40%" }} />
                                         <col style={{ width: "15%" }} />
@@ -488,12 +498,16 @@ const WarehousePage = () => {
                                                     <TableCell>{row.quantity - row.reservedQuantity}</TableCell>
                                                 </TableRow>
                                             ))}
-                                        {emptyRows > 0 && Array.from(Array(emptyRows)).map((_, index) => (
-                                            <TableRow key={`empty-${index}`} style={{ height: 53 }}>
+                                        {/** 空行の埋め合わせ */}
+                                        {emptyRows > 0 && (
+                                            <TableRow
+                                                style={{
+                                                    height: emptyRows * 50.16,
+                                                }}
+                                            >
                                                 <TableCell colSpan={5} />
                                             </TableRow>
-                                        ))}
-
+                                        )}
                                     </TableBody>
                                     <TableFooter>
                                         <TableRow>
@@ -503,14 +517,7 @@ const WarehousePage = () => {
                                                 count={stocks.length}
                                                 rowsPerPage={rowsPerPage}
                                                 page={page}
-                                                slotProps={{
-                                                    select: {
-                                                        inputProps: {
-                                                            'aria-label': 'rows per page',
-                                                        },
-                                                        native: true,
-                                                    },
-                                                }}
+                                                slotProps={getCommonSlotProps(isSM)}
                                                 onPageChange={handleChangePage}
                                                 onRowsPerPageChange={handleChangeRowsPerPage}
                                                 ActionsComponent={TablePaginationActions}

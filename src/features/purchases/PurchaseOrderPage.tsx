@@ -45,13 +45,14 @@ import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 import { blue, red } from "@mui/material/colors";
 import type { Order } from "../products/AllProductsPage";
-import { useMemo, useState, } from "react";
+import { useEffect, useMemo, useState, } from "react";
 import type { PurchaseOrderData } from "./types/purchase";
 import { styledSelect } from "../../shared/styles/styledSelect";
 import { TablePaginationActions } from "../../shared/components/pagination/PaginationAction";
 import { styledTable } from "../../shared/styles/StyleTable";
 import { ORDER_STATUS } from "../../constants/status";
 import SearchBar from "../../shared/components/global/SearchBar";
+import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";
 
 /** 
  * 購入一覧ページコンポーネント
@@ -230,11 +231,16 @@ const PurchaseOrderPage = () => {
         })
     }, [filteredSuppliersAndStatus, order, orderBy]);
 
+    // フィルター結果の件数が変わった場合、ページを先頭（0ページ目）にリセットする
+    useEffect(() => {
+        setPage(0);
+    }, [sortedData.length]);
+
     // ページネーション用の空行数
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, sortedData.length - page * rowsPerPage);
 
     return (
-        <Box m={3}>
+        <Box mx={3} mb={3}>
             <Box display="flex" justifyContent="space-between">
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
@@ -398,7 +404,6 @@ const PurchaseOrderPage = () => {
                                                 backgroundColor: colors.blueAccent[500],
                                                 color: colors.grey[100],
                                             },
-
                                         }}
                                     >
                                         {columns.map(
@@ -429,7 +434,6 @@ const PurchaseOrderPage = () => {
                                 </TableHead>
 
                                 <TableBody>
-
                                     {sortedData
                                         .slice(
                                             page * rowsPerPage,
@@ -524,11 +528,15 @@ const PurchaseOrderPage = () => {
                                         </TableRow>
                                     )}
                                     {/** 空行の埋め合わせ */}
-                                    {emptyRows > 0 && Array.from(Array(emptyRows)).map((_, index) => (
-                                        <TableRow key={`empty-${index}`} style={{ height: 47 }}>
+                                    {emptyRows > 0 && (
+                                        <TableRow
+                                            sx={{
+                                                height: emptyRows * 53.56,
+                                            }}
+                                        >
                                             <TableCell colSpan={isMD ? 5 : 7} />
                                         </TableRow>
-                                    ))}
+                                    )}
                                 </TableBody>
 
                                 {/** ページネーション */}
@@ -540,14 +548,7 @@ const PurchaseOrderPage = () => {
                                             count={sortedData?.length || 0}
                                             rowsPerPage={rowsPerPage}
                                             page={page}
-                                            slotProps={{
-                                                select: {
-                                                    inputProps: {
-                                                        'aria-label': 'rows per page',
-                                                    },
-                                                    native: true,
-                                                },
-                                            }}
+                                            slotProps={getCommonSlotProps(isSM)}
                                             onPageChange={(_, newPage) => setPage(newPage)}
                                             onRowsPerPageChange={(event) => {
                                                 setRowsPerPage(parseInt(event.target.value, 10));
