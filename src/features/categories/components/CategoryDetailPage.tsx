@@ -23,7 +23,7 @@ import { tokens } from "../../../shared/theme";
 import Header from "../../../shared/components/layout/Header";
 import type { CategoryData, CategoryFormData, ProductStockData } from "../types/category";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ErrorState from "../../../shared/components/messages/ErrorState";
@@ -40,6 +40,8 @@ import { styledTable } from "../../../shared/styles/StyleTable";
 import { STATUS } from "../../../constants/status";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 /**
  * カテゴリー詳細ページ
  *
@@ -161,6 +163,8 @@ const CategoryDetailPage = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const { categoryId } = useParams<{ categoryId: string }>();
+    const { isMD } = useScreen();
+    const navigate = useNavigate()
 
     const [openEditCategoryForm, setOpenEditCategoryForm] = useState(false);
 
@@ -222,16 +226,27 @@ const CategoryDetailPage = () => {
     }
     return (
         <Box mx={3} mb={3}>
-            {/* ヘッダー表示 */}
-            {isLoading ? (
-                <Skeleton variant="text" width="80%" height={40} />
-            ) : (
-                <Header
-                    title={`カテゴリ: ${data?.categorySummary?.categoryName ?? ""}`}
-                    subtitle={`仕入先: ${getAllSuppliers(data?.categorySummary?.products)}`}
-                />
-            )}
-            <Box m="40px 0 0 0" minHeight="75vh">
+            <Box display="flex" justifyContent="space-between" flexDirection={isMD ? 'column' : 'row'}>
+                {/* ヘッダー表示 */}
+                {isLoading ? (
+                    <Skeleton variant="text" width="80%" height={40} />
+                ) : (
+                    <Header
+                        title={`カテゴリ: ${data?.categorySummary?.categoryName ?? ""}`}
+                        subtitle={`仕入先: ${getAllSuppliers(data?.categorySummary?.products)}`}
+                    />
+                )}
+                <Box>
+                    <Tooltip title="元に戻す">
+                        <IconButton aria-label="元に戻す" color='info' onClick={() => {
+                            navigate("/category");
+                        }}>
+                            <ArrowBackIcon fontSize="large" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
+            <Box minHeight="75vh">
 
                 {/* エラー表示 */}
                 {(error) && (

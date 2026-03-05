@@ -1,3 +1,4 @@
+import type { LOGIN_STATUS } from "../../../constants/status";
 import type { Role } from "../../auth/types/auth";
 
 export interface UserData {
@@ -14,13 +15,15 @@ export interface ChangePasswordRequest {
     newPassword: string;
     confirmPassword: string;
 }
+
+type LoginStatus = keyof typeof LOGIN_STATUS;
 export interface LoginHistories {
     id: number;
     userId: string;
     loginTime: string;
     ipAddress: string;
-    userAgent: string;
-    status: string;
+    device: string;
+    status: LoginStatus;
 }
 export interface UserRequestData {
     name: string;

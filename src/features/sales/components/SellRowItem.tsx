@@ -31,7 +31,8 @@ import type { SellRow } from "./CreateSellPage";
 import { useState } from "react";
 import type { ProductWithSkuByCategoryData } from "../../suppliers/types/supplier";
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
-import { styledSelect } from "../../../shared/styles/styledSelect";
+import { styledSelect } from "../../../shared/components/global/select/styledSelect";
+import { getCommonMenuProps } from "../../../shared/components/global/select/SelectHelper";
 
 /**
  * 商品詳細カードコンポーネント
@@ -119,6 +120,10 @@ const SellRowItem = ({
                         })
                     }
                     sx={styledSelect}
+                    MenuProps={getCommonMenuProps({
+                        backgroundColor: colors.blueAccent[900],
+                        color: colors.grey[100],
+                    })}
                 >
                     {categories.map((cat) => (
                         <MenuItem key={cat.id} value={cat.id}>
@@ -156,6 +161,10 @@ const SellRowItem = ({
                             onUpdate(index, { productId: Number(e.target.value), sku: null })
                         }
                         sx={styledSelect}
+                        MenuProps={getCommonMenuProps({
+                            backgroundColor: colors.blueAccent[900],
+                            color: colors.grey[100],
+                        })}
                     >
                         {Array.from(
                             new Map(productData.map(p => [p.productName, p])).values()
@@ -206,6 +215,10 @@ const SellRowItem = ({
                             });
                         }}
                         sx={styledSelect}
+                        MenuProps={getCommonMenuProps({
+                            backgroundColor: colors.blueAccent[900],
+                            color: colors.grey[100],
+                        })}
                     >
                         {productData
                             .filter(p => p.productId === row.productId)

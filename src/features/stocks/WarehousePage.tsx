@@ -65,12 +65,12 @@ const WarehousePage = () => {
     const { showSnackbar } = useSnackbar();
     const queryClient = useQueryClient();
     const { confirmDelete } = useDialogs();
-    const { isSM } = useScreen();
+    const { isSM, isLG } = useScreen();
 
     // ステート
     // ページネーションの状態管理
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     // 倉庫の作成・編集フォームの開閉状態
     const [openCreateWarehouseForm, setOpenCreateWarehouseForm] = useState(false);
@@ -279,7 +279,7 @@ const WarehousePage = () => {
                 {(errorWH || errorWHWithTotal) && (
                     <ErrorState />
                 )}
-                {isLoadingWH ? (
+                {isLG && (isLoadingWH ? (
                     <Skeleton variant="rectangular" height={150} />
                 ) : (
                     <Stack
@@ -335,7 +335,7 @@ const WarehousePage = () => {
                             </Tooltip>
                         </Stack>
                     </Stack>
-                )}
+                ))}
                 {isLoadingWHWithTotal ? (
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
@@ -391,7 +391,7 @@ const WarehousePage = () => {
                             </Stack>
                         </Box>
                         <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }} gap={4} >
-                            <TableContainer component={Paper} sx={{ height: "100%", minWidth: 650 }}>
+                            <TableContainer component={Paper} sx={{ height: "100%", xs: 308, lg: 600 }}>
                                 <Table
                                     sx={{
                                         backgroundColor: colors.primary[400],
@@ -531,7 +531,7 @@ const WarehousePage = () => {
                             <Box
                                 display='flex'
                                 gap={4}
-                                flexDirection={{ xl: 'column', md: 'row' }}
+                                flexDirection={{ xl: 'column', sm: 'row', xs: 'column' }}
                                 justifyContent="space-between"
                             >
                                 <Box
@@ -539,7 +539,6 @@ const WarehousePage = () => {
                                     gap={2}
                                     flexDirection={{ xl: 'column', lg: 'row', xs: 'column' }}
                                 >
-
                                     <Stack direction="row" gap={2} justifyContent="space-between">
                                         <Card
                                             sx={{
@@ -768,9 +767,7 @@ const WarehousePage = () => {
                                     </Stack>
                                 </Box>
 
-
                                 <Box display="flex">
-
                                     <PieChart
                                         series={[
                                             {

@@ -25,7 +25,7 @@ import Header from "../../../shared/components/layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PurchaseOrderData, } from "../types/purchase";
 import type { SumReceivedGroupByProduct, WarehouseWithLocationData } from "../../products/types/product";
-import type { DeliverStockItem, InventoryHistoryByPurchaseOrder, ReceiveStockItem } from "../../stocks/types/stock";
+import type { DeliverStockItem, InventoryHistoryByPurchaseOrder, ReceiveStockItem, StockDataBySku } from "../../stocks/types/stock";
 import { useNavigate, useParams } from "react-router-dom";
 import CheckIcon from '@mui/icons-material/Check';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
@@ -44,6 +44,7 @@ import { useScreen } from "../../../shared/hooks/ScreenContext";
 import useRoleFlags from "../../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 /**
  * 受領確認ダイアログコンポーネント
@@ -153,7 +154,8 @@ interface ReceiveFormDialogProps {
     };
     poId: string;
     supplier: string;
-    warehouses: WarehouseWithLocationData[];
+    stockBySku?: StockDataBySku[];
+    warehouses?: WarehouseWithLocationData[];
     targetName?: string;
     isPending?: boolean;
     remains: number;
@@ -168,6 +170,7 @@ export const ReceiveFormDialog = ({
     product,
     poId,
     supplier,
+    stockBySku,
     warehouses,
     isPending,
     remains,
@@ -177,6 +180,8 @@ export const ReceiveFormDialog = ({
     const colors = tokens(theme.palette.mode);
 
     const [openSubmitConfirm, setOpenSubmitConfirm] = useState(false);
+    const submitButton = title === "出荷" ? "売出" : "購入";
+
 
     // バリデーションスキーマ
     const schema = yup.object({
@@ -295,6 +300,13 @@ export const ReceiveFormDialog = ({
                                 error={!!errors.warehouses}
                                 helperText={errors.warehouses ? errors.warehouses.message : ' '}
                             >
+                                {stockBySku?.map((stock) => (
+                                    <MenuItem key={stock.warehouseId} value={stock.warehouseId}>
+                                        {stockBySku
+                                            ? `${stock.warehouseName}(${stock.reservedQuantity})`
+                                            : stock.warehouseName}
+                                    </MenuItem>
+                                ))}
                                 {warehouses?.map((wh) => (
                                     <MenuItem key={wh.id} value={wh.id}>
                                         {wh.name}
@@ -348,7 +360,7 @@ export const ReceiveFormDialog = ({
                         onClick={handleSubmit(() => setOpenSubmitConfirm(true))}
                         disabled={isPending}
                     >
-                        {isPending ? "購入中..." : "購入"}
+                        {isPending ? `${submitButton}中...` : submitButton}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -395,11 +407,11 @@ const ReceiveForm = () => {
     // データ取得
     const { isLoading, error, data } = useQuery<{
         purchaseOrder: PurchaseOrderData;
-        receivedQtyMap: Record<number, number>;
+        receivedQtyMap: Record<string, number>;
         resWarehouse: WarehouseWithLocationData[];
         resInventoryHistoryByPurchaseOrder: InventoryHistoryByPurchaseOrder[];
     }>({
-        queryKey: ["purchaseOrderDetail", poId],
+        queryKey: ["purchase-order-detail", poId],
         queryFn: async () => {
             // 発注詳細
             const resPODetail = await purchaseAPI.getPurchaseOrderById(Number(poId));
@@ -410,11 +422,11 @@ const ReceiveForm = () => {
             // 在庫履歴
             const resInventoryHistoryByPurchaseOrder = await stockAPI.getInventoryHistoryByPurchaseOrder(Number(poId));
             // 受領済数量マップを作成
-            const receivedQtyMap: Record<number, number> = {};
+            const receivedQtyMap: Record<string, number> = {};
 
             resSumReceivedQty.data.forEach((item: SumReceivedGroupByProduct) => {
 
-                receivedQtyMap[Number(item.productId)] = item.receivedQty;
+                receivedQtyMap[item.sku] = item.receivedQty;
             });
             return {
                 purchaseOrder: resPODetail.data,
@@ -433,7 +445,7 @@ const ReceiveForm = () => {
         },
         onSuccess: (response) => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.ORDER.RECEIVE_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["purchaseOrderDetail"] });
+            queryClient.invalidateQueries({ queryKey: ["purchase-order-detail"] });
             setTimeout(() => {
                 navigate(`/purchase-order/${poId}`);
             }, 500);
@@ -485,21 +497,26 @@ const ReceiveForm = () => {
 
 
     return (
-        <Box
-            m={2}
-            p={1}
-            sx={{
-                borderRadius: 1
-            }}
-        >
-            {isLoading ? (
-                <Skeleton variant="text" width="80%" height={40} />
-            ) : (
-                !isSM && <Header
-                    title={`注文番号: ${data?.purchaseOrder?.id ?? ""} | 仕入先: ${data?.purchaseOrder?.supplierName ?? ""}`}
-                    subtitle={`ステータス: ${data?.purchaseOrder?.status ?? ""}`}
-                />
-            )}
+        <Box mx={3} mb={3}>
+            <Box display="flex" justifyContent="space-between">
+                {isLoading ? (
+                    <Skeleton variant="text" width="80%" height={40} />
+                ) : (
+                    !isSM && <Header
+                        title={`注文番号: ${data?.purchaseOrder?.id ?? ""} | 仕入先: ${data?.purchaseOrder?.supplierName ?? ""}`}
+                        subtitle={`ステータス: ${data?.purchaseOrder?.status ?? ""}`}
+                    />
+                )}
+                <Box mt={4}>
+                    <Tooltip title="元に戻す">
+                        <IconButton aria-label="元に戻す" color='info' onClick={() => {
+                            navigate(`/purchase-order/${poId}`)
+                        }}>
+                            <ArrowBackIcon fontSize="large" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
             <Box mt={3} height="75vh">
                 {/* エラー表示 */}
                 {(error) && (
@@ -529,7 +546,7 @@ const ReceiveForm = () => {
                             </TableHead>
                             <TableBody>
                                 {data?.purchaseOrder?.details.map((detail, index) => {
-                                    const received = data.receivedQtyMap[detail.productId] || 0;
+                                    const received = data.receivedQtyMap[detail.sku || ""] || 0;
                                     const remains = detail.qty - received;
                                     return (
                                         < TableRow key={index} >

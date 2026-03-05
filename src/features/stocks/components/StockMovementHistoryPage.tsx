@@ -954,7 +954,7 @@ const StockMovementHistoryPage = () => {
                                     minWidth: { xs: 308, lg: 600 },
                                 }}>
                                 <Table
-                                    sx={{
+                                      sx={{
                                         tableLayout: "fixed",
                                         ...styledTable(colors),
                                         "& .qty-in": {

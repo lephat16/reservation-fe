@@ -18,7 +18,7 @@ import { tokens } from "../../../shared/theme";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
-import { styledSelect } from "../../../shared/styles/styledSelect";
+import { styledSelect } from "../../../shared/components/global/select/styledSelect";
 
 /**
  * 注文作成ページ用の単一商品行コンポーネント
@@ -118,15 +118,22 @@ export const PurchaseItemRow = ({
                             onProductChange(i, Number(event.target.value))
                         }
                         sx={styledSelect}
+                        MenuProps={{
+                            PaperProps: {
+                                sx: {
+                                    backgroundColor: colors.blueAccent[900],
+                                    color: colors.grey[100],
+                                    minWidth: 200,
+                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                }
+                            }
+                        }}
                     >
-                        {productData?.map((p) =>
-                        (
+                        {productData?.map((p) => (
                             <MenuItem key={p.id} value={p.id} disabled={p.status === "INACTIVE"}>
                                 {`${p.product}${p.status === "INACTIVE" ? "(停止中)" : ""}`}
                             </MenuItem>
-                        )
-                        )}
-
+                        ))}
                     </Select>
                 </FormControl>
             )}
@@ -146,7 +153,6 @@ export const PurchaseItemRow = ({
                     }}
                 >
                     {/* 削除ボタン */}
-
                     <Stack
                         direction="row"
                         sx={{
@@ -175,9 +181,7 @@ export const PurchaseItemRow = ({
                                 <AddCircleIcon />
                             </IconButton>
                         </Tooltip>
-
                     </Stack>
-
 
                     <Typography variant="h6" textAlign="center" mb={2}>{row.product.product}</Typography>
 
@@ -195,6 +199,7 @@ export const PurchaseItemRow = ({
                                 }
                                 min={1}
                                 max={500}
+                                sx={{ flex: 1 }}
                             />
 
                             <TextField
@@ -206,7 +211,10 @@ export const PurchaseItemRow = ({
                                         readOnly: true,
                                     },
                                 }}
-                                sx={descriptionTextField}
+                                sx={{
+                                    flex: 2,
+                                    ...descriptionTextField
+                                }}
                             />
                         </Stack>
                         <Typography mt={2}>リードタイム: <strong>{row.product.leadTime}日</strong></Typography>

@@ -225,7 +225,7 @@ const ProductPage = () => {
                 <Box>
                     <Tooltip title="元に戻す">
                         <IconButton aria-label="元に戻す" color='info' onClick={() => {
-                            window.history.back()
+                            navigate("/products");
                         }}>
                             <ArrowBackIcon fontSize="large" />
                         </IconButton>

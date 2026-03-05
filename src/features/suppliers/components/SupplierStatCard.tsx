@@ -32,7 +32,7 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
         <Box
             display="flex"
             flexDirection="row"
-            gap={2} mb={2}
+            gap={1} mb={2}
             flexWrap="wrap"
             justifyContent={"space-between"}
         >
@@ -40,7 +40,7 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
                 sx={{
                     backgroundColor: colors.primary[400],
                     color: colors.grey[200],
-                    width: { lg: 160, md: 100, sm: 160, xs: 50 },
+                    width: { lg: 160, md: 100, sm: 160, xs: 90 },
                     height: { md: 178, xs: 80 },
                 }}
             >
@@ -91,7 +91,7 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
                 sx={{
                     backgroundColor: colors.primary[400],
                     color: colors.grey[200],
-                    width: { lg: 160, md: 100, sm: 160, xs: 50 },
+                    width: { lg: 160, md: 100, sm: 160, xs: 90 },
                     height: { md: 178, xs: 80 },
                 }}
             >

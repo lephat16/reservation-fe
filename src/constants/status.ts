@@ -60,3 +60,16 @@ export const ORDER_STATUS = {
         color: "error"
     },
 } as const;
+
+export const LOGIN_STATUS = {
+    SUCCESS: {
+        value: 'SUCCESS',
+        label: "成功",
+        color: "success"
+    },
+    FAILED: {
+        value: 'FAILED',
+        label: "失敗",
+        color: "error"
+    }
+} as const;

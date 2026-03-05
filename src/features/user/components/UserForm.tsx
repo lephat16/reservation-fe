@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import type { UserData, UserRequestData } from '../types/user';
 import { ROLES } from '../../../constants/role';
-import { StyledSelectTextField } from '../../../shared/styles/StyledSelectTextField';
+import { StyledSelectTextField } from '../../../shared/components/global/select/StyledSelectTextField';
 import { blueGrey } from '@mui/material/colors';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useEffect } from 'react';

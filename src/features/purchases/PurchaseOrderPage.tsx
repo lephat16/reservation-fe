@@ -47,12 +47,13 @@ import { blue, red } from "@mui/material/colors";
 import type { Order } from "../products/AllProductsPage";
 import { useEffect, useMemo, useState, } from "react";
 import type { PurchaseOrderData } from "./types/purchase";
-import { styledSelect } from "../../shared/styles/styledSelect";
+import { styledSelect } from "../../shared/components/global/select/styledSelect";
 import { TablePaginationActions } from "../../shared/components/pagination/PaginationAction";
 import { styledTable } from "../../shared/styles/StyleTable";
 import { ORDER_STATUS } from "../../constants/status";
 import SearchBar from "../../shared/components/global/SearchBar";
 import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";
+import { getCommonMenuProps } from "../../shared/components/global/select/SelectHelper";
 
 /** 
  * 購入一覧ページコンポーネント
@@ -271,7 +272,7 @@ const PurchaseOrderPage = () => {
                 ) : (
                     <Stack direction="row" justifyContent="space-between" >
                         <Stack direction="row" gap={1}>
-                            <FormControl sx={{ m: 1, ml: 0, width: { lg: 150, xs: 120 } }}>
+                            <FormControl sx={{ m: 1, ml: 0, width: { lg: 240, xs: 120 } }}>
                                 <InputLabel
                                     id="multiple-suppliers-label"
                                     sx={{
@@ -292,16 +293,10 @@ const PurchaseOrderPage = () => {
                                     input={<OutlinedInput label="仕入先" />}
                                     renderValue={(selected) => selected.join(', ')}
                                     sx={styledSelect}
-                                    MenuProps={{
-                                        PaperProps: {
-                                            sx: {
-                                                backgroundColor: colors.blueAccent[800],
-                                                color: colors.grey[100],
-                                                minWidth: 200,
-                                                boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                            }
-                                        }
-                                    }}
+                                    MenuProps={getCommonMenuProps({
+                                        backgroundColor: colors.blueAccent[800],
+                                        color: colors.grey[100],
+                                    })}
                                 >
                                     <MenuItem value='__CLEAR__'>
                                         <em>未選択</em>
@@ -314,9 +309,24 @@ const PurchaseOrderPage = () => {
                                                     '&.Mui-checked': {
                                                         color: colors.grey[200],
                                                     },
+                                                    p: 0,
                                                 }}
                                             />
-                                            <ListItemText primary={sup.supplierName} />
+                                            <Tooltip title={sup.supplierName}>
+                                                <ListItemText
+                                                    primary={sup.supplierName}
+                                                    slotProps={{
+                                                        primary: {
+                                                            sx: {
+                                                                maxWidth: { lg: 98, xs: 68 },
+                                                                overflow: "hidden",
+                                                                textOverflow: "ellipsis",
+                                                                whiteSpace: "nowrap",
+                                                            }
+                                                        }
+                                                    }}
+                                                />
+                                            </Tooltip>
                                         </MenuItem>
                                     ))}
                                 </Select>

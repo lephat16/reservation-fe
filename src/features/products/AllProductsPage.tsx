@@ -46,7 +46,7 @@ import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { productAPI } from "./api/productAPI";
 import { useStockWithSupplier } from "../stocks/hooks/useStockWithSupplier";
-import { styledSelect } from "../../shared/styles/styledSelect";
+import { styledSelect } from "../../shared/components/global/select/styledSelect";
 import { styledTable } from "../../shared/styles/StyleTable";
 import AddCardIcon from '@mui/icons-material/AddCard';
 import ProductForm from "./components/ProductForm";
@@ -57,6 +57,7 @@ import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 import { TablePaginationActions } from "../../shared/components/pagination/PaginationAction";
 import { useAddProduct } from "./hooks/useAddProduct";
 import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";
+import { getCommonMenuProps } from "../../shared/components/global/select/SelectHelper";
 
 /**
  * 在庫テーブルの1行コンポーネント
@@ -93,7 +94,7 @@ type Status = 'ACTIVE' | 'INACTIVE' | "";
 function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockData) => void; }) {
 
     const { row, onDelete } = props;
-    const { isMD, isSM } = useScreen(); // 画面サイズ判定
+    const { isMD } = useScreen(); // 画面サイズ判定
 
     const [open, setOpen] = useState(false); // Collapseの開閉状態
 
@@ -511,16 +512,10 @@ const AllProductsPage = () => {
                                         input={<OutlinedInput label="カテゴリー" />}
                                         renderValue={(selected) => selected.join(', ')}
                                         sx={styledSelect}
-                                        MenuProps={{
-                                            PaperProps: {
-                                                sx: {
-                                                    backgroundColor: colors.blueAccent[800],
-                                                    color: colors.grey[100],
-                                                    minWidth: 200,
-                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                                }
-                                            }
-                                        }}
+                                        MenuProps={getCommonMenuProps({
+                                            backgroundColor: colors.blueAccent[800],
+                                            color: colors.grey[100],
+                                        })}
                                     >
                                         <MenuItem value="__CLEAR__">
                                             <em>未選択</em>
@@ -536,9 +531,24 @@ const AllProductsPage = () => {
                                                         '&.Mui-checked': {
                                                             color: colors.grey[200],
                                                         },
+                                                        p: 0,
                                                     }}
                                                 />
-                                                <ListItemText primary={cat.name} />
+                                                <Tooltip title={cat.name}>
+                                                    <ListItemText
+                                                        primary={cat.name}
+                                                        slotProps={{
+                                                            primary: {
+                                                                sx: {
+                                                                    maxWidth: { lg: 100, xs: 68 },
+                                                                    overflow: "hidden",
+                                                                    textOverflow: "ellipsis",
+                                                                    whiteSpace: "nowrap",
+                                                                }
+                                                            }
+                                                        }}
+                                                    />
+                                                </Tooltip>
                                             </MenuItem>
                                         ))}
                                     </Select>
@@ -567,16 +577,10 @@ const AllProductsPage = () => {
                                         }}
                                         input={<OutlinedInput label="在庫数" />}
                                         sx={styledSelect}
-                                        MenuProps={{
-                                            PaperProps: {
-                                                sx: {
-                                                    backgroundColor: colors.blueAccent[800],
-                                                    color: colors.grey[100],
-                                                    minWidth: 200,
-                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                                }
-                                            }
-                                        }}
+                                        MenuProps={getCommonMenuProps({
+                                            backgroundColor: colors.blueAccent[800],
+                                            color: colors.grey[100],
+                                        })}
                                     >
                                         <MenuItem value={0}>
                                             <em>未選択</em>
@@ -608,17 +612,12 @@ const AllProductsPage = () => {
                                         }}
                                         input={<OutlinedInput label="ステータス" />}
                                         sx={styledSelect}
-                                        MenuProps={{
-                                            PaperProps: {
-                                                sx: {
-                                                    backgroundColor: colors.blueAccent[800],
-                                                    color: colors.grey[100],
-                                                    minWidth: 200,
-                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                                }
-                                            }
-                                        }}
+                                        MenuProps={getCommonMenuProps({
+                                            backgroundColor: colors.blueAccent[800],
+                                            color: colors.grey[100],
+                                        })}
                                     >
+
                                         <MenuItem value={0}>
                                             <em>未選択</em>
                                         </MenuItem>
@@ -675,22 +674,28 @@ const AllProductsPage = () => {
                                         multiple
                                         value={tempCategoryNames}
                                         onChange={(e) => {
+                                            const CLEAR = "__CLEAR__";
                                             const value = e.target.value;
-                                            setTempCategoryNames(typeof value === 'string' ? value.split(',') : value);
+                                            const values =
+                                                typeof value === "string" ? value.split(",") : value;
+
+                                            if (values.includes(CLEAR)) {
+                                                setTempCategoryNames([]);
+                                                return;
+                                            }
+
+                                            setTempCategoryNames(values);
                                         }}
                                         input={<OutlinedInput label="カテゴリー" />}
                                         renderValue={(selected) => selected.join(', ')}
-                                        MenuProps={{
-                                            PaperProps: {
-                                                sx: {
-                                                    backgroundColor: colors.primary[600],
-                                                    color: colors.grey[100],
-                                                    minWidth: 200,
-                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                                }
-                                            }
-                                        }}
+                                        MenuProps={getCommonMenuProps({
+                                            backgroundColor: colors.primary[600],
+                                            color: colors.grey[100],
+                                        })}
                                     >
+                                        <MenuItem value="__CLEAR__">
+                                            <em>未選択</em>
+                                        </MenuItem>
                                         {data?.categories.map(cat => (
                                             <MenuItem key={cat.id} value={cat.name}>
                                                 <Checkbox checked={tempCategoryNames.includes(cat.name)} />
@@ -715,16 +720,10 @@ const AllProductsPage = () => {
                                         value={tempQty}
                                         input={<OutlinedInput label="在庫数" />}
                                         onChange={(e) => setTempQty(Number(e.target.value))}
-                                        MenuProps={{
-                                            PaperProps: {
-                                                sx: {
-                                                    backgroundColor: colors.primary[600],
-                                                    color: colors.grey[100],
-                                                    minWidth: 200,
-                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                                }
-                                            }
-                                        }}
+                                        MenuProps={getCommonMenuProps({
+                                            backgroundColor: colors.primary[600],
+                                            color: colors.grey[100],
+                                        })}
                                     >
                                         <MenuItem value={0}><em>未選択</em></MenuItem>
                                         <MenuItem value={5}>5以上</MenuItem>
@@ -751,16 +750,10 @@ const AllProductsPage = () => {
                                             setTempStatus(value)
                                         }}
                                         input={<OutlinedInput label="ステータス" />}
-                                        MenuProps={{
-                                            PaperProps: {
-                                                sx: {
-                                                    backgroundColor: colors.primary[600],
-                                                    color: colors.grey[100],
-                                                    minWidth: 200,
-                                                    boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                                }
-                                            }
-                                        }}
+                                        MenuProps={getCommonMenuProps({
+                                            backgroundColor: colors.primary[600],
+                                            color: colors.grey[100],
+                                        })}
                                     >
                                         <MenuItem value={0}><em>未選択</em></MenuItem>
                                         <MenuItem value="ACTIVE">ACTIVE</MenuItem>
@@ -769,8 +762,8 @@ const AllProductsPage = () => {
                                 </FormControl>
 
                                 {/** Drawer フィルターの下部ボタン */}
-                                <Box mt="auto" display="flex" justifyContent="space-between" py={2}>
-                                    <Button variant="outlined" onClick={() => setOpenFilterDrawer(false)}>キャンセル</Button>
+                                <Box mt="auto" display="flex" justifyContent="right" gap={2} py={2}>
+                                    <Button variant="contained" color="warning" onClick={() => setOpenFilterDrawer(false)}>キャンセル</Button>
                                     <Button
                                         variant="contained"
                                         onClick={() => {

@@ -70,18 +70,6 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                     </colgroup>
                     <TableHead>
                         <TableRow>
-                            <TableCell
-                                align="center"
-                                colSpan={isMD ? 4 : 6}
-                                sx={{
-                                    fontWeight: "bold",
-                                    fontSize: 16,
-                                }}
-                            >
-                                引き取り履歴
-                            </TableCell>
-                        </TableRow>
-                        <TableRow>
                             <TableCell>ID</TableCell>
                             <TableCell>日付</TableCell>
                             <TableCell>合計</TableCell>

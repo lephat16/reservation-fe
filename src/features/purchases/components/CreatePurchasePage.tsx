@@ -18,7 +18,7 @@ import type { SupplierData } from '../../suppliers/types/supplier';
 import Header from '../../../shared/components/layout/Header';
 import { useSnackbar } from '../../../shared/hooks/SnackbarContext';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ErrorState from '../../../shared/components/messages/ErrorState';
 import { SNACKBAR_MESSAGES } from '../../../constants/message';
 import { purchaseAPI } from '../api/purchaseAPI';
@@ -27,7 +27,7 @@ import { useAllSuppliers } from '../../suppliers/hooks/useAllSuppliers';
 import { useSupplierProductsWithLeadTime } from '../../suppliers/hooks/useSupplierProductsWithLeadTime';
 import { PurchaseItemRow } from './PurchaseItemRow';
 import { PurchaseConfirmDialog } from './PurchaseConfirmDialog';
-import { styledSelect } from '../../../shared/styles/styledSelect';
+import { styledSelect } from '../../../shared/components/global/select/styledSelect';
 import { useScreen } from '../../../shared/hooks/ScreenContext';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 /**
@@ -57,6 +57,7 @@ const CreatePurchasePage = () => {
     const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const { preselectedSupplierId, preselectedSku } = location.state || {};
 
+    const navigate = useNavigate(); // ページ遷移用
     // ステート管理
     const [rows, setRows] = useState<PurchaseRow[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
@@ -176,6 +177,7 @@ const CreatePurchasePage = () => {
             setDescription("");
             setRows([]);
             setSelectedSupplier(null);
+            navigate(`/purchase-order/${createdPurchaseOrder.data.id}`);
         } catch (err) {
             showSnackbar(SNACKBAR_MESSAGES.ORDER.CREATE_FAILED, "error");
         }
@@ -198,14 +200,14 @@ const CreatePurchasePage = () => {
         };
 
         try {
-            await purchaseAPI.createPurchaseOrder(purchaseItem);
+            const savedPurchaseOrder = await purchaseAPI.createPurchaseOrder(purchaseItem);
             showSnackbar(SNACKBAR_MESSAGES.SAVE_SUCCESS, "success");
-
-            // reset
+            // リセットステート
             setOpenConfirmDialog(false);
             setDescription("");
             setRows([]);
             setSelectedSupplier(null);
+            navigate(`/purchase-order/${savedPurchaseOrder.data.id}`);
         } catch (e) {
             showSnackbar(SNACKBAR_MESSAGES.SAVE_FAILED, "error");
         }
@@ -309,6 +311,16 @@ const CreatePurchasePage = () => {
                                 label="仕入先"
                                 onChange={handleSupplierChange}
                                 sx={styledSelect}
+                                MenuProps={{
+                                    PaperProps: {
+                                        sx: {
+                                            backgroundColor: colors.blueAccent[900],
+                                            color: colors.grey[100],
+                                            minWidth: 200,
+                                            boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                        }
+                                    }
+                                }}
                             >
                                 {data?.map((supplier) => (
                                     <MenuItem key={supplier.id} value={supplier.id}>

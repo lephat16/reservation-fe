@@ -67,6 +67,7 @@ export interface StockData {
     sku?: string;
 };
 
+
 export interface WarehousesData {
     id: number;
     name: string;
@@ -76,6 +77,9 @@ export interface WarehousesData {
     createdAt: string;
     updatedAt: string;
     stocks: StockData[];
+};
+export type StockDataBySku = StockData & {
+    warehouseId: number;
 };
 
 export interface WarehouseFormData {

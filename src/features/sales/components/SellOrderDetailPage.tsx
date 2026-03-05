@@ -1,6 +1,7 @@
 import {
     Box,
     Button,
+    IconButton,
     Paper,
     Skeleton,
     Stack,
@@ -32,6 +33,7 @@ import useRoleFlags from "../../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 /**
  * 販売注文詳細ページコンポーネント
@@ -147,14 +149,25 @@ const SellOrderDetailPage = () => {
     });
     return (
         <Box mx={3} mb={3}>
-            {isLoading ? (
-                <Skeleton variant="text" width="80%" height={40} />
-            ) : (
-                !isSM && <Header
-                    title={`注文番号: ${data?.id ?? ""}`}
-                    subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${data?.createdAt ?? ""}`}
-                />
-            )}
+            <Box display="flex" justifyContent="space-between">
+                {isLoading ? (
+                    <Skeleton variant="text" width="80%" height={40} />
+                ) : (
+                    !isSM && <Header
+                        title={`注文番号: ${data?.id ?? ""}`}
+                        subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${data?.createdAt ?? ""}`}
+                    />
+                )}
+                <Box mt={4}>
+                    <Tooltip title="元に戻す">
+                        <IconButton aria-label="元に戻す" color='info' onClick={() => {
+                            navigate("/sell-order");
+                        }}>
+                            <ArrowBackIcon fontSize="large" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
             <Box mt={3} height="75vh">
                 {/* エラー表示 */}
                 {(error) && (

@@ -52,7 +52,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
             sx={{
                 mt: 2,
                 p: 3,
-                background: `${colors.primary[400]}`
+                background: `${colors.primary[400]}`,
+                minHeight:450
             }}>
             <Typography
                 className="title"

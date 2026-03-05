@@ -2,6 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
     Box,
     Button,
+    Divider,
     FormControl,
     IconButton,
     InputLabel,
@@ -10,6 +11,7 @@ import {
     Skeleton,
     Stack,
     Tooltip,
+    Typography,
     useTheme,
 } from "@mui/material";
 import Header from "../../../shared/components/layout/Header";
@@ -30,7 +32,7 @@ import OrderBySupplierTable from "./OrderBySupplierTable";
 import SupplierCategoryTable from "./SupplierCategoryTable";
 import AddIcon from '@mui/icons-material/Add';
 import { useScreen } from "../../../shared/hooks/ScreenContext";
-import { styledSelect } from "../../../shared/styles/styledSelect";
+import { styledSelect } from "../../../shared/components/global/select/styledSelect";
 import { tokens } from "../../../shared/theme";
 import SupplierProductForm from "./SupplierProductForm";
 import { useProducts } from "../../products/hooks/useProducts";
@@ -199,15 +201,15 @@ const SupplierPage = () => {
                     />
 
                 )}
-                <Box mt={4}>
+                {!isSM && <Box>
                     <Tooltip title="元に戻す">
                         <IconButton aria-label="元に戻す" color='info' onClick={() => {
-                            window.history.back()
+                            navigate("/suppliers")
                         }}>
                             <ArrowBackIcon fontSize="large" />
                         </IconButton>
                     </Tooltip>
-                </Box>
+                </Box>}
             </Box>
             <Box minHeight="75vh">
                 {/* エラー表示 */}
@@ -227,11 +229,22 @@ const SupplierPage = () => {
                                     justifyContent="space-between"
                                     flexDirection={{ md: 'row', xs: 'column' }}
                                 >
-                                    <SupplierDetailCard
-                                        supplier={data?.supplier}
-                                        openDeleteDialog={() => handleDelete()}
-                                        openEditDialog={() => setOpenEditSupplierForm(true)}
-                                    />
+                                    <Box display="flex" flexDirection="row" justifyContent="space-between">
+                                        <SupplierDetailCard
+                                            supplier={data?.supplier}
+                                            openDeleteDialog={() => handleDelete()}
+                                            openEditDialog={() => setOpenEditSupplierForm(true)}
+                                        />
+                                        {isSM && <Box>
+                                            <Tooltip title="元に戻す">
+                                                <IconButton aria-label="元に戻す" color='info' onClick={() => {
+                                                    navigate("/suppliers")
+                                                }}>
+                                                    <ArrowBackIcon fontSize="large" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Box>}
+                                    </Box>
 
                                     <SupplierStatCard purchaseOrder={dataPO} />
                                 </Box>
@@ -332,7 +345,6 @@ const SupplierPage = () => {
                                     .map(cat => (
                                         <SupplierCategoryTable
                                             key={cat.categoryName}
-                                            categoryName={cat.categoryName}
                                             products={cat.products}
                                             supplierId={Number(supplierId)}
                                             supplierStatus={data.supplier.supplierStatus}
@@ -344,6 +356,9 @@ const SupplierPage = () => {
                                 <Skeleton variant="rectangular" height={400} />
                             ) : (
                                 <Box>
+                                    <Divider sx={{ mb: 1 }}>
+                                        <Typography variant="h6">引き取り履歴</Typography>
+                                    </Divider>
                                     <OrderBySupplierTable
                                         purchaseOrder={dataPO}
                                     />

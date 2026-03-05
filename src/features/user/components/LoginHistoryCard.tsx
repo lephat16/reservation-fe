@@ -1,10 +1,11 @@
-import { Card, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Typography, useTheme } from "@mui/material";
+import { Card, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Tooltip, Typography, useTheme } from "@mui/material";
 import type { LoginHistories } from "../types/user";
 import { styledTable } from "../../../shared/styles/StyleTable";
 import { tokens } from "../../../shared/theme";
 import { useState } from "react";
 import { getCommonSlotProps } from "../../../shared/components/pagination/TablePaginationHelper";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
+import { LOGIN_STATUS } from "../../../constants/status";
 
 /**
  * 商品詳細カードコンポーネント
@@ -38,7 +39,8 @@ const LoginHistoriesCard = ({ loginHistories, isLoading, error }: LoginHistories
     <Card
       sx={{
         background: colors.primary[400],
-        mt: 2
+        mt: 2,
+        minHeight: 450
       }}
     >
       <Typography
@@ -55,13 +57,26 @@ const LoginHistoriesCard = ({ loginHistories, isLoading, error }: LoginHistories
         sx={{
           maxHeight: '75vh',
           overflowY: 'auto',
+          minWidth: { xs: 308, md: 600 }
         }}>
         <Table
           stickyHeader
           sx={{
-            ...styledTable(colors)
+            tableLayout: "fixed",
+            ...styledTable(colors),
+            '& .MuiTableCell-root': {
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
           }}
         >
+          <colgroup>
+            <col style={{ width: "15%" }} />
+            <col style={{ width: isSM ? "20%" : "25%" }} />
+            <col style={{ width: "35%" }} />
+            <col style={{ width: isSM ? "25%" : "15%" }} />
+          </colgroup>
           <TableHead>
             <TableRow>
               <TableCell>日時</TableCell>
@@ -70,48 +85,58 @@ const LoginHistoriesCard = ({ loginHistories, isLoading, error }: LoginHistories
               <TableCell>状態</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
+          <TableBody >
             {loginHistories
               .slice(
                 page * rowsPerPage,
                 rowsPerPage > 0 ? page * rowsPerPage + rowsPerPage : loginHistories.length
               )
-              .map((history) => (
-                <TableRow key={history.id}>
-                  <TableCell>
-                    {history.loginTime}
-                  </TableCell>
-                  <TableCell>
-                    {history.ipAddress}
-                  </TableCell>
-                  <TableCell>
-                    {history.userAgent}
-                  </TableCell>
-                  <TableCell>
-                    {history.status}
-                  </TableCell>
-                </TableRow>
-              ))}
+              .map((history) => {
+                const loginTime = new Date(history.loginTime);
+                return (
+                  <TableRow key={history.id}>
+                    <TableCell>
+                      <Tooltip title={loginTime.toLocaleString()}>
+                        <span>{loginTime.toLocaleDateString()}</span>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell>
+                      {history.ipAddress}
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title={history.device}>
+                        <span>{history.device}</span>
+                      </Tooltip>
+
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={LOGIN_STATUS[history.status].label}
+                        color={LOGIN_STATUS[history.status].color}
+                      />
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
 
           </TableBody>
           <TableFooter>
             <TableRow>
               <TablePagination
                 rowsPerPageOptions={[5, 10,]}
-                colSpan={5}
+                colSpan={4}
                 count={loginHistories.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 slotProps={getCommonSlotProps(isSM)}
                 onPageChange={(_, newPage) => { setPage(newPage) }}
                 onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))}
-
               />
             </TableRow>
           </TableFooter>
         </Table>
       </TableContainer>
-    </Card>
+    </Card >
   )
 }
 

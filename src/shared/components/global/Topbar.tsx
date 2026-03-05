@@ -52,7 +52,8 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
     <Box
       display="flex"
       justifyContent="space-between"
-      p={2}
+      p={1}
+      marginLeft="auto"
       sx={{
         position: "sticky",
         top: 0,
@@ -60,7 +61,7 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
       }}
     >
       {/* SEARCH BAR */}
-      <Box
+      {/* <Box
         sx={{
           display: "flex",
           backgroundColor: colors.primary[400],
@@ -71,7 +72,7 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
         <IconButton type="button" sx={{ p: 1 }}>
           <SearchIcon />
         </IconButton>
-      </Box>
+      </Box> */}
       {/* ICONS */}
       <Box display="flex">
         <IconButton
@@ -84,12 +85,12 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
             <DarkModeOutlinedIcon />
           )}
         </IconButton>
-        <IconButton>
+        {/* <IconButton>
           <NotificationsOutlinedIcon />
-        </IconButton>
-        <IconButton>
+        </IconButton> */}
+        {/* <IconButton>
           <SettingsOutlinedIcon />
-        </IconButton>
+        </IconButton> */}
         <IconButton
           onClick={handleClick}
           size="small"

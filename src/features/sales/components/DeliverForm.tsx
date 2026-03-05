@@ -15,8 +15,8 @@ import {
 } from '@mui/material';
 import { useState } from 'react'
 import { tokens } from '../../../shared/theme';
-import { useParams } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Header from '../../../shared/components/layout/Header';
 import { type GridColDef } from '@mui/x-data-grid';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
@@ -25,8 +25,7 @@ import { ReceiveFormDialog } from '../../purchases/components/ReceiveForm';
 import { jaJP } from '@mui/x-data-grid/locales';
 import ErrorState from '../../../shared/components/messages/ErrorState';
 import { SNACKBAR_MESSAGES } from '../../../constants/message';
-import type { WarehouseWithLocationData } from '../../products/types/product';
-import type { DeliverStockItem } from '../../stocks/types/stock';
+import type { DeliverStockItem, } from '../../stocks/types/stock';
 import { stockAPI } from '../../stocks/api/stockAPI';
 import { useSaleOrderDetail } from '../hooks/useSaleOrderDetail';
 import { useInventoryHistoryBySaleOrder } from '../../stocks/hooks/useInventoryHistoryBySaleOrder';
@@ -34,6 +33,8 @@ import { StyledDataGrid } from '../../../shared/components/global/StyledDataGrid
 import useRoleFlags from '../../auth/hooks/useRoleFlags';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import { useSnackbar } from '../../../shared/hooks/SnackbarContext';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useStockBySku } from '../../stocks/hooks/useStockBySku';
 
 const DeliverForm = () => {
 
@@ -44,7 +45,7 @@ const DeliverForm = () => {
     const { isStaff } = useRoleFlags();
     const queryClient = useQueryClient();
     const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
-
+    const navigate = useNavigate();
     // ステート
     const [openDeliverForm, setOpenDeliverForm] = useState(false);
     const [selectedRemains, setSelectedRemains] = useState<number | null>(null);
@@ -59,15 +60,7 @@ const DeliverForm = () => {
     // 在庫履歴取得
     const { isLoading: isLoadingStock, error: errorStock, data: dataStock } = useInventoryHistoryBySaleOrder(Number(soId));
     // 選択SKUに基づく倉庫データ取得
-    const { data: whData } = useQuery<WarehouseWithLocationData[]>({
-        queryKey: ["selectedSku"],
-        queryFn: async () => {
-            if (!selectedSku) return [];
-            const resWarehouse = await stockAPI.getAllWarehouseWithLocationBySku(selectedSku);
-            return resWarehouse.data;
-        },
-        enabled: !!selectedSku
-    });
+    const { data: dataStockBySku } = useStockBySku(selectedSku);
     // 出荷処理
     const deliverMutation = useMutation({
         mutationFn: async (data: { deliverItem: DeliverStockItem[], soId: number }) => {
@@ -75,8 +68,9 @@ const DeliverForm = () => {
         },
         onSuccess: () => {
             showSnackbar(SNACKBAR_MESSAGES.SELL.DELIVER_SUCCESS, "success");
-            queryClient.invalidateQueries({ queryKey: ["saleOrderDetail"] });
-
+            queryClient.invalidateQueries({ queryKey: ["sell-order-detail", Number(soId)] });
+            queryClient.invalidateQueries({ queryKey: ["stock-history-by-so", Number(soId)] });
+            queryClient.invalidateQueries({ queryKey: ["stocks-by-sku", selectedSku] });
             setOpenDeliverForm(false);
         },
         onError: (error: unknown) => {
@@ -123,21 +117,26 @@ const DeliverForm = () => {
         },
     ];
     return (
-        <Box
-            m={2}
-            p={1}
-            sx={{
-                borderRadius: 1
-            }}
-        >
-            {(isLoadingSOD) ? (
-                <Skeleton variant="text" width="80%" height={40} />
-            ) : (
-                < Header
-                    title={`受注番号: ${dataSOD?.id ?? ""} | 顧客: ${dataSOD?.customerName ?? ""}`}
-                    subtitle={`ステータス: ${dataSOD?.status ?? ""}`}
-                />
-            )}
+        <Box mx={3} mb={3}>
+            <Box display="flex" justifyContent="space-between">
+                {(isLoadingSOD) ? (
+                    <Skeleton variant="text" width="80%" height={40} />
+                ) : (
+                    < Header
+                        title={`受注番号: ${dataSOD?.id ?? ""} | 顧客: ${dataSOD?.customerName ?? ""}`}
+                        subtitle={`ステータス: ${dataSOD?.status ?? ""}`}
+                    />
+                )}
+                <Box mt={4}>
+                    <Tooltip title="元に戻す">
+                        <IconButton aria-label="元に戻す" color='info' onClick={() => {
+                            navigate(`/sell-order/${soId}`);
+                        }}>
+                            <ArrowBackIcon fontSize="large" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
             <Box mt={3} height="75vh">
                 {/* エラー表示 */}
                 {(errorSOD || errorStock) && (
@@ -254,7 +253,7 @@ const DeliverForm = () => {
                             }
                         }}
                         isPending={deliverMutation.isPending}
-                        warehouses={whData || []}
+                        stockBySku={dataStockBySku || []}
                         product={selectedProduct}
                         remains={selectedRemains || 0}
                         poId={soId || ""}

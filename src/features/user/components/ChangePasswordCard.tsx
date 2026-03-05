@@ -113,8 +113,9 @@ const ChangePasswordCard = ({ onSubmit }: ChangePasswordProps) => {
         <Card
             sx={{
                 p: 3,
+                mt: 2,
                 background: colors.primary[400],
-                mt: 2
+                minHeight: 450
             }}
         >
             <Typography
@@ -126,7 +127,7 @@ const ChangePasswordCard = ({ onSubmit }: ChangePasswordProps) => {
             >
                 パスワード変更
             </Typography>
-            <Stack spacing={2} component="form" onSubmit={handleSubmit(handleFormSubmit)}>
+            <Stack spacing={2} component="form" onSubmit={handleSubmit(handleFormSubmit)} pt={3}>
                 <Controller
                     name="currentPassword"
                     control={control}
@@ -164,7 +165,6 @@ const ChangePasswordCard = ({ onSubmit }: ChangePasswordProps) => {
                         />
                     )}
                 />
-
                 <Controller
                     name="newPassword"
                     control={control}
@@ -239,8 +239,7 @@ const ChangePasswordCard = ({ onSubmit }: ChangePasswordProps) => {
                     )}
                 />
 
-                <Stack direction="row" spacing={2} justifyContent="flex-end">
-
+                <Stack direction="row" spacing={2} justifyContent="flex-end" pt={3}>
                     <Button
                         type="submit"
                         variant="contained"

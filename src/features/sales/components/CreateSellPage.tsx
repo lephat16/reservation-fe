@@ -6,9 +6,11 @@ import {
     DialogContent,
     DialogTitle,
     Grid,
+    IconButton,
     Skeleton,
     Stack,
     TextField,
+    Tooltip,
     Typography,
     useTheme
 } from "@mui/material"
@@ -27,6 +29,8 @@ import type { CategorySummariesData } from "../../categories/types/category";
 import { useCategorySummaries } from "../../categories/hooks/useCategorySummaries";
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate } from "react-router-dom";
 
 /** 
  * 新規販売注文作成ページコンポーネント
@@ -83,6 +87,7 @@ const CreateSellPage = () => {
     const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const { isSM } = useScreen();
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
     // ステート
     const [customerName, setCustomerName] = useState<string>("");
@@ -225,7 +230,6 @@ const CreateSellPage = () => {
 
     // 注文確定処理（即時発注）
     const handleSell = async () => {
-
         const sellItem = buildSellItem();
         if (!sellItem) return;
 
@@ -249,6 +253,7 @@ const CreateSellPage = () => {
                     queryKey: ["supplierProductsByCategory", categoryId]
                 });
             });
+            navigate(`/sell-order/${createdSaleOrder.data.id}`);
         } catch (err) {
             showSnackbar(SNACKBAR_MESSAGES.SELL.CREATE_FAILED, "error");
         }
@@ -273,7 +278,7 @@ const CreateSellPage = () => {
         };
 
         try {
-            await saleAPI.createSaleOrder(sellItem);
+            const savedSaleOrder = await saleAPI.createSaleOrder(sellItem);
             showSnackbar(SNACKBAR_MESSAGES.SAVE_SUCCESS, "success");
 
             // reset
@@ -281,6 +286,7 @@ const CreateSellPage = () => {
             setDescription("");
             setRows([defaultItem]);
             setCustomerName("");
+            navigate(`/sell-order/${savedSaleOrder.data.id}`);
         } catch (e) {
             showSnackbar(SNACKBAR_MESSAGES.SAVE_FAILED, "error");
         }
@@ -301,14 +307,25 @@ const CreateSellPage = () => {
 
     return (
         <Box mx={3} mb={3}>
-            {isLoading ? (
-                <Skeleton variant="text" width="80%" height={40} />
-            ) : (
-                !isSM && <Header
-                    title="新規販売注文作成"
-                    subtitle="新しい規販注文の詳細を入力してください"
-                />
-            )}
+            <Box display="flex" justifyContent="space-between">
+                {isLoading ? (
+                    <Skeleton variant="text" width="80%" height={40} />
+                ) : (
+                    !isSM && <Header
+                        title="新規販売注文作成"
+                        subtitle="新しい規販注文の詳細を入力してください"
+                    />
+                )}
+                <Box mt={4}>
+                    <Tooltip title="元に戻す">
+                        <IconButton aria-label="元に戻す" color='info' onClick={() => {
+                            window.history.back()
+                        }}>
+                            <ArrowBackIcon fontSize="large" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
             <Box mt={3} minHeight="75vh">
                 {/* エラー表示 */}
                 {(error) && (

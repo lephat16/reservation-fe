@@ -4,7 +4,7 @@ import { stockAPI } from "../api/stockAPI";
 
 export const useInventoryHistoryBySaleOrder = (soId: number) => {
     return useQuery<InventoryHistoryBySaleOrder[]>({
-        queryKey: ["stock-history-by-so"],
+        queryKey: ["stock-history-by-so", soId],
         queryFn: async () => {
             const resInventoryHistoryBySaleOrder = await stockAPI.getInventoryHistoryBySaleOrder(soId);
             return resInventoryHistoryBySaleOrder.data

@@ -54,7 +54,7 @@ export interface WarehouseWithLocationData {
 }
 
 export interface SumReceivedGroupByProduct {
-    productId: string;
+    supplierProductId: string;
     receivedQty: number;
     sku: string;
 }

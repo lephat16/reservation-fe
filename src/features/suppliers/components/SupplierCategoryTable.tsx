@@ -42,14 +42,13 @@ import { getErrorMessage } from "../../../shared/utils/errorHandler";
  */
 
 type SupplierCategoryTableProps = {
-    categoryName: string | undefined;
     products: SupplierProductData[];
     supplierId: number;
     supplierStatus: "ACTIVE" | "INACTIVE";
     showSnackbar: (message: string, type: "success" | "error") => void;
 };
 
-const SupplierCategoryTable = ({ categoryName, products, supplierId, supplierStatus, showSnackbar }: SupplierCategoryTableProps) => {
+const SupplierCategoryTable = ({ products, supplierId, supplierStatus, showSnackbar }: SupplierCategoryTableProps) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const isMD = useScreen()
@@ -110,19 +109,7 @@ const SupplierCategoryTable = ({ categoryName, products, supplierId, supplierSta
                             <col style={{ width: isMD ? "25%" : "15%" }} />
                         </colgroup>
                         <TableHead >
-                            <TableRow>
-                                <TableCell
-                                    align="center"
-                                    colSpan={isMD ? 4 : 6}
-                                    sx={{
-                                        fontWeight: "bold",
-                                        backgroundColor: colors.blueAccent[500],
-                                        fontSize: 16,
-                                        color: colors.grey[100]
-                                    }}>
-                                    {categoryName}
-                                </TableCell>
-                            </TableRow>
+
                             <TableRow
                                 sx={{ backgroundColor: colors.primary[900] }}>
                                 <TableCell>

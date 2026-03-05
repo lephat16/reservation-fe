@@ -113,7 +113,7 @@ const ProfilePage = () => {
     };
 
     return (
-        <Box mt={3} height="75vh" width={{ lg: 900, md: 700 }} justifySelf="center">
+        <Box mt={3} height="75vh" width={{xs:"100%", lg: 900, md: 700 }} justifySelf="center">
 
             {/* ページタイトルとタブ */}
             <Box

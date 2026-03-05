@@ -31,7 +31,7 @@ import * as yup from 'yup';
 import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm, type Resolver } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { StyledSelectTextField } from '../../../shared/styles/StyledSelectTextField'
+import { StyledSelectTextField } from '../../../shared/components/global/select/StyledSelectTextField'
 import CommentIcon from '@mui/icons-material/Comment';
 import type { ProductData } from '../../products/types/product'
 

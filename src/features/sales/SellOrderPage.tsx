@@ -47,7 +47,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { SaleOrderData } from "./types/sell";
 import { ORDER_STATUS } from "../../constants/status";
 import { TablePaginationActions } from "../../shared/components/pagination/PaginationAction";
-import { styledSelect } from "../../shared/styles/styledSelect";
+import { styledSelect } from "../../shared/components/global/select/styledSelect";
 import { blue, red } from "@mui/material/colors";
 import SearchBar from "../../shared/components/global/SearchBar";
 import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";

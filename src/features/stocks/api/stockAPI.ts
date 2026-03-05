@@ -1,7 +1,7 @@
 import { api } from "../../../shared/api/axiosClient";
 import type { ApiResponse } from "../../../shared";
 import type { WarehouseWithLocationData } from "../../products/types/product";
-import type { DeliverStockItem, InventoryHistoryByPurchaseOrder, InventoryHistoryBySaleOrder, ReceiveStockItem, StockHistoriesWithDetailData, StockResultData, StockWithSupplierAndProduct, WarehouseFormData, WarehousesData, WarehouseWithTotalChangedQtyData } from "../types/stock";
+import type { DeliverStockItem, InventoryHistoryByPurchaseOrder, InventoryHistoryBySaleOrder, ReceiveStockItem, StockDataBySku, StockHistoriesWithDetailData, StockResultData, StockWithSupplierAndProduct, WarehouseFormData, WarehousesData, WarehouseWithTotalChangedQtyData } from "../types/stock";
 
 export const stockAPI = {
     getAllWarehouseWithLocation: async (): Promise<ApiResponse<WarehouseWithLocationData[]>> => {
@@ -42,5 +42,8 @@ export const stockAPI = {
     },
     getAllStockWithSupplierAndProduct: async (): Promise<ApiResponse<StockWithSupplierAndProduct[]>> => {
         return (await api.get(`/inventory/stock/all-with-supplier`));
+    },
+    getStocksBySku: async (sku: string): Promise<ApiResponse<StockDataBySku[]>> => {
+        return (await api.get(`/inventory/stock/by-sku/${sku}`,));
     },
 }
