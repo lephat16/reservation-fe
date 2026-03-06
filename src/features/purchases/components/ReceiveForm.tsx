@@ -45,6 +45,7 @@ import useRoleFlags from "../../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { StyledSelectTextField } from "../../../shared/components/global/select/StyledSelectTextField";
 
 /**
  * 受領確認ダイアログコンポーネント
@@ -291,7 +292,7 @@ export const ReceiveFormDialog = ({
                         name="warehouses"
                         control={control}
                         render={({ field }) => (
-                            <TextField
+                            <StyledSelectTextField
                                 label="倉庫"
                                 select
                                 fullWidth
@@ -299,6 +300,7 @@ export const ReceiveFormDialog = ({
                                 {...field}
                                 error={!!errors.warehouses}
                                 helperText={errors.warehouses ? errors.warehouses.message : ' '}
+                                bgColor={colors.greenAccent[900]}
                             >
                                 {stockBySku?.map((stock) => (
                                     <MenuItem key={stock.warehouseId} value={stock.warehouseId}>
@@ -312,7 +314,7 @@ export const ReceiveFormDialog = ({
                                         {wh.name}
                                     </MenuItem>
                                 ))}
-                            </TextField>
+                            </StyledSelectTextField>
                         )}
                     />
                     {/* 受領数量フィールド */}

@@ -1,13 +1,10 @@
 import { Avatar, Box, Divider, IconButton, ListItemIcon, Menu, MenuItem, Typography, useTheme } from "@mui/material";
 import { useContext, useState } from "react";
 import { ColorModeContext, tokens } from "../../theme";
-import InputBase from "@mui/material/InputBase";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from '@mui/icons-material/Menu';
 import React from "react";
 import PersonAdd from '@mui/icons-material/PersonAdd';
@@ -85,16 +82,15 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
             <DarkModeOutlinedIcon />
           )}
         </IconButton>
-        {/* <IconButton>
+        <IconButton>
           <NotificationsOutlinedIcon />
-        </IconButton> */}
+        </IconButton>
         {/* <IconButton>
           <SettingsOutlinedIcon />
         </IconButton> */}
         <IconButton
           onClick={handleClick}
           size="small"
-          sx={{ ml: 2 }}
           aria-controls={open ? 'account-menu' : undefined}
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}

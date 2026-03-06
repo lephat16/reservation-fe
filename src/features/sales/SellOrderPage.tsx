@@ -22,8 +22,6 @@ import {
     TableSortLabel,
     Tooltip,
     useTheme,
-    type SxProps,
-    type Theme
 } from "@mui/material";
 import { tokens } from "../../shared/theme";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +39,6 @@ import useRoleFlags from "../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 import { styledTable } from "../../shared/styles/StyleTable";
-import type { Column } from "../purchases/PurchaseOrderPage";
 import type { Order } from "../products/AllProductsPage";
 import { useEffect, useMemo, useState } from "react";
 import type { SaleOrderData } from "./types/sell";
@@ -51,6 +48,8 @@ import { styledSelect } from "../../shared/components/global/select/styledSelect
 import { blue, red } from "@mui/material/colors";
 import SearchBar from "../../shared/components/global/SearchBar";
 import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";
+import type { Column } from "../../shared/types/shared";
+import { cellStyle } from "../../shared/styles/cellSyle";
 
 /** 
  * 販売注文一覧ページコンポーネント
@@ -80,13 +79,6 @@ const renderStatusChip = (status: keyof typeof ORDER_STATUS) => {
     />;
 };
 
-const cellStyle = (align?: "right" | "center", truncate?: boolean): SxProps<Theme> => ({
-    textAlign: align,
-    whiteSpace: truncate ? "nowrap" : "normal",
-    overflow: truncate ? "hidden" : "visible",
-    textOverflow: truncate ? "ellipsis" : "clip",
-});
-
 const SellOrderPage = () => {
 
     // フック
@@ -101,7 +93,7 @@ const SellOrderPage = () => {
 
     // ソート用state
     const [order, setOrder] = useState<Order>('desc');
-    const [orderBy, setOrderBy] = useState<'id' | 'total' | 'createdAt'>('createdAt');
+    const [orderBy, setOrderBy] = useState<keyof SaleOrder>('createdAt');
     // フィルターや選択状態のstate
     const [selectedStatus, setSelectedStatus] = useState<keyof typeof ORDER_STATUS | "">("");
     const [searchText, setSearchText] = useState<string>("");
@@ -113,7 +105,7 @@ const SellOrderPage = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
     // テーブルの列定義
-    const columns: Column[] = [
+    const columns: Column<SaleOrder>[] = [
         { key: "id", label: "ID", width: isMD ? "10%" : "5%", sortable: true },
         { key: "customerName", label: "顧客", width: isMD ? "35%" : "15%", truncate: true },
         { key: "status", label: "ステータス", width: isMD ? "30%" : "10%", align: "center", truncate: true },
@@ -198,9 +190,9 @@ const SellOrderPage = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    !isSM && <Header title="販売一覧:" subtitle="販売情報の一覧表示" />
+                    <Header title="販売一覧" subtitle={!isSM ? "販売情報の一覧表示" : ""} />
                 )}
-                <Box mt={4} >
+                <Box sx={{ mt: { sm: 4 } }} >
                     {(isAdmin || isStaff) && (
                         <Button
                             variant="contained"
@@ -225,7 +217,7 @@ const SellOrderPage = () => {
                     <Stack direction="row" justifyContent="space-between">
                         <Stack direction="row" gap={1}>
                             {/** ステータスフィルター */}
-                            <FormControl sx={{ m: 1, width: { lg: 150, xs: 120 } }}>
+                            <FormControl sx={{ width: { lg: 150, xs: 120 } }}>
                                 <InputLabel
                                     id="multiple-status-label"
                                     sx={{
@@ -291,7 +283,8 @@ const SellOrderPage = () => {
                                 sx={{
                                     tableLayout: "fixed",
                                     ...styledTable(colors),
-                                }}>
+                                }}
+                            >
                                 <colgroup>
                                     {columns.map(
                                         (col) => (!isMD || !col.hideOnMobile ? <col key={col.key} style={{ width: col.width }} /> : null)
@@ -324,7 +317,7 @@ const SellOrderPage = () => {
                                                                 onClick={() => {
                                                                     const isAsc = orderBy === col.key && order === 'asc';
                                                                     setOrder(isAsc ? 'desc' : 'asc');
-                                                                    setOrderBy(col.key);
+                                                                    setOrderBy(col.key as keyof SaleOrder);
                                                                 }}
                                                             >
                                                                 {col.label}

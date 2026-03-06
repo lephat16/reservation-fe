@@ -34,6 +34,10 @@ import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { styledTable } from "../../../shared/styles/StyleTable";
+import type { Column } from "../../../shared/types/shared";
+import { cellStyle } from "../../../shared/styles/cellSyle";
+import { renderStatusChip } from "../../purchases/PurchaseOrderPage";
 
 /**
  * 販売注文詳細ページコンポーネント
@@ -42,6 +46,10 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
  * 商品一覧、数量、単価、合計金額、注文説明を表示します。
  * また、注文の編集・削除・受注確定・出荷操作を行うことができます。
  */
+
+type SaleOrderDetailRow = SaleOrderDetailData & {
+    subtotal: number;
+};
 
 const descriptionSchema = yup.object({
     description: yup
@@ -72,6 +80,23 @@ const SellOrderDetailPage = () => {
 
     // 注文詳細取得
     const { isLoading, error, data } = useSaleOrderDetail(Number(soId));
+
+    const rows: SaleOrderDetailRow[] = useMemo(() => {
+        return (details ?? []).map(d => ({
+            ...d,
+            subtotal: d.qty * d.price
+        }));
+    }, [details]);
+    // テーブルの列定義
+    const columns: Column<SaleOrderDetailRow>[] = [
+        { key: "productName", label: "商品名", width: isSM ? "25%" : "15%", truncate: true },
+        { key: "sku", label: isSM ? "SKU" : "SKUコード", width: isSM ? "25%" : "15%", align: "center", truncate: true, sortable: true },
+        { key: "qty", label: "数量", width: isSM ? "25%" : "10%", align: "center", truncate: true, },
+        { key: "price", label: isSM ? "単価" : "単価(円)", width: isSM ? "30%" : "15%", align: "center", truncate: true, hideOnMobile: true },
+        { key: "subtotal", label: isSM ? "小計" : "小計(円)", width: "15%", align: "center", hideOnMobile: true },
+        { key: "status", label: "ステータス", width: isSM ? "25%" : "15%", align: "center", truncate: true },
+    ];
+
 
     // 注文詳細の初期セット
     useEffect(() => {
@@ -147,15 +172,22 @@ const SellOrderDetailPage = () => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.SELL.CREATE_FAILED, "error");
         }
     });
+
+    const createdAt = data?.createdAt ? new Date(data?.createdAt ?? "").toLocaleDateString("ja-JP", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long"
+    }) : "";
     return (
         <Box mx={3} mb={3}>
             <Box display="flex" justifyContent="space-between">
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    !isSM && <Header
+                    <Header
                         title={`注文番号: ${data?.id ?? ""}`}
-                        subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${data?.createdAt ?? ""}`}
+                        subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${createdAt}`}
                     />
                 )}
                 <Box mt={4}>
@@ -178,56 +210,84 @@ const SellOrderDetailPage = () => {
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
                     <TableContainer component={Paper} sx={{ mb: 3 }}>
-                        <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
+                        <Table
+                            sx={{
+                                tableLayout: "fixed",
+                                ...styledTable(colors),
+                            }}
+                        >
+                            <colgroup>
+                                {columns.map(
+                                    (col) => (!isSM || !col.hideOnMobile ? <col key={col.key} style={{ width: col.width }} /> : null)
+                                )}
+                            </colgroup>
                             <TableHead>
-                                <TableRow
-                                    sx={{
-                                        fontWeight: "bold",
-                                        backgroundColor: colors.blueAccent[500],
-                                        color: colors.grey[100]
-                                    }}
-                                >
-                                    <TableCell>商品名</TableCell>
-                                    <TableCell>SKUコード</TableCell>
-                                    <TableCell>数量</TableCell>
-                                    <TableCell>単価（円）</TableCell>
-                                    <TableCell>小計（円）</TableCell>
-                                    <TableCell>ステータス</TableCell>
+                                <TableRow>
+                                    {columns.map(col => !isSM || !col.hideOnMobile ? (
+                                        <TableCell
+                                            key={col.key}
+                                            sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}
+                                        >
+                                            {col.label}
+                                        </TableCell>
+                                    ) : null)}
                                 </TableRow>
                             </TableHead>
 
                             <TableBody>
                                 {/* 注文行 */}
-                                {(data?.details ?? [].length > 0) ? (
-                                    details.map((detail, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>{detail.productName}</TableCell>
-                                            <TableCell>{detail.sku}</TableCell>
-                                            <TableCell>
-                                                {isEditing ? (
-                                                    <TextField
-                                                        type="number"
-                                                        value={detail.qty}
-                                                        onChange={(e) => {
-                                                            const newQty = Number(e.target.value);
-                                                            const newDetails = [...details];
-                                                            newDetails[index].qty = newQty;
-                                                            setDetails(newDetails);
-                                                        }}
-                                                        size="small"
-                                                        autoFocus={index === 0}
-                                                        slotProps={{
-                                                            input: {
-                                                                inputProps: { min: 0 },
-                                                            },
-                                                        }}
-                                                    />
-                                                ) : (data?.status === "NEW" ? detail.qty : `${detail.deliveredQty || 0}/${detail.qty}`)}
-
-                                            </TableCell>
-                                            <TableCell>{detail.price}</TableCell>
-                                            <TableCell>{detail.qty * detail.price}</TableCell>
-                                            <TableCell>{detail.status}</TableCell>
+                                {(rows.length > 0) ? (
+                                    rows.map((row, index) => (
+                                        <TableRow key={row.id}>
+                                            {columns.map(col => {
+                                                if (isSM && col.hideOnMobile) return null;
+                                                let displayContent: React.ReactNode;
+                                                let tooltipText: string = "";
+                                                switch (col.key) {
+                                                    case "qty":
+                                                        displayContent = isEditing ? (
+                                                            <TextField
+                                                                type="number"
+                                                                value={row.qty}
+                                                                onChange={(e) => {
+                                                                    const newQty = Number(e.target.value);
+                                                                    const newDetails = [...details];
+                                                                    newDetails[index].qty = newQty;
+                                                                    setDetails(newDetails);
+                                                                }}
+                                                                size="small"
+                                                                autoFocus={index === 0}
+                                                                slotProps={{
+                                                                    input: {
+                                                                        inputProps: { min: 0 },
+                                                                    },
+                                                                }}
+                                                            />
+                                                        ) : (data?.status === "NEW" ? row.qty : `${row.deliveredQty || 0}/${row.qty}`);
+                                                        break;
+                                                    case "status":
+                                                        displayContent = renderStatusChip(row.status);
+                                                        tooltipText = row.status;
+                                                        break;
+                                                    case "subtotal":
+                                                        displayContent = `¥${row.subtotal.toLocaleString()}`;
+                                                        break;
+                                                    default:
+                                                        displayContent = row[col.key as keyof typeof row];
+                                                        tooltipText = String(displayContent ?? "");
+                                                }
+                                                return (
+                                                    <TableCell key={col.key} sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}>
+                                                        {tooltipText ? (
+                                                            <Tooltip title={tooltipText}>
+                                                                <span>{displayContent}</span>
+                                                            </Tooltip>
+                                                        ) : (
+                                                            displayContent
+                                                        )}
+                                                    </TableCell>
+                                                );
+                                            })}
                                         </TableRow>
                                     ))
                                 ) : (
@@ -239,7 +299,7 @@ const SellOrderDetailPage = () => {
                                 )}
                                 {/* 合計金額 */}
                                 <TableRow>
-                                    <TableCell colSpan={5} align="right" sx={{ fontWeight: 'bold' }}>
+                                    <TableCell colSpan={isSM ? 3: 5} align="right" sx={{ fontWeight: 'bold' }}>
                                         合計金額:
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: 'bold' }}>

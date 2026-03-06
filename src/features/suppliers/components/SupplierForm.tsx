@@ -15,6 +15,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import type { SupplierData } from "../types/supplier";
+import { STATUS } from "../../../constants/status";
+import { StyledSelectTextField } from "../../../shared/components/global/select/StyledSelectTextField";
 
 /** 
  * 仕入先情報フォームコンポーネント
@@ -77,7 +79,7 @@ const SupplierForm = ({
 
         supplierStatus: yup
             .string()
-            .oneOf(["ACTIVE", "INACTIVE"], "'ACTIVE' または 'INACTIVE' のいずれかを選択してください。")
+            .oneOf(Object.values(STATUS).map(s => s.value), "'ACTIVE' または 'INACTIVE' のいずれかを選択してください。")
             .required("ステータスは必須です。"),
     }), []);
 
@@ -88,7 +90,7 @@ const SupplierForm = ({
             contactInfo: "",
             mail: "",
             address: "",
-            supplierStatus: "INACTIVE"
+            supplierStatus: STATUS.INACTIVE.value
         }
     });
 
@@ -101,7 +103,7 @@ const SupplierForm = ({
                 contactInfo: "",
                 mail: "",
                 address: "",
-                supplierStatus: "ACTIVE"
+                supplierStatus: STATUS.ACTIVE.value
             });
         }
     }, [supplier, reset]);
@@ -182,20 +184,20 @@ const SupplierForm = ({
                             name="supplierStatus"
                             control={control}
                             render={({ field }) => (
-                                <TextField
+                                <StyledSelectTextField
                                     label="ステータス"
                                     select
                                     fullWidth
                                     {...field}
                                     error={!!errors.supplierStatus}
                                     helperText={errors.supplierStatus ? errors.supplierStatus.message : ' '}
+                                    bgColor={colors.greenAccent[900]}
                                 >
-                                    <MenuItem value={"ACTIVE"}>ACTIVE</MenuItem>
-                                    <MenuItem value={"INACTIVE"}>INACTIVE</MenuItem>
-                                </TextField>
+                                    <MenuItem value={STATUS.ACTIVE.value}>ACTIVE</MenuItem>
+                                    <MenuItem value={STATUS.INACTIVE.value}>INACTIVE</MenuItem>
+                                </StyledSelectTextField>
                             )}
                         />
-
 
                         <Controller
                             name="contactInfo"

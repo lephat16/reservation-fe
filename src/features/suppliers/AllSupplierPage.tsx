@@ -33,6 +33,7 @@ import { useScreen } from "../../shared/hooks/ScreenContext";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
+import { STATUS } from "../../constants/status";
 
 /** 
  * 仕入先一覧ページコンポーネント
@@ -112,7 +113,7 @@ const columns: GridColDef<SupplierData>[] = [
             return (
                 <Chip
                     label={value}
-                    color={value === "ACTIVE" ? "success" : "default"}
+                    color={value === STATUS.ACTIVE.value ? "success" : "default"}
                     size="small"
                     variant="filled"
                 />

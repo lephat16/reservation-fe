@@ -8,6 +8,7 @@ import { Box, Button, Dialog, DialogContent, DialogTitle, MenuItem, Stack, TextF
 import { tokens } from '../../../shared/theme';
 import type { CategoryData, CategorySummariesData } from '../../categories/types/category';
 import { StyledSelectTextField } from '../../../shared/components/global/select/StyledSelectTextField';
+import { STATUS } from '../../../constants/status';
 
 /** 
  * 商品フォームコンポーネント
@@ -65,7 +66,7 @@ const ProductForm = ({
             .max(500, "説明は500文字以内で入力してください"),
 
         status: yup.mixed<ProductStatus>()
-            .oneOf(["ACTIVE", "INACTIVE"], "ステータスは「ACTIVE」または「INACTIVE」のいずれかでなければなりません")
+            .oneOf(Object.values(STATUS).map(s => s.value), "ステータスは「ACTIVE」または「INACTIVE」のいずれかでなければなりません")
             .required("ステータスは必須です"),
 
         unit: yup.string()
@@ -177,8 +178,8 @@ const ProductForm = ({
                                     sx={{ mb: 2 }}
                                     bgColor={colors.greenAccent[900]}
                                 >
-                                    <MenuItem value={"ACTIVE"}>ACTIVE</MenuItem>
-                                    <MenuItem value={"INACTIVE"}>INACTIVE</MenuItem>
+                                    <MenuItem value={STATUS.ACTIVE.value}>ACTIVE</MenuItem>
+                                    <MenuItem value={STATUS.INACTIVE.value}>INACTIVE</MenuItem>
                                 </StyledSelectTextField>
                             )}
                         />

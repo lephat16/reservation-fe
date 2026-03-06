@@ -31,6 +31,7 @@ import ErrorState from "../../../shared/components/messages/ErrorState";
 import { stockAPI } from "../api/stockAPI";
 import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
+import { green, red } from "@mui/material/colors";
 
 /** 
  * 在庫取引履歴ページコンポーネント
@@ -115,7 +116,7 @@ const StockHistoriesPage = () => {
             renderCell: (params) => {
                 if (!params.value) return null;
                 const type = params.value;
-                const color = type === "SO" ? "#d32f2f" : "#388e3c";
+                const color = type === "SO" ? theme.alpha(red[800], 1) : theme.alpha(green[800], 1);
 
                 return (
                     <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>

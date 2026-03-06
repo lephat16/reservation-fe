@@ -93,10 +93,10 @@ const UserShow = ({
                     >
                         <Typography fontSize="1.2rem">セッション管理</Typography>
                         <Typography fontSize="1.5rem" sx={{ mb: 1 }} display="flex" alignItems="center">
-                            {session?.filter(ss => ss.status === "ACTIVE").length ?? 0}
+                            {session?.filter(ss => ss.status === SESSION_STATUS.ACTIVE.value).length ?? 0}
                             <Chip
-                                label={SESSION_STATUS["ACTIVE"].label}
-                                color={SESSION_STATUS["ACTIVE"].color}
+                                label={SESSION_STATUS.ACTIVE.label}
+                                color={SESSION_STATUS.ACTIVE.color}
                                 size="small"
                                 sx={{ height: 16, ml: 1 }}
                             />

@@ -1,3 +1,4 @@
+import type { STATUS } from "../../../constants/status";
 import type { ResponseData } from "../../../shared";
 
 export interface SupplierData {
@@ -6,7 +7,7 @@ export interface SupplierData {
     contactInfo: string;
     mail: string;
     address: string;
-    supplierStatus: "ACTIVE" | "INACTIVE";
+    supplierStatus: keyof typeof STATUS;
     categoryNames?: string[];
 }
 export interface SupplierProductData {
@@ -16,7 +17,7 @@ export interface SupplierProductData {
     price: number;
     stock?: number;
     leadTime?: number;
-    status?: "ACTIVE" | "INACTIVE";
+    status?: keyof typeof STATUS;
     priceHistories?: PriceHistoriesData[];
 }
 
@@ -70,7 +71,7 @@ export interface SupplierProducWithPriceHistory {
     supplierSku: string,
     currentPrice: number,
     leadTime: number,
-    status: "ACTIVE" | "INACTIVE",
+    status: keyof typeof STATUS,
     priceHistories: PriceHistoriesData[],
 }
 

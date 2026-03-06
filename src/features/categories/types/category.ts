@@ -1,3 +1,4 @@
+import type { STATUS } from "../../../constants/status";
 import type { SupplierDataWithSku } from "../../suppliers/types/supplier";
 
 export interface CategoryData {
@@ -5,7 +6,7 @@ export interface CategoryData {
     name: string;
     description: string;
     imageUrl?: string;
-    status: "ACTIVE" | "INACTIVE";
+    status: keyof typeof STATUS;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -15,7 +16,7 @@ export interface CategorySummariesData {
     categoryName: string;
     products: string;
     suppliers: string;
-    status: "ACTIVE" | "INACTIVE";
+    status: keyof typeof STATUS;
 }
 export interface CategorySummaryData {
     categoryId: number;
@@ -34,7 +35,7 @@ export interface StockData {
 }
 export interface CategoryFormData {
     name: string;
-    status: "ACTIVE" | "INACTIVE";
+    status: keyof typeof STATUS;
     description: string;
     imageUrl: File | string | null;
 };

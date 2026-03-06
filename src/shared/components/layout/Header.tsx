@@ -4,9 +4,9 @@ import { tokens } from "../../theme";
 const Header = ({ title, subtitle }: { title: string; subtitle: string }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  
+
   return (
-    <Box mb="20px">
+    <Box sx={{ mb: { xs: 1, sm: 2 } }}>
       <Typography
         variant="h2"
         color={colors.grey[100]}

@@ -1,3 +1,5 @@
+import type { STATUS } from "../../../constants/status";
+
 export interface ProductStockData {
     categoryName: string;
     description: string;
@@ -72,7 +74,7 @@ export interface WarehousesData {
     id: number;
     name: string;
     location: string;
-    status: "ACTIVE" | "INACTIVE";
+    status: keyof typeof STATUS;
     stockLimit: number;
     createdAt: string;
     updatedAt: string;
@@ -86,7 +88,7 @@ export interface WarehouseFormData {
     name: string;
     location: string;
     stockLimit: number;
-    status: 'ACTIVE' | 'INACTIVE';
+    status: keyof typeof STATUS;
 };
 
 export interface WarehouseWithTotalChangedQtyData {

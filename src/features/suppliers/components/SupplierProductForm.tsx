@@ -34,6 +34,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { StyledSelectTextField } from '../../../shared/components/global/select/StyledSelectTextField'
 import CommentIcon from '@mui/icons-material/Comment';
 import type { ProductData } from '../../products/types/product'
+import { STATUS } from '../../../constants/status'
 
 /** 
  * 仕入先商品フォームコンポーネント
@@ -106,7 +107,7 @@ const SupplierProductForm = ({
             .min(1, "リードタイムは1以上である必要があります"),
         status: yup
             .string()
-            .oneOf(["ACTIVE", "INACTIVE"], "'ACTIVE' または 'INACTIVE' のいずれかを選択してください。")
+            .oneOf(Object.values(STATUS).map(s => s.value), "'ACTIVE' または 'INACTIVE' のいずれかを選択してください。")
             .required("ステータスは必須です。"),
         note: yup
             .string()
@@ -206,45 +207,7 @@ const SupplierProductForm = ({
                             }}
                         />
                         ) : (
-                            // <Controller
-                            //     name="productId"
-                            //     control={control}
-                            //     render={({ field }) => (
-                            //         <StyledSelectTextField
-                            //             label="商品"
-                            //             {...field}
-                            //             select
-                            //             fullWidth
-                            //             variant="filled"
-                            //             value={field.value ? String(field.value) : ""}
-                            //             onChange={(e) => {
-                            //                 const val = e.target.value;
-                            //                 if (val === "CREATE_NEW") {
-                            //                     openAddProductForm?.();
-                            //                     return;
-                            //                 }
-                            //                 field.onChange(val ? Number(val) : undefined);
-                            //             }}
-                            //             error={!!errors.productId}
-                            //             helperText={errors.productId ? errors.productId.message : ' '}
-                            //             bgColor={colors.blueAccent[900]}
-                            //             sx={{ flex: 1 }}
-                            //             maxHeight={200}
-                            //         >
-                            //             {products?.map(p => (
-                            //                 <MenuItem key={p.id} value={String(p.id)}>
-                            //                     {p.productName}
-                            //                 </MenuItem>
-                            //             ))}
-                            //             <Divider />
-                            //             <MenuItem value="CREATE_NEW">
-                            //                 <Typography variant="body2" color="primary">
-                            //                     こちらをクリックして新規作成
-                            //                 </Typography>
-                            //             </MenuItem>
-                            //         </StyledSelectTextField>
-                            //     )}
-                            // />
+
                             <Controller
                                 name="productId"
                                 control={control}
@@ -456,8 +419,8 @@ const SupplierProductForm = ({
                                     bgColor={colors.blueAccent[900]}
                                     sx={{ flex: 1 }}
                                 >
-                                    <MenuItem value={"ACTIVE"}>ACTIVE</MenuItem>
-                                    <MenuItem value={"INACTIVE"}>INACTIVE</MenuItem>
+                                    <MenuItem value={STATUS.ACTIVE.value}>ACTIVE</MenuItem>
+                                <MenuItem value={STATUS.INACTIVE.value}>INACTIVE</MenuItem>
                                 </StyledSelectTextField>
                             )}
                         />

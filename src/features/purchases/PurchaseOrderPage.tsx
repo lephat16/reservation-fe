@@ -25,8 +25,6 @@ import {
     Tooltip,
     useTheme,
     type SelectChangeEvent,
-    type SxProps,
-    type Theme
 } from "@mui/material";
 import Header from "../../shared/components/layout/Header";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -54,6 +52,8 @@ import { ORDER_STATUS } from "../../constants/status";
 import SearchBar from "../../shared/components/global/SearchBar";
 import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";
 import { getCommonMenuProps } from "../../shared/components/global/select/SelectHelper";
+import type { Column } from "../../shared/types/shared";
+import { cellStyle } from "../../shared/styles/cellSyle";
 
 /** 
  * 購入一覧ページコンポーネント
@@ -71,28 +71,9 @@ type PurchaseOrder = {
     createdAt: string;
 }
 
-type SortableKey = 'id' | 'total' | 'createdAt';
-export type Column =
-    | {
-        key: SortableKey;
-        label: string;
-        width: string;
-        sortable: true;
-        align?: "right" | "center";
-        truncate?: boolean;
-        hideOnMobile?: boolean;
-    }
-    | {
-        key: string;
-        label: string;
-        width: string;
-        sortable?: false;
-        align?: "right" | "center";
-        truncate?: boolean;
-        hideOnMobile?: boolean;
-    };
+
 // ステータスに応じたChipを表示する関数
-const renderStatusChip = (status: keyof typeof ORDER_STATUS) => {
+export const renderStatusChip = (status: keyof typeof ORDER_STATUS) => {
     return <Chip
         label={ORDER_STATUS[status].label}
         color={ORDER_STATUS[status].color}
@@ -101,13 +82,7 @@ const renderStatusChip = (status: keyof typeof ORDER_STATUS) => {
         }}
     />;
 };
-// テーブルセルのスタイル関数（右寄せや省略表示など）
-const cellStyle = (align?: "right" | "center", truncate?: boolean): SxProps<Theme> => ({
-    textAlign: align,
-    whiteSpace: truncate ? "nowrap" : "normal",
-    overflow: truncate ? "hidden" : "visible",
-    textOverflow: truncate ? "ellipsis" : "clip",
-});
+
 
 const PurchaseOrderPage = () => {
 
@@ -123,7 +98,7 @@ const PurchaseOrderPage = () => {
 
     // ソート用state
     const [order, setOrder] = useState<Order>('desc');
-    const [orderBy, setOrderBy] = useState<'id' | 'total' | 'createdAt'>('createdAt');
+    const [orderBy, setOrderBy] = useState<keyof PurchaseOrder>('createdAt');
 
     // フィルターや選択状態のstate
     const [suppliers, setSuppliers] = useState<string[]>([]);
@@ -137,7 +112,7 @@ const PurchaseOrderPage = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
     // テーブル列定義
-    const columns: Column[] = [
+    const columns: Column<PurchaseOrder>[] = [
         { key: "id", label: "ID", width: isMD ? "10%" : "5%", sortable: true },
         { key: "supplierName", label: "仕入先", width: isMD ? "35%" : "15%", truncate: true },
         { key: "status", label: "ステータス", width: isMD ? "30%" : "10%", align: "center", truncate: true },
@@ -246,7 +221,7 @@ const PurchaseOrderPage = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    !isSM && <Header title="購入一覧:" subtitle="購入情報の一覧表示" />
+                    !isSM && <Header title="購入一覧" subtitle="購入情報の一覧表示" />
                 )}
                 <Box mt={4}>
                     {(isAdmin || isStaff) && (
@@ -407,15 +382,7 @@ const PurchaseOrderPage = () => {
                                 </colgroup>
 
                                 <TableHead>
-                                    <TableRow
-                                        sx={{
-                                            "& .MuiTableCell-root": {
-                                                fontWeight: "bold",
-                                                backgroundColor: colors.blueAccent[500],
-                                                color: colors.grey[100],
-                                            },
-                                        }}
-                                    >
+                                    <TableRow>
                                         {columns.map(
                                             (col) =>
                                                 !isMD || !col.hideOnMobile ? (
@@ -431,7 +398,7 @@ const PurchaseOrderPage = () => {
                                                                 onClick={() => {
                                                                     const isAsc = orderBy === col.key && order === 'asc';
                                                                     setOrder(isAsc ? 'desc' : 'asc');
-                                                                    setOrderBy(col.key);
+                                                                    setOrderBy(col.key as keyof PurchaseOrder);
                                                                 }}
                                                             >
                                                                 {col.label}

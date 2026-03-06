@@ -7,6 +7,8 @@ import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useEffect, } from "react";
 import FileInput from "./FileInput";
 import type { CategoryFormData } from "../types/category";
+import { STATUS } from "../../../constants/status";
+import { StyledSelectTextField } from "../../../shared/components/global/select/StyledSelectTextField";
 
 /**
  * カテゴリー作成・編集用フォームモーダル
@@ -40,9 +42,9 @@ const CategoryForm = ({
             .required("名前は必須です")
             .max(50, "名前は50文字以内で入  力してください"),
         status: yup
-            .mixed<"ACTIVE" | "INACTIVE">()
+            .mixed<keyof typeof STATUS>()
             .required("ステータスは必須です")
-            .oneOf(["ACTIVE", "INACTIVE"], "ステータスはACTIVEまたはINACTIVEでなければなりません"),
+            .oneOf(Object.values(STATUS).map(s => s.value), "ステータスはACTIVEまたはINACTIVEでなければなりません"),
         description: yup
             .string()
             .required("説明は必須です")
@@ -133,7 +135,7 @@ const CategoryForm = ({
                         name="status"
                         control={control}
                         render={({ field }) => (
-                            <TextField
+                            <StyledSelectTextField
                                 select
                                 {...field}
                                 label="ステータス"
@@ -141,11 +143,12 @@ const CategoryForm = ({
                                 fullWidth
                                 error={!!errors.status}
                                 helperText={errors.status ? errors.status.message : ' '}
-                                sx={{ mb: 2 }}
+                                sx={{ mb: 2, }}
+                                bgColor={colors.greenAccent[900]}
                             >
-                                <MenuItem value={"ACTIVE"}>ACTIVE</MenuItem>
-                                <MenuItem value={"INACTIVE"}>INACTIVE</MenuItem>
-                            </TextField>
+                                <MenuItem value={STATUS.ACTIVE.value}>ACTIVE</MenuItem>
+                                <MenuItem value={STATUS.INACTIVE.value}>INACTIVE</MenuItem>
+                            </StyledSelectTextField>
                         )}
                     />
                     {/* 画像ファイル入力 */}

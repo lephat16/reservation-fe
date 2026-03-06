@@ -4,9 +4,9 @@ import { DeleteConfirmDialog, EditConfirmDialog } from "./useDialogs";
 
 interface ConfirmState<T = unknown> {
     open: boolean;
-    message: string;
+    message?: string;
     data?: T;
-    resolve?: (value: boolean) => void;
+    resolve?: (value: T) => void;
 }
 
 export default function DialogsProvider({
@@ -19,11 +19,7 @@ export default function DialogsProvider({
     });
 
     // EDIT STATE
-    const [editState, setEditState] = useState<{
-        open: boolean;
-        data: any;
-        resolve?: (value: any) => void;
-    }>({
+    const [editState, setEditState] = useState<ConfirmState<unknown>>({
         open: false,
         data: null,
     });
@@ -44,7 +40,7 @@ export default function DialogsProvider({
             setEditState({
                 open: true,
                 data,
-                resolve,
+                resolve: resolve as (value: unknown) => void,
             });
         });
     }, []);
@@ -59,7 +55,7 @@ export default function DialogsProvider({
         resolver?.(result);
     };
 
-    const handleEditClose = (result: any) => {
+    const handleEditClose = (result: unknown) => {
         editState.resolve?.(result);
         setEditState({
             open: false,
@@ -75,13 +71,13 @@ export default function DialogsProvider({
 
             <DeleteConfirmDialog
                 open={deleteState.open}
-                message={deleteState.message}
+                message={deleteState.message || ""}
                 onClose={handleDeleteClose}
             />
 
             <EditConfirmDialog
                 open={editState.open}
-                data={editState.data}
+                data={editState.data as { name: string }}
                 onClose={handleEditClose}
             />
         </DialogsContext.Provider>

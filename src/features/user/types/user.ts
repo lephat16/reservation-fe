@@ -1,4 +1,4 @@
-import type { LOGIN_STATUS } from "../../../constants/status";
+import type { LOGIN_STATUS, SESSION_STATUS } from "../../../constants/status";
 import type { Role } from "../../auth/types/auth";
 
 export interface UserData {
@@ -38,7 +38,7 @@ export interface SetPasswordRequest {
 };
 
 type RevokedReason = "USER_LOGOUT" | "ROTATED";
-type SessionStatus = "ACTIVE" | "EXPIRED" | "REVOKED";
+type SessionStatus = keyof typeof SESSION_STATUS;
 export interface UserSession {
     id: number;
     userId: string;

@@ -1,6 +1,7 @@
+import type { STATUS } from "../../../constants/status";
 import type { SupplierData, SupplierDataWithSku } from "../../suppliers/types/supplier";
 
-export type ProductStatus = "ACTIVE" | "INACTIVE";
+export type ProductStatus = keyof typeof STATUS;
 export interface ProductData {
     productName: string;
     id?: number;

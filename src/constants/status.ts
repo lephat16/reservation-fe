@@ -9,10 +9,7 @@ export const STATUS = {
         label: "停止中",
         color: "error"
     },
-    UNKNOWN: {
-        label: "不明",
-        color: "default"
-    },
+
 } as const;
 
 export const SESSION_STATUS = {

@@ -28,6 +28,7 @@ import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
+import { STATUS } from "../../../constants/status";
 
 /** 
  * サプライヤーカテゴリーテーブルコンポーネント
@@ -44,7 +45,7 @@ import { getErrorMessage } from "../../../shared/utils/errorHandler";
 type SupplierCategoryTableProps = {
     products: SupplierProductData[];
     supplierId: number;
-    supplierStatus: "ACTIVE" | "INACTIVE";
+    supplierStatus: keyof typeof STATUS;
     showSnackbar: (message: string, type: "success" | "error") => void;
 };
 
@@ -147,7 +148,7 @@ const SupplierCategoryTable = ({ products, supplierId, supplierStatus, showSnack
                                     <TableCell align="center">
                                         <Chip
                                             label={p.status}
-                                            color={p.status === "ACTIVE" ? "success" : "default"}
+                                            color={p.status === STATUS.ACTIVE.value ? "success" : "default"}
                                             size="small"
                                             variant="filled"
                                         />

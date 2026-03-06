@@ -311,12 +311,12 @@ const CreateSellPage = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    !isSM && <Header
+                    <Header
                         title="新規販売注文作成"
-                        subtitle="新しい規販注文の詳細を入力してください"
+                        subtitle={!isSM ? "新しい規販注文の詳細を入力してください" : ""}
                     />
                 )}
-                <Box mt={4}>
+                <Box sx={{ mt: { md: 4 } }}>
                     <Tooltip title="元に戻す">
                         <IconButton aria-label="元に戻す" color='info' onClick={() => {
                             window.history.back()
@@ -326,7 +326,7 @@ const CreateSellPage = () => {
                     </Tooltip>
                 </Box>
             </Box>
-            <Box mt={3} minHeight="75vh">
+            <Box minHeight="75vh">
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />
@@ -336,7 +336,7 @@ const CreateSellPage = () => {
                 {isLoading ? (
                     <Skeleton variant="rectangular" height={200} />
                 ) : (
-                    <Box m={2}>
+                    <Box mx={2} mt={1}>
                         <TextField
                             required
                             label="顧客名"

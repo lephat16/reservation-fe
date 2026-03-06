@@ -15,6 +15,8 @@ import * as yup from 'yup';
 import { yupResolver } from "@hookform/resolvers/yup";
 import type { WarehouseFormData } from "../types/stock";
 import { useEffect } from "react";
+import { STATUS } from "../../../constants/status";
+import { StyledSelectTextField } from "../../../shared/components/global/select/StyledSelectTextField";
 
 /**
  * 倉庫作成・編集フォーム
@@ -60,7 +62,7 @@ const WarehouseForm = ({
             name: '',
             location: '',
             stockLimit: 0,
-            status: "ACTIVE",
+            status: STATUS.ACTIVE.value,
         }
     });
 
@@ -133,7 +135,7 @@ const WarehouseForm = ({
                             name="status"
                             control={control}
                             render={({ field }) => (
-                                <TextField
+                                <StyledSelectTextField
                                     label="ステータス"
                                     select
                                     fullWidth
@@ -141,10 +143,11 @@ const WarehouseForm = ({
                                     {...field}
                                     error={!!errors.status}
                                     helperText={errors.status ? errors.status.message : ' '}
+                                    bgColor={colors.greenAccent[900]}
                                 >
-                                    <MenuItem value={"ACTIVE"}>ACTIVE</MenuItem>
-                                    <MenuItem value={"INACTIVE"}>INACTIVE</MenuItem>
-                                </TextField>
+                                    <MenuItem value={STATUS.ACTIVE.value}>ACTIVE</MenuItem>
+                                    <MenuItem value={STATUS.INACTIVE.value}>INACTIVE</MenuItem>
+                                </StyledSelectTextField>
                             )}
                         />
                         {/* 在庫上限の入力フィールド */}

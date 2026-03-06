@@ -38,6 +38,11 @@ import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import type { Column } from "../../../shared/types/shared";
+import { styledTable } from "../../../shared/styles/StyleTable";
+import { cellStyle } from "../../../shared/styles/cellSyle";
+import { renderStatusChip } from "../PurchaseOrderPage";
+import { ORDER_STATUS } from "../../../constants/status";
 
 /**
  * 注文確認ダイアログコンポーネント
@@ -51,14 +56,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
  * @param targetName - 対象名（例: 注文番号や商品名）、未指定の場合は汎用文言を表示
  * @param isPending - 確定処理中かどうか。true の場合ボタンは無効化され「注文中…」と表示
  */
-
-// Yupスキーマ（説明のバリデーション用）
-const descriptionSchema = yup.object({
-    description: yup
-        .string()
-        .required("説明を入力してください")
-        .max(500, "説明は500文字以内で入力してください"),
-});
 
 interface SubmitConfirmDialogProps {
     open: boolean;
@@ -137,6 +134,18 @@ export const SubmitConfirmDialog = ({
  *
  * @component
  */
+
+type PurchaseOrderDetailRow = PurchaseOrderDetailData & {
+    subtotal: number;
+};
+
+// Yupスキーマ（説明のバリデーション用）
+const descriptionSchema = yup.object({
+    description: yup
+        .string()
+        .required("説明を入力してください")
+        .max(500, "説明は500文字以内で入力してください"),
+});
 const PurchaseOrderDetailPage = () => {
 
     const theme = useTheme();
@@ -161,6 +170,33 @@ const PurchaseOrderDetailPage = () => {
     const { isLoading, error, data } = usePurchaseOrderDetail(Number(poId));
     const { isLoading: isLoadingReceivedQty, error: errorReceivedQty, data: dataReceivedQty } =
         useSumReceivedQtyByPoGroupByProduct(Number(poId), data);
+
+    const rows: PurchaseOrderDetailRow[] = useMemo(() => {
+        return (details ?? []).map(item => {
+            const sumReceived = dataReceivedQty?.find(d => d.sku === item.sku);
+            console.log(sumReceived)
+            const received = sumReceived
+                ? sumReceived.receivedQty
+                : item.received;
+
+            return {
+                ...item,
+                received,
+                subtotal: item.qty * item.cost
+            };
+        });
+
+    }, [details, dataReceivedQty]);
+
+    // テーブルの列定義
+    const columns: Column<PurchaseOrderDetailRow>[] = [
+        { key: "productName", label: "商品名", width: isSM ? "25%" : "15%", truncate: true },
+        { key: "sku", label: isSM ? "SKU" : "SKUコード", width: isSM ? "25%" : "15%", align: "center", truncate: true, sortable: true },
+        { key: "qty", label: "数量", width: isSM ? "25%" : "10%", align: "center", truncate: true, },
+        { key: "cost", label: isSM ? "単価" : "単価(円)", width: isSM ? "30%" : "15%", align: "center", truncate: true, hideOnMobile: true },
+        { key: "subtotal", label: isSM ? "小計" : "小計(円)", width: "15%", align: "center", hideOnMobile: true },
+        { key: "status", label: "ステータス", width: isSM ? "25%" : "15%", align: "center", truncate: true },
+    ];
 
     // データ反映
     useEffect(() => {
@@ -238,15 +274,12 @@ const PurchaseOrderDetailPage = () => {
         }
     });
 
-    // 受領数マッピング
-    const mappedQty: PurchaseOrderDetailData[] = useMemo(() => {
-        return details.map(item => {
-            const sumReceived = dataReceivedQty?.find(d => d.sku === item.sku);
-            return sumReceived
-                ? { ...item, received: sumReceived.receivedQty }
-                : item;
-        });
-    }, [details, dataReceivedQty]);
+    const createdAt = data?.createdAt ? new Date(data?.createdAt ?? "").toLocaleDateString("ja-JP", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long"
+    }) : "";
 
     return (
         <Box mx={3} mb={3}>
@@ -255,9 +288,9 @@ const PurchaseOrderDetailPage = () => {
                 {(isLoading || isLoadingReceivedQty) ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    !isSM && <Header
+                    <Header
                         title={`注文番号: ${data?.id ?? ""} | 仕入先: ${data?.supplierName ?? ""}`}
-                        subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${data?.createdAt ?? ""}`}
+                        subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${createdAt}`}
                     />
                 )}
                 <Box mt={4}>
@@ -279,65 +312,93 @@ const PurchaseOrderDetailPage = () => {
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
                     <TableContainer component={Paper} sx={{ mb: 3 }}>
-                        <Table sx={{ backgroundColor: colors.primary[400], tableLayout: "fixed" }}>
+                        <Table
+                            sx={{
+                                tableLayout: "fixed",
+                                ...styledTable(colors),
+                            }}
+                        >
+                            <colgroup>
+                                {columns.map(
+                                    (col) => (!isSM || !col.hideOnMobile ? <col key={col.key} style={{ width: col.width }} /> : null)
+                                )}
+                            </colgroup>
                             <TableHead>
-                                <TableRow
-                                    sx={{
-                                        fontWeight: "bold",
-                                        backgroundColor: colors.blueAccent[500],
-                                        color: colors.grey[100]
-                                    }}
-                                >
-                                    <TableCell>商品名</TableCell>
-                                    <TableCell>SKUコード</TableCell>
-                                    <TableCell>数量</TableCell>
-                                    <TableCell>単価（円）</TableCell>
-                                    <TableCell>小計（円）</TableCell>
-                                    <TableCell>ステータス</TableCell>
+                                <TableRow>
+                                    {columns.map(col => !isSM || !col.hideOnMobile ? (
+                                        <TableCell
+                                            key={col.key}
+                                            sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}
+                                        >
+                                            {col.label}
+                                        </TableCell>
+                                    ) : null)}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {(mappedQty.length > 0) ? (
-                                    mappedQty.map((detail, index) => {
-                                        const subtotal = detail.qty * detail.cost;
+                                {(rows.length > 0) ? (
+                                    rows.map((row, index) => (
+                                        <TableRow key={row.id}>
+                                            {columns.map(col => {
+                                                if (isSM && col.hideOnMobile) return null;
+                                                let displayContent: React.ReactNode;
+                                                let tooltipText: string = "";
+                                                let qtyDisplay;
+                                                if (data?.status === ORDER_STATUS.NEW.value) {
+                                                    qtyDisplay = row.qty;
+                                                } else if (data?.status === ORDER_STATUS.COMPLETED.value) {
+                                                    qtyDisplay = `${row.qty}/${row.qty}`;
+                                                } else {
+                                                    qtyDisplay = `${row.received || 0}/${row.qty}`;
+                                                }
 
-                                        return (
-                                            <TableRow key={index}>
-                                                <TableCell>{detail.productName}</TableCell>
-                                                <TableCell>{detail.sku}</TableCell>
-                                                <TableCell>
-                                                    {isEditing ? (
-                                                        <TextField
-                                                            type="number"
-                                                            value={detail.qty}
-                                                            onChange={(e) => {
-                                                                const newQty = Number(e.target.value);
-                                                                const newDetails = [...details];
-                                                                newDetails[index].qty = newQty;
-                                                                setDetails(newDetails);
-                                                            }}
-
-                                                            size="small"
-                                                            autoFocus={index === 0}
-                                                            slotProps={{
-                                                                input: {
-                                                                    inputProps: { min: 0 },
-                                                                },
-                                                            }}
-                                                        />
-                                                    ) : (data?.status === "NEW"
-                                                        ? detail.qty
-                                                        : data?.status === "COMPLETED"
-                                                            ? `${detail.qty}/${detail.qty}`
-                                                            : `${detail.received ?? 0}/${detail.qty}`)
-                                                    }
-                                                </TableCell>
-                                                <TableCell>{detail.cost}</TableCell>
-                                                <TableCell>{subtotal}</TableCell>
-                                                <TableCell>{detail.status}</TableCell>
-                                            </TableRow>
-                                        )
-                                    })
+                                                switch (col.key) {
+                                                    case "qty":
+                                                        displayContent = isEditing ? (
+                                                            <TextField
+                                                                type="number"
+                                                                value={row.qty}
+                                                                onChange={(e) => {
+                                                                    const newQty = Number(e.target.value);
+                                                                    const newDetails = [...details];
+                                                                    newDetails[index].qty = newQty;
+                                                                    setDetails(newDetails);
+                                                                }}
+                                                                size="small"
+                                                                autoFocus={index === 0}
+                                                                slotProps={{
+                                                                    input: {
+                                                                        inputProps: { min: 0 },
+                                                                    },
+                                                                }}
+                                                            />
+                                                        ) : (qtyDisplay);
+                                                        break;
+                                                    case "status":
+                                                        displayContent = renderStatusChip(row.status);
+                                                        tooltipText = row.status;
+                                                        break;
+                                                    case "subtotal":
+                                                        displayContent = `¥${row.subtotal.toLocaleString()}`;
+                                                        break;
+                                                    default:
+                                                        displayContent = row[col.key as keyof typeof row];
+                                                        tooltipText = String(displayContent ?? "");
+                                                }
+                                                return (
+                                                    <TableCell key={col.key} sx={cellStyle(col.align as "right" | "center" | undefined, col.truncate)}>
+                                                        {tooltipText ? (
+                                                            <Tooltip title={tooltipText}>
+                                                                <span>{displayContent}</span>
+                                                            </Tooltip>
+                                                        ) : (
+                                                            displayContent
+                                                        )}
+                                                    </TableCell>
+                                                );
+                                            })}
+                                        </TableRow>
+                                    ))
                                 ) : (
                                     <TableRow>
                                         <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
@@ -347,7 +408,7 @@ const PurchaseOrderDetailPage = () => {
                                 )}
                                 {/* 合計行 */}
                                 <TableRow>
-                                    <TableCell colSpan={5} align="right" sx={{ fontWeight: 'bold' }}>
+                                    <TableCell colSpan={isSM ? 3 : 5} align="right" sx={{ fontWeight: 'bold' }}>
                                         合計金額:
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: 'bold' }}>

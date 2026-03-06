@@ -230,8 +230,11 @@ const WarehousePage = () => {
         ? (totalQuantity / selectedWarehouse.stockLimit) * 100
         : 0;
 
-    const statusKey = (selectedWarehouse?.status ?? "UNKNOWN") as keyof typeof STATUS;
-
+    const statusInfo =
+        STATUS[selectedWarehouse?.status as keyof typeof STATUS] ?? {
+            label: "不明",
+            color: "default",
+        };
     // ソート済みデータ
     const sortedFilteredData = useMemo(() => {
         const getValue = (item: StockData) => {
@@ -352,8 +355,8 @@ const WarehousePage = () => {
                             </Typography>
                             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} mt={1}>
                                 <Chip
-                                    label={STATUS[statusKey].label}
-                                    color={STATUS[statusKey].color}
+                                    label={statusInfo.label}
+                                    color={statusInfo.color}
                                     size="small"
                                 />
                                 <Tooltip title="削除">

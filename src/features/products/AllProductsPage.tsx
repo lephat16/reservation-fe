@@ -58,6 +58,7 @@ import { TablePaginationActions } from "../../shared/components/pagination/Pagin
 import { useAddProduct } from "./hooks/useAddProduct";
 import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";
 import { getCommonMenuProps } from "../../shared/components/global/select/SelectHelper";
+import { STATUS } from "../../constants/status";
 
 /**
  * 在庫テーブルの1行コンポーネント
@@ -621,8 +622,8 @@ const AllProductsPage = () => {
                                         <MenuItem value={0}>
                                             <em>未選択</em>
                                         </MenuItem>
-                                        <MenuItem value="ACTIVE">ACTIVE</MenuItem>
-                                        <MenuItem value="INACTIVE">INACTIVE</MenuItem>
+                                        <MenuItem value={STATUS.ACTIVE.value}>ACTIVE</MenuItem>
+                                        <MenuItem value={STATUS.INACTIVE.value}>INACTIVE</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Stack>
@@ -756,8 +757,8 @@ const AllProductsPage = () => {
                                         })}
                                     >
                                         <MenuItem value={0}><em>未選択</em></MenuItem>
-                                        <MenuItem value="ACTIVE">ACTIVE</MenuItem>
-                                        <MenuItem value="INACTIVE">INACTIVE</MenuItem>
+                                        <MenuItem value={STATUS.ACTIVE.value }>ACTIVE</MenuItem>
+                                        <MenuItem value={STATUS.INACTIVE.value }>INACTIVE</MenuItem>
                                     </Select>
                                 </FormControl>
 
