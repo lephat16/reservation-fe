@@ -5,7 +5,7 @@ import type { ChangePasswordRequest, LoginHistories, SetPasswordRequest, UserDat
 export const userAPI = {
 
     createUserByAdmin: async (request: UserRequestData): Promise<ApiResponse<void>> => {
-        return (await api.post(`/users/create`, request));
+        return (await api.post(`/users/create-user`, request));
     },
     setPasswordByToken: async (request: SetPasswordRequest): Promise<ApiResponse<void>> => {
         return (await api.post(`/users/set-password`, request));
@@ -22,7 +22,7 @@ export const userAPI = {
         }));
     },
     getAllUsers: async (): Promise<ApiResponse<UserData[]>> => {
-        return (await api.get(`/users/all`));
+        return (await api.get(`/users/all-users`));
     },
     getLoggedInUser: async (): Promise<ApiResponse<UserData>> => {
         return ((await api.get(`/users/current`)));
@@ -31,13 +31,13 @@ export const userAPI = {
         return (await api.get(`/users/transaction/${userId}`));
     },
     updateUserById: async (userId: number, userData: Partial<UserData>): Promise<ApiResponse<UserData>> => {
-        return (await api.put(`/users/update/${userId}`, userData));
+        return (await api.put(`/users/${userId}/update`, userData));
     },
     deleteUser: async (userId: number): Promise<ApiResponse<void>> => {
-        return (await api.delete(`/users/delete/${userId}`));
+        return (await api.delete(`/users/${userId}/delete`));
     },
     changePassword: async (userId: number, request: ChangePasswordRequest): Promise<ApiResponse<UserData>> => {
-        return (await api.put(`/users/${userId}/password`, request));
+        return (await api.put(`/users/${userId}/change-password`, request));
     },
     getLoginHistories: async (): Promise<ApiResponse<LoginHistories[]>> => {
         return (await api.get(`/users/login-history`,));

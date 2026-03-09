@@ -26,4 +26,12 @@ export const SNACKBAR_MESSAGES = {
     SEND_REQUEST_FAILED: "リクエストの送信に失敗しました",
     RESET_PASSWORD_SUCCESS: "パスワードが変更されました",
     RESET_PASSWORD_CREATE_FAILED: "パスワード変更に失敗しました",
+    NOTIFICATION_MESSAGES: {
+        DELETE_SUCCESS: "通知を削除しました",
+        DELETE_FAILED: "通知の削除に失敗しました",
+        CREATE_SUCCESS: "通知を作成しました",
+        CREATE_FAILED: "通知の作成に失敗しました",
+        READ_SUCCESS: "すべての通知を既読にしました",
+        READ_FAILED: "通知を既読にできませんでした",
+    }
 };

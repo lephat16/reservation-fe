@@ -12,13 +12,13 @@ export type Column<T> = {
     hideOnMobile?: boolean;
     render?: (row: T) => React.ReactNode;
 };
-
+export type NotificationType = "ORDER" | "STOCK" | "TASK";
 export type NotificationResponse = {
     id: number;
     title: string;
     userId: number;
     message: string;
-    type: string;
+    type: NotificationType;
     link: string;
     readed: boolean
     createdAt: string;

@@ -236,6 +236,7 @@ const CreateSellPage = () => {
         try {
             const createdSaleOrder = await saleAPI.createSaleOrder(sellItem);
             await saleAPI.prepareSaleOrder(Number(createdSaleOrder.data.id));
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
             showSnackbar(SNACKBAR_MESSAGES.SELL.CREATE_SUCCESS, "success");
 
             const categoryIds = rows
@@ -279,6 +280,7 @@ const CreateSellPage = () => {
 
         try {
             const savedSaleOrder = await saleAPI.createSaleOrder(sellItem);
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
             showSnackbar(SNACKBAR_MESSAGES.SAVE_SUCCESS, "success");
 
             // reset

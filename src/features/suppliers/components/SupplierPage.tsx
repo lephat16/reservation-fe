@@ -134,7 +134,6 @@ const SupplierPage = () => {
             // 成功時の処理
             showSnackbar(response.message || SNACKBAR_MESSAGES.CREATE_SUCCESS, "success"); // スナックバー表示
             queryClient.invalidateQueries({ queryKey: ["supplier", Number(supplierId)] });
-
         },
         onError: (error: unknown) => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.CREATE_FAILED, "error");

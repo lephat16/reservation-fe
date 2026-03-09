@@ -142,7 +142,7 @@ const SupplierProductForm = ({
             ...data,
             productId: data.productId ? Number(data.productId) : undefined
         };
-
+        
         onSubmit(submitData);
         setIsEdit(false);
         setOpenNoteForm(false);
@@ -420,7 +420,7 @@ const SupplierProductForm = ({
                                     sx={{ flex: 1 }}
                                 >
                                     <MenuItem value={STATUS.ACTIVE.value}>ACTIVE</MenuItem>
-                                <MenuItem value={STATUS.INACTIVE.value}>INACTIVE</MenuItem>
+                                    <MenuItem value={STATUS.INACTIVE.value}>INACTIVE</MenuItem>
                                 </StyledSelectTextField>
                             )}
                         />
@@ -460,7 +460,9 @@ const SupplierProductForm = ({
                                 size="small"
                                 stickyHeader
                                 sx={{
-                                    ...styledTable(colors)
+                                    ...styledTable(colors, {
+                                        rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                    }),
                                 }}
                             >
                                 <TableHead>

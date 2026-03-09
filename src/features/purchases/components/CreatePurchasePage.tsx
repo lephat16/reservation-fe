@@ -30,6 +30,8 @@ import { PurchaseConfirmDialog } from './PurchaseConfirmDialog';
 import { styledSelect } from '../../../shared/components/global/select/styledSelect';
 import { useScreen } from '../../../shared/hooks/ScreenContext';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { ORDER_TYPE } from '../../../constants/order';
+import { useQueryClient } from '@tanstack/react-query';
 /**
  * CreatePurchasePage コンポーネント
  *
@@ -57,6 +59,7 @@ const CreatePurchasePage = () => {
     const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const { preselectedSupplierId, preselectedSku } = location.state || {};
 
+    const queryClient = useQueryClient(); // React Queryのクライアント取得
     const navigate = useNavigate(); // ページ遷移用
     // ステート管理
     const [rows, setRows] = useState<PurchaseRow[]>([]);
@@ -171,7 +174,7 @@ const CreatePurchasePage = () => {
             const createdPurchaseOrder = await purchaseAPI.createPurchaseOrder(purchaseItem);
             await purchaseAPI.placePurchaseOrder(Number(createdPurchaseOrder.data.id));
             showSnackbar(SNACKBAR_MESSAGES.ORDER.CREATE_SUCCESS, "success");
-
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });  // 通知データを再取得
             // リセット
             setOpenConfirmDialog(false);
             setDescription("");
@@ -202,6 +205,8 @@ const CreatePurchasePage = () => {
         try {
             const savedPurchaseOrder = await purchaseAPI.createPurchaseOrder(purchaseItem);
             showSnackbar(SNACKBAR_MESSAGES.SAVE_SUCCESS, "success");
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });  // 通知データを再取得
+
             // リセットステート
             setOpenConfirmDialog(false);
             setDescription("");
@@ -376,7 +381,7 @@ const CreatePurchasePage = () => {
                                 if (!validateBeforeSave()) return;
                                 setDialogMode("purchase");
                                 setOpenConfirmDialog(true);
-                            }}>注文</Button>
+                            }}>{ORDER_TYPE.PURCHASE.label}</Button>
 
                             <Button variant="contained" color="warning" onClick={handleCancel}>キャンセル</Button>
                         </Stack>

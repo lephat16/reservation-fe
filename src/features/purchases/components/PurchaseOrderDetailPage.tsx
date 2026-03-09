@@ -43,6 +43,7 @@ import { styledTable } from "../../../shared/styles/StyleTable";
 import { cellStyle } from "../../../shared/styles/cellSyle";
 import { renderStatusChip } from "../PurchaseOrderPage";
 import { ORDER_STATUS } from "../../../constants/status";
+import { ORDER_TYPE } from "../../../constants/order";
 
 /**
  * 注文確認ダイアログコンポーネント
@@ -93,8 +94,8 @@ export const SubmitConfirmDialog = ({
             <DialogContent>
                 <Typography>
                     {targetName
-                        ? `${targetName}の${type}書を${type}してもよろしいですか？`
-                        : "この商品を注文・受注してもよろしいですか？"}
+                        ? `${type}書＃${targetName}を発注してもよろしいですか？`
+                        : `${type}書＃${targetName}を受けてもよろしいですか？`}
                 </Typography>
             </DialogContent>
             {/* Dialogのアクションボタン */}
@@ -108,7 +109,7 @@ export const SubmitConfirmDialog = ({
                     onClick={onConfirm}
                     disabled={isPending}
                 >
-                    {isPending ? "注文中..." : "注文"}
+                    {isPending ? `${ORDER_TYPE.PURCHASE.label}中...` : `${ORDER_TYPE.PURCHASE.label}`}
                 </Button>
             </DialogActions>
         </Dialog>
@@ -265,6 +266,7 @@ const PurchaseOrderDetailPage = () => {
         onSuccess: (response) => {
             showSnackbar(response.message || SNACKBAR_MESSAGES.ORDER.CREATE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["purchase-order-detail"] });
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
             setTimeout(() => {
                 navigate("/purchase-order");
             }, 500);
@@ -274,12 +276,19 @@ const PurchaseOrderDetailPage = () => {
         }
     });
 
-    const createdAt = data?.createdAt ? new Date(data?.createdAt ?? "").toLocaleDateString("ja-JP", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        weekday: "long"
-    }) : "";
+    const createdAt = data?.createdAt ?
+        (() => {
+            const d = new Date(data.createdAt);
+            const date = d.toLocaleDateString("ja-JP", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            });
+            const weekday = d.toLocaleDateString("ja-JP", {
+                weekday: "short",
+            });
+            return `${date} (${weekday})`;
+        })() : "";
 
     return (
         <Box mx={3} mb={3}>
@@ -315,7 +324,9 @@ const PurchaseOrderDetailPage = () => {
                         <Table
                             sx={{
                                 tableLayout: "fixed",
-                                ...styledTable(colors),
+                                ...styledTable(colors, {
+                                    rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                }),
                             }}
                         >
                             <colgroup>
@@ -499,7 +510,7 @@ const PurchaseOrderDetailPage = () => {
                 targetName={poId}
                 onConfirm={() => submitMutation.mutate()}
                 isPending={submitMutation.isPending}
-                type="受注"
+                type={ORDER_TYPE.PURCHASE.label}
             />
 
         </Box >

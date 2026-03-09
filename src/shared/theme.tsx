@@ -208,18 +208,27 @@ export const themeSettings = (mode: 'light' | 'dark') => {
         fontSize: 14,
       },
     },
-    // components: {
-    //   MuiPaper: {
-    //     styleOverrides: {
-    //       root: {
-    //         backgroundColor: mode === "dark" ? colors.primary[500] : "#fff", 
-    //         padding: "16px", 
-    //         borderRadius: "8px", 
-    //         boxShadow: mode === "dark" ? "none" : "0 4px 10px rgba(0, 0, 0, 0.1)",
-    //       },
-    //     },
-    //   },
-    // },
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          'body::-webkit-scrollbar': {
+            width: '10px',
+            height: '10px'
+          },
+          '::-webkit-scrollbar': {
+            width: '4px',
+            height: '4px'
+          },
+          '::-webkit-scrollbar-track': {
+            background: colors.grey[500],
+          },
+          '::-webkit-scrollbar-thumb': {
+            background: colors.grey[700],
+            borderRadius: '5px'
+          }
+        },
+      },
+    },
   };
 };
 

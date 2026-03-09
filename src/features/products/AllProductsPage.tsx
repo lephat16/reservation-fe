@@ -757,8 +757,8 @@ const AllProductsPage = () => {
                                         })}
                                     >
                                         <MenuItem value={0}><em>未選択</em></MenuItem>
-                                        <MenuItem value={STATUS.ACTIVE.value }>ACTIVE</MenuItem>
-                                        <MenuItem value={STATUS.INACTIVE.value }>INACTIVE</MenuItem>
+                                        <MenuItem value={STATUS.ACTIVE.value}>ACTIVE</MenuItem>
+                                        <MenuItem value={STATUS.INACTIVE.value}>INACTIVE</MenuItem>
                                     </Select>
                                 </FormControl>
 
@@ -791,7 +791,9 @@ const AllProductsPage = () => {
                             <Table
                                 sx={{
                                     tableLayout: "fixed",
-                                    ...styledTable(colors),
+                                    ...styledTable(colors, {
+                                        rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                    }),
                                 }}
                             >
                                 {/** カラム幅調整 */}

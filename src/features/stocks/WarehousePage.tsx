@@ -53,6 +53,7 @@ import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 import { type Order } from "../products/AllProductsPage";
 import { TablePaginationActions } from "../../shared/components/pagination/PaginationAction";
 import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";
+import { styledTable } from "../../shared/styles/StyleTable";
 
 
 type OrderBy = 'productName' | 'sku' | 'quantity' | 'reservedQuantity' | 'available'
@@ -397,7 +398,9 @@ const WarehousePage = () => {
                             <TableContainer component={Paper} sx={{ height: "100%", xs: 308, lg: 600 }}>
                                 <Table
                                     sx={{
-                                        backgroundColor: colors.primary[400],
+                                        ...styledTable(colors, {
+                                            rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                        }),
                                         tableLayout: "fixed",
                                         '& .MuiTableCell-root': {
                                             whiteSpace: 'nowrap',
@@ -413,13 +416,7 @@ const WarehousePage = () => {
                                         <col style={{ width: "15%" }} />
                                     </colgroup>
                                     <TableHead>
-                                        <TableRow
-                                            sx={{
-                                                fontWeight: "bold",
-                                                backgroundColor: colors.blueAccent[700],
-                                                color: colors.grey[100]
-                                            }}
-                                        >
+                                        <TableRow>
                                             <TableCell sortDirection={orderBy === 'productName' ? order : false}>
                                                 <TableSortLabel
                                                     active={orderBy === 'productName'}

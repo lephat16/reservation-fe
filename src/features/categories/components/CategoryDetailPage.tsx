@@ -374,7 +374,9 @@ const CategoryDetailPage = () => {
                                 <Table
                                     stickyHeader
                                     sx={{
-                                        ...styledTable(colors)
+                                        ...styledTable(colors, {
+                                            rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                        }),
                                     }}
                                 >
                                     <TableHead>

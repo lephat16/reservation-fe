@@ -954,9 +954,11 @@ const StockMovementHistoryPage = () => {
                                     minWidth: { xs: 308, lg: 600 },
                                 }}>
                                 <Table
-                                      sx={{
+                                    sx={{
                                         tableLayout: "fixed",
-                                        ...styledTable(colors),
+                                        ...styledTable(colors, {
+                                            rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                        }),
                                         "& .qty-in": {
                                             color: theme.palette.success.main,
                                             fontWeight: 600,

@@ -282,7 +282,9 @@ const SellOrderPage = () => {
                             <Table
                                 sx={{
                                     tableLayout: "fixed",
-                                    ...styledTable(colors),
+                                    ...styledTable(colors, {
+                                        rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                    }),
                                 }}
                             >
                                 <colgroup>

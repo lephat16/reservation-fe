@@ -260,7 +260,9 @@ const ProductPage = () => {
                                 <TableContainer component={Paper} sx={{ mb: 2, backgroundColor: colors.primary[400] }}>
                                     <Table
                                         sx={{
-                                            ...styledTable(colors),
+                                            ...styledTable(colors, {
+                                                rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                            }),
                                             maxHeight: '15vh',
                                             overflowY: 'auto',
                                         }}
@@ -321,7 +323,9 @@ const ProductPage = () => {
                                 <TableContainer component={Paper} sx={{ mb: 2, backgroundColor: colors.primary[400] }}>
                                     <Table
                                         sx={{
-                                            ...styledTable(colors),
+                                            ...styledTable(colors, {
+                                                rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                            }),
                                             maxHeight: '15vh',
                                             overflowY: 'auto',
                                         }}
@@ -368,7 +372,9 @@ const ProductPage = () => {
                                 >
                                     <Table
                                         sx={{
-                                            ...styledTable(colors),
+                                            ...styledTable(colors, {
+                                                rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                            }),
                                         }}
                                         size="small"
                                         stickyHeader

@@ -11,17 +11,17 @@ export const categoryAPI = {
 
     /** 新しいカテゴリーを追加する */
     addCategory: async (data: FormData): Promise<ApiResponse<CategoryData>> => {
-        return (await api.post(`/categories/add`, data));
+        return (await api.post(`/categories/add-cat`, data));
     },
 
     /** 指定IDのカテゴリーを更新する */
     updateCategory: async (categoryId: number, data: FormData): Promise<ApiResponse<CategoryData>> => {
-        return (await api.put(`/categories/update/${categoryId}`, data));
+        return (await api.put(`/categories/${categoryId}/update-cat`, data));
     },
 
     /** すべてのカテゴリー一覧を取得する */
     getAllCategories: async (): Promise<ApiResponse<CategoryData[]>> => {
-        return (await api.get(`/categories/all`));
+        return (await api.get(`/categories/all-cat`));
     },
 
     /** すべてのカテゴリーサマリー一覧を取得する */
@@ -31,18 +31,18 @@ export const categoryAPI = {
 
     /** 指定IDのカテゴリーサマリーを取得する */
     getCategorySummariesById: async (categoryId: number): Promise<ApiResponse<CategorySummaryData>> => {
-        return (await api.get(`/categories/summaries/${categoryId}`));
+        return (await api.get(`/categories/${categoryId}/summaries-by-id`));
     },
 
     /** 指定IDのカテゴリー情報を取得する */
     getCategoryById: async (categoryId: number): Promise<ApiResponse<CategoryData>> => {
-        return (await api.get(`/categories/${categoryId}`));
+        return (await api.get(`/categories/${categoryId}/get-cat`));
     },
 
     /** 指定IDのカテゴリーを削除する */
 
     deleteCategory: async (categoryId: number): Promise<ResponseData> => {
-        return (await api.delete(`/categories/delete/${categoryId}`));
+        return (await api.delete(`/categories/${categoryId}/delete-cat`));
     },
 
 }

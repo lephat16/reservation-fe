@@ -38,6 +38,7 @@ import { styledTable } from "../../../shared/styles/StyleTable";
 import type { Column } from "../../../shared/types/shared";
 import { cellStyle } from "../../../shared/styles/cellSyle";
 import { renderStatusChip } from "../../purchases/PurchaseOrderPage";
+import { ORDER_TYPE } from "../../../constants/order";
 
 /**
  * 販売注文詳細ページコンポーネント
@@ -164,6 +165,7 @@ const SellOrderDetailPage = () => {
         onSuccess: () => {
             showSnackbar(SNACKBAR_MESSAGES.SELL.CREATE_SUCCESS, "success");
             queryClient.invalidateQueries({ queryKey: ["sell-order-detail"] });
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
             setTimeout(() => {
                 navigate("/sell-order");
             }, 500);
@@ -213,7 +215,9 @@ const SellOrderDetailPage = () => {
                         <Table
                             sx={{
                                 tableLayout: "fixed",
-                                ...styledTable(colors),
+                                ...styledTable(colors, {
+                                    rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                }),
                             }}
                         >
                             <colgroup>
@@ -299,7 +303,7 @@ const SellOrderDetailPage = () => {
                                 )}
                                 {/* 合計金額 */}
                                 <TableRow>
-                                    <TableCell colSpan={isSM ? 3: 5} align="right" sx={{ fontWeight: 'bold' }}>
+                                    <TableCell colSpan={isSM ? 3 : 5} align="right" sx={{ fontWeight: 'bold' }}>
                                         合計金額:
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: 'bold' }}>
@@ -371,7 +375,7 @@ const SellOrderDetailPage = () => {
                     <Tooltip title={isWarehouse ? "管理者またはスタッフのみ受注可能" : ""} arrow>
                         <span>
                             <Button disabled={isWarehouse} variant="contained" color="info" onClick={() => setOpenSubmitConfirm(true)}>
-                                受注
+                                {ORDER_TYPE.SALE.label}
                             </Button>
                         </span>
                     </Tooltip>
@@ -394,7 +398,7 @@ const SellOrderDetailPage = () => {
                 targetName={soId}
                 onConfirm={() => submitMutation.mutate()}
                 isPending={submitMutation.isPending}
-                type="受注"
+                type={ORDER_TYPE.SALE.label}
             />
         </Box>
     )

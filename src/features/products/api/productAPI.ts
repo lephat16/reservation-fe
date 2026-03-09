@@ -6,19 +6,19 @@ import type { ProductData, ProductDetailDataDTO, ProductFormData } from "../type
 
 export const productAPI = {
     getAllProducts: async (): Promise<ApiResponse<ProductData[]>> => {
-        return (await api.get(`/products/info/all`));
+        return (await api.get(`/products/info/all-prod`));
     },
     createProduct: async (data: ProductFormData): Promise<ApiResponse<ProductDetailDataDTO>> => {
-        return (await api.post(`/products/add`, data));
+        return (await api.post(`/products/add-prod`, data));
     },
     getProductInfoDetail: async (productId: number): Promise<ApiResponse<ProductDetailDataDTO>> => {
-        return (await api.get(`/products/info-detail/${productId}`));
+        return (await api.get(`/products/${productId}/info-detail`));
     },
     updateProduct: async (productData: FormData, productId: number): Promise<ApiResponse<ProductData>> => {      
-        return (await api.put(`/products/update/${productId}`, productData));
+        return (await api.put(`/products/${productId}/update-prod`, productData));
     },
     deleteProduct: async (productId: number): Promise<ApiResponse<ProductData>> => {
-        return (await api.delete(`/products/delete/${productId}`));
+        return (await api.delete(`/products/${productId}/delete-cat`));
     },
     getAllProductsWithInventoryOptional: async (): Promise<ApiResponse<StockWithSupplierAndProduct[]>> => {
         return (await api.get(`/products/all/with-inventory-optional`));

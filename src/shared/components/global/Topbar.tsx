@@ -1,4 +1,4 @@
-import { Avatar, Box, Divider, IconButton, ListItemIcon, Menu, MenuItem, Typography, useTheme } from "@mui/material";
+import { Avatar, Badge, Box, Divider, IconButton, ListItemIcon, Menu, MenuItem, Typography, useTheme } from "@mui/material";
 import { useContext, useState } from "react";
 import { ColorModeContext, tokens } from "../../theme";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
@@ -13,32 +13,187 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../../features/auth/store/authSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { RootState } from "../../../features/auth/store";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import notificationAPI from "../../api/notificationAPI";
+import type { NotificationResponse, NotificationType } from "../../types/shared";
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import WidgetsIcon from '@mui/icons-material/Widgets';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useSnackbar } from "../../hooks/SnackbarContext";
+import { SNACKBAR_MESSAGES } from "../../../constants/message";
+import { getErrorMessage } from "../../utils/errorHandler";
 
 type TopbarProps = {
   onSidebarClick?: () => void;
 };
+
+const formatNotificationTime = (createdAt: string | Date) => {
+  const date = new Date(createdAt);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+
+  if (diffHour >= 24) {
+    return date.toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } else if (diffHour >= 1) {
+    return `${diffHour}時間前`;
+  } else if (diffMin >= 1) {
+    return `${diffMin}分前`;
+  } else {
+    return "たった今";
+  }
+};
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const weekStart = new Date();
+weekStart.setDate(today.getDate() - today.getDay() + 1); // Monday
+weekStart.setHours(0, 0, 0, 0);
+
+const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
 
 const Topbar = ({ onSidebarClick }: TopbarProps) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
 
+  // スナックバー表示用カスタムフック
+  const { showSnackbar } = useSnackbar();
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const queryClient = useQueryClient(); // React Queryのクライアント取得
   const { user } = useSelector((state: RootState) => state.auth);
 
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
 
+  const [anchorNotif, setAnchorNotif] = useState<null | HTMLElement>(null);
+  const [anchorAcount, setAnchorAcount] = useState<null | HTMLElement>(null);
+  const openAnchorAcount = Boolean(anchorAcount);
+  const openAnchorNotif = Boolean(anchorNotif);
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const getNotificationIcon = (type: NotificationType) => {
+    switch (type) {
+      case "ORDER":
+        return <LocalShippingIcon fontSize="small" color="warning" />
+      case "STOCK":
+        return <WidgetsIcon fontSize="small" />;
+      case "TASK":
+        return <AssignmentIcon fontSize="small" />;
+      default:
+        return null;
+    }
   };
-  const handleClose = () => {
-    setAnchorEl(null);
+
+  const handleAcountClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorAcount(event.currentTarget);
   };
+  const handleAcountClose = () => {
+    setAnchorAcount(null);
+  };
+
+  const { data: notifications } = useQuery<NotificationResponse[]>({
+    queryKey: ["notifications"],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const resNotifications = await notificationAPI.getNotificationsForUser(user?.id);
+      return resNotifications.data
+    },
+    enabled: !!user // ユーザーがいる場合のみ実行
+  });
+
+  const groupedNotifications = [
+    { label: "今日", items: notifications?.filter(n => new Date(n.createdAt) >= today) ?? [] },
+    {
+      label: "今週", items: notifications?.filter(n => {
+        const created = new Date(n.createdAt);
+        return created >= weekStart && created < today;
+      }) ?? []
+    },
+    {
+      label: "今月", items: notifications?.filter(n => {
+        const created = new Date(n.createdAt);
+        return created >= monthStart && created < weekStart;
+      }) ?? []
+    },
+  ];
+
+  const { data: unreadCount = 0 } = useQuery<number>({
+    queryKey: ["unread-count"],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+      const resunreadCount = await notificationAPI.getUnreadCount(user?.id);
+      return resunreadCount.data
+    },
+    enabled: !!user // ユーザーがいる場合のみ実行
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => notificationAPI.deleteNotification(id),
+    onSuccess: (response) => {
+      showSnackbar(response.message || SNACKBAR_MESSAGES.DELETE_SUCCESS, "success");
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: (error: unknown) => {
+      showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.DELETE_FAILED, "error");
+    }
+  });
+
+  const markAllReadMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      if (!user?.id) return;
+      return notificationAPI.markReadAllNotification(userId)
+    },
+    onSuccess: () => {
+      showSnackbar(SNACKBAR_MESSAGES.NOTIFICATION_MESSAGES.READ_SUCCESS, "success");
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["unread-count"] });
+    },
+    onError: (error: unknown) => {
+      showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.NOTIFICATION_MESSAGES.READ_FAILED, "error");
+    }
+  })
+
+  const handleNotifClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorNotif(event.currentTarget);
+  };
+  const handleNotifClose = () => {
+    setAnchorNotif(null);
+  };
+
+  const handleNotificationClick = async (notif: NotificationResponse) => {
+    try {
+      await notificationAPI.markAsRead(notif.id);
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["unread-count"] });
+
+      if (notif.link) {
+        navigate(notif.link);
+      }
+
+    } catch (err) {
+      console.error("通知の更新に失敗しました", err);
+    }
+  };
+
+  const notificationsLabel = (count: number) => {
+    if (count === 0) {
+      return '通知はありません';
+    }
+    if (count > 99) {
+      return '通知99件以上';
+    }
+    return `通知 ${unreadCount} 件`;
+  }
 
   const handleLogout = () => {
     dispatch(logout());
@@ -57,19 +212,6 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
         zIndex: 1100,
       }}
     >
-      {/* SEARCH BAR */}
-      {/* <Box
-        sx={{
-          display: "flex",
-          backgroundColor: colors.primary[400],
-          borderRadius: "3px",
-        }}
-      >
-        <InputBase sx={{ ml: 2, flex: 1 }} placeholder="Search" />
-        <IconButton type="button" sx={{ p: 1 }}>
-          <SearchIcon />
-        </IconButton>
-      </Box> */}
       {/* ICONS */}
       <Box display="flex">
         <IconButton
@@ -82,18 +224,24 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
             <DarkModeOutlinedIcon />
           )}
         </IconButton>
-        <IconButton>
-          <NotificationsOutlinedIcon />
-        </IconButton>
-        {/* <IconButton>
-          <SettingsOutlinedIcon />
-        </IconButton> */}
         <IconButton
-          onClick={handleClick}
+          onClick={handleNotifClick}
           size="small"
-          aria-controls={open ? 'account-menu' : undefined}
+          aria-controls={openAnchorNotif ? 'notification-menu' : undefined}
           aria-haspopup="true"
-          aria-expanded={open ? 'true' : undefined}
+          aria-expanded={openAnchorNotif ? 'true' : undefined}
+          aria-label={notificationsLabel(unreadCount)}
+        >
+          <Badge badgeContent={unreadCount} color="secondary">
+            <NotificationsOutlinedIcon />
+          </Badge>
+        </IconButton>
+        <IconButton
+          onClick={handleAcountClick}
+          size="small"
+          aria-controls={openAnchorAcount ? 'account-menu' : undefined}
+          aria-haspopup="true"
+          aria-expanded={openAnchorAcount ? 'true' : undefined}
         >
           <PersonOutlinedIcon />
         </IconButton>
@@ -106,16 +254,16 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
       </Box>
 
       <Menu
-        anchorEl={anchorEl}
+        anchorEl={anchorAcount}
         id="account-menu"
-        open={open}
-        onClose={handleClose}
-        onClick={handleClose}
+        open={openAnchorAcount}
+        onClose={handleAcountClose}
+        onClick={handleAcountClose}
         slotProps={{
           paper: {
             elevation: 0,
             sx: {
-              backgroundColor: colors.primary[800],
+              backgroundColor: colors.primary[900],
               overflow: 'visible',
               filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
               mt: 1.5,
@@ -130,10 +278,10 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
                 display: 'block',
                 position: 'absolute',
                 top: 0,
-                right: 14,
+                right: 4,
                 width: 10,
                 height: 10,
-                bgcolor: colors.primary[800],
+                bgcolor: colors.primary[900],
                 transform: 'translateY(-50%) rotate(45deg)',
                 zIndex: 0,
               },
@@ -158,7 +306,7 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
           <Avatar />マイアカウント
         </MenuItem>
         <Divider />
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleAcountClose}>
           <ListItemIcon>
             <PersonAdd fontSize="small" />
           </ListItemIcon>
@@ -170,6 +318,143 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
           </ListItemIcon>
           ログアウト
         </MenuItem>
+      </Menu>
+
+      <Menu
+        anchorEl={anchorNotif}
+        id="notification-menu"
+        open={openAnchorNotif}
+        onClose={handleNotifClose}
+        onClick={handleNotifClose}
+        slotProps={{
+          paper: {
+            elevation: 0,
+            sx: {
+              backgroundColor: colors.primary[900],
+              overflow: 'visible',
+              maxWidth: 360,
+              minWidth: 250,
+              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+              mt: 1.5,
+              '& .MuiAvatar-root': {
+                width: 32,
+                height: 32,
+                ml: -0.5,
+                mr: 1,
+              },
+              position: "relative",
+              '&::before': {
+                content: '""',
+                display: 'block',
+                position: 'absolute',
+                top: 0,
+                right: 4,
+                width: 10,
+                height: 10,
+                bgcolor: colors.primary[900],
+                transform: 'translateY(-50%) rotate(45deg)',
+                zIndex: 0,
+              },
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: `1px solid ${colors.grey[800]}`
+          }}
+        >
+          <Typography px={2} fontSize={20} fontWeight="bold" color={colors.blueAccent[500]}>
+            通知
+          </Typography>
+          <Typography
+            fontSize={12}
+            px={2}
+            sx={{
+              cursor: "pointer",
+              color: colors.blueAccent[300],
+              "&:hover": { textDecoration: "underline" }
+            }}
+            onClick={() => markAllReadMutation.mutate(user?.id || 0)}
+          >
+            すべて既読にする
+          </Typography>
+        </Box>
+        <Box sx={{ maxHeight: 300, overflow: "auto" }}>
+          {notifications?.length === 0 ? (
+            <MenuItem>通知はありません</MenuItem>
+          ) : (
+            groupedNotifications.map(group => (
+              group.items.length > 0 && (
+                <Box key={group.label}>
+                  <Typography px={2} py={1} fontSize={12} color={colors.grey[400]}>
+                    {group.label}
+                  </Typography>
+
+                  {group.items.map((notif, index) => (
+                    <MenuItem
+                      key={notif.id}
+                      onClick={() => handleNotificationClick(notif)}
+                      sx={{
+                        backgroundColor: notif.readed ? 'transparent' : colors.blueAccent[800],
+                        '&:hover': {
+                          backgroundColor: notif.readed ? colors.primary[700] : colors.blueAccent[700],
+                          '.delete-btn': { display: 'flex' }
+                        },
+                        borderBottom: index < group.items.length - 1 ? `1px solid ${colors.grey[800]}` : 'none',
+                        position: "relative",
+                      }}
+                    >
+                      <ListItemIcon>
+                        {getNotificationIcon(notif.type)}
+                      </ListItemIcon>
+
+                      <Box>
+                        <Typography
+                          fontSize={14}
+                          fontWeight={notif.readed ? 'normal' : 'bold'}
+                          color={colors.grey[100]}
+                        >
+                          {notif.title}
+                        </Typography>
+                        <Typography fontSize={12} color={colors.grey[200]}>
+                          {notif.message}
+                        </Typography>
+                        <Typography fontSize={10} color={colors.grey[400]}>
+                          {formatNotificationTime(notif.createdAt)}
+                        </Typography>
+                      </Box>
+
+                      <IconButton
+                        className="delete-btn"
+                        size="small"
+                        sx={{
+                          display: 'none',
+                          position: 'absolute',
+                          right: 8,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                        }}
+                        color="error"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteMutation.mutate(notif.id);
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </MenuItem>
+                  ))}
+                </Box>
+              )
+            ))
+          )}
+        </Box>
       </Menu>
     </Box>
   );

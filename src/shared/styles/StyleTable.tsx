@@ -13,7 +13,7 @@ export const styledTable = (
     backgroundColor: colors.primary[400],
     '& .MuiTableRow-root': {
         '&:hover': {
-            backgroundColor: options?.rowHoverBg ?? colors.primary[800],
+            backgroundColor: options?.rowHoverBg,
         },
     },
     '& .MuiTableCell-root': {

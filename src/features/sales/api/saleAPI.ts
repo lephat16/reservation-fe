@@ -4,22 +4,22 @@ import type { SaleOrderData, SellOrderItem, WeeklySalesByProduct } from "../type
 
 export const saleAPI = {
     getSaleOrders: async (): Promise<ApiResponse<SaleOrderData[]>> => {
-        return (await api.get(`/transactions/sales/all`));
+        return (await api.get(`/transactions/all-sales`));
     },
     getSaleOrderById: async (soId: number): Promise<ApiResponse<SaleOrderData>> => {
-        return (await api.get(`/transactions/sales/${soId}`));
+        return (await api.get(`/transactions/${soId}/by-sale`));
     },
     updateSalesOrderQuantityAndDescription: async (soId: number, data: SaleOrderData): Promise<ApiResponse<SaleOrderData>> => {
-        return (await api.put(`/transactions/sales/update-qty-and-desc/${soId}`, data));
+        return (await api.put(`/transactions/sales/${soId}/update-qty-and-desc`, data));
     },
     createSaleOrder: async (sellData: SellOrderItem): Promise<ApiResponse<SaleOrderData>> => {
-        return (await api.post(`/transactions/sales/add`, sellData));
+        return (await api.post(`/transactions/add-sales`, sellData));
     },
     prepareSaleOrder: async (soId: number): Promise<ApiResponse<SaleOrderData>> => {
-        return (await api.put(`/transactions/sales/prepare/${soId}`));
+        return (await api.put(`/transactions/sales/${soId}/prepare`));
     },
     deleteSellOrder: async (orderId: number): Promise<ApiResponse<void>> => {
-        return (await api.delete(`/transactions/sales/delete/${orderId}`));
+        return (await api.delete(`/transactions/sales/${orderId}/delete-sale`));
     },
     getWeeklySalesByProduct: async (productId: number): Promise<ApiResponse<WeeklySalesByProduct[]>> => {
         return (await api.get(`/transactions/sales-order/${productId}/weekly-sales`));

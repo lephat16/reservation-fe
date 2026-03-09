@@ -5,40 +5,40 @@ import type { DeliverStockItem, InventoryHistoryByPurchaseOrder, InventoryHistor
 
 export const stockAPI = {
     getAllWarehouseWithLocation: async (): Promise<ApiResponse<WarehouseWithLocationData[]>> => {
-        return (await api.get(`/warehouses/with-location/all`));
+        return (await api.get(`/warehouses/with-location/all-wh`));
     },
     getAllWarehouseWithLocationBySku: async (sku: string): Promise<ApiResponse<WarehouseWithLocationData[]>> => {
         return (await api.get(`/warehouses/all-by-sku/with-location/${sku}`));
     },
     getInventoryHistoryByPurchaseOrder: async (poId: number): Promise<ApiResponse<InventoryHistoryByPurchaseOrder[]>> => {
-        return (await api.get(`/inventory/stock-history/purchase-order/${poId}`));
+        return (await api.get(`/inventory/stock-history/${poId}/by-purchase-order`));
     },
     getAllStockHistoriesWithDetails: async (): Promise<ApiResponse<StockHistoriesWithDetailData[]>> => {
-        return (await api.get(`/inventory/stock-history/with-details/all`));
+        return (await api.get(`/inventory/stock-history/all-with-details`));
     },
     getAllWarehouses: async (): Promise<ApiResponse<WarehousesData[]>> => {
-        return (await api.get(`/warehouses/all`));
+        return (await api.get(`/warehouses/all-wh`));
     },
     getWarehouseWithTotalChangedQty: async (): Promise<ApiResponse<WarehouseWithTotalChangedQtyData[]>> => {
         return (await api.get(`/warehouses/all-with-total-changed-qty`));
     },
     createWarehouse: async (createItem: WarehouseFormData): Promise<ApiResponse<WarehousesData>> => {
-        return (await api.post(`/warehouses/add`, createItem));
+        return (await api.post(`/warehouses/add-wh`, createItem));
     },
     updateWarehouse: async (id: number, updateItem: WarehouseFormData): Promise<ApiResponse<WarehousesData>> => {
-        return (await api.put(`/warehouses/update/${id}`, updateItem));
+        return (await api.put(`/warehouses/${id}/update-wh`, updateItem));
     },
     deleteWarehouse: async (id: number): Promise<ApiResponse<void>> => {
-        return (await api.delete(`/warehouses/delete/${id}`));
+        return (await api.delete(`/warehouses/${id}/delete-wh`));
     },
     deliverStock: async (deliverItem: DeliverStockItem[], soId: number): Promise<ApiResponse<StockResultData[]>> => {
-        return (await api.post(`/inventory/stock/deliver-stock/${soId}`, deliverItem));
+        return (await api.post(`/inventory/stock/${soId}/deliver-stock`, deliverItem));
     },
     receiveStock: async (receiveItem: ReceiveStockItem[], poId: number): Promise<ApiResponse<StockResultData[]>> => {
-        return (await api.post(`/inventory/stock/receive-stock/${poId}`, receiveItem));
+        return (await api.post(`/inventory/stock/${poId}/receive-stock`, receiveItem));
     },
     getInventoryHistoryBySaleOrder: async (soId: number): Promise<ApiResponse<InventoryHistoryBySaleOrder[]>> => {
-        return (await api.get(`/inventory/stock-history/sale-order/${soId}`));
+        return (await api.get(`/inventory/stock-history/${soId}/by-sale-order`));
     },
     getAllStockWithSupplierAndProduct: async (): Promise<ApiResponse<StockWithSupplierAndProduct[]>> => {
         return (await api.get(`/inventory/stock/all-with-supplier`));

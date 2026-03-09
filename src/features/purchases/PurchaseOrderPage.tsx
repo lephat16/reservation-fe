@@ -366,13 +366,15 @@ const PurchaseOrderPage = () => {
                         <TableContainer
                             component={Paper}
                             sx={{
-                                height: "100%"
+                                height: "100%",
                             }}
                         >
                             <Table
                                 sx={{
                                     tableLayout: "fixed",
-                                    ...styledTable(colors),
+                                    ...styledTable(colors, {
+                                        rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
+                                    }),
                                 }}
                             >
                                 <colgroup>

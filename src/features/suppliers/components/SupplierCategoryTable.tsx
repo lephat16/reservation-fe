@@ -29,6 +29,7 @@ import ErrorState from "../../../shared/components/messages/ErrorState";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { STATUS } from "../../../constants/status";
+import { ORDER_TYPE } from "../../../constants/order";
 
 /** 
  * サプライヤーカテゴリーテーブルコンポーネント
@@ -66,10 +67,11 @@ const SupplierCategoryTable = ({ products, supplierId, supplierStatus, showSnack
             const updatedRes = await supplierAPI.updateSupplierProduct(updateSupplierProduct, selectedSupplierProduct?.sku ?? "");
             return updatedRes;
         },
-        onSuccess: (response) => {
+        onSuccess: (response, ) => {
             // 成功時の処理
             showSnackbar(response.message || SNACKBAR_MESSAGES.UPDATE_SUCCESS, "success"); // スナックバー表示
-            queryClient.invalidateQueries({ queryKey: ["supplier-product-with-price-history", selectedSupplierProduct?.sku] });
+            
+            queryClient.invalidateQueries({ queryKey: ["supplier", supplierId] });
         },
         onError: (error: unknown) => {
             showSnackbar(getErrorMessage(error) || SNACKBAR_MESSAGES.UPDATE_FAILED, "error");
@@ -94,7 +96,9 @@ const SupplierCategoryTable = ({ products, supplierId, supplierStatus, showSnack
                 >
                     <Table
                         sx={{
-                            ...styledTable(colors)
+                            ...styledTable(colors, {
+                                rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.primary[800],
+                            }),
                         }}
                     >
                         <colgroup>
@@ -155,7 +159,7 @@ const SupplierCategoryTable = ({ products, supplierId, supplierStatus, showSnack
                                     </TableCell>
                                     <TableCell>
                                         <Stack direction="row" justifyContent="center">
-                                            <Tooltip title="注文">
+                                            <Tooltip title={ORDER_TYPE.PURCHASE.label}>
                                                 <span>
                                                     <IconButton
                                                         aria-label="see-more"

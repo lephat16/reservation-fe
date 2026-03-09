@@ -14,6 +14,7 @@ import type { PurchaseRow } from "../types/purchase";
 import { tokens } from "../../../shared/theme";
 import type { DialogMode } from "./CreatePurchasePage";
 import { descriptionTextField } from "../../../shared/styles/descriptionTextField";
+import { ORDER_TYPE } from "../../../constants/order";
 
 /**
  * 注文確認ダイアログコンポーネント
@@ -143,7 +144,7 @@ export const PurchaseConfirmDialog = ({
                     color={dialogMode === "save" ? "info" : "success"}
                     onClick={dialogMode === "save" ? onConfirmSave : onConfirmPurchase}
                 >
-                    {dialogMode === "save" ? "保存" : "注文"}
+                    {dialogMode === "save" ? "保存" : `${ORDER_TYPE.PURCHASE.label}`}
                 </Button>
             </DialogActions>
         </Dialog>
