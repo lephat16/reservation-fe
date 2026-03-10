@@ -377,5 +377,5 @@ const SellRowItem = ({
         </Box>
     )
 }
-
+// SKU は「同じ商品でも仕入先ごとに異なるバージョン」
 export default SellRowItem;

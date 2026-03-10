@@ -21,7 +21,7 @@ import { descriptionTextField } from "../../../shared/styles/descriptionTextFiel
 import { styledSelect } from "../../../shared/components/global/select/styledSelect";
 
 /**
- * 注文作成ページ用の単一商品行コンポーネント
+ * 発注作成ページ用の単一商品行コンポーネント
  * 
  * 選択された仕入先に紐づく商品を選択・表示し、
  * 数量、合計、小計、備考を入力可能。
@@ -220,7 +220,7 @@ export const PurchaseItemRow = ({
                         <Typography mt={2}>リードタイム: <strong>{row.product.leadTime}日</strong></Typography>
                     </Box>
 
-                    {/* メモ入力 */}
+                    {/* 備考入力 */}
                     <TextField
                         label="備考"
                         variant="outlined"

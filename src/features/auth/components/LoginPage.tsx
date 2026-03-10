@@ -42,6 +42,7 @@ const LoginPage = (): JSX.Element => {
 
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch();
+    console.log(user)
 
     // ユーザーが既にログインしている場合、倉庫一覧ページにリダイレクト
     useEffect(() => {

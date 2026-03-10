@@ -1,11 +1,16 @@
 import {
     Box,
     Button,
-    Card,
-    CardContent,
     Chip,
+    Divider,
+    Drawer,
+    FormControl,
     IconButton,
+    InputLabel,
+    MenuItem,
+    OutlinedInput,
     Paper,
+    Select,
     Skeleton,
     Stack,
     Table,
@@ -29,15 +34,7 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import AddIcon from '@mui/icons-material/Add';
 import { useEffect, useMemo, useState } from "react";
-import WidgetsIcon from '@mui/icons-material/Widgets';
-import ArchiveIcon from '@mui/icons-material/Archive';
-import UnarchiveIcon from '@mui/icons-material/Unarchive';
-import MovingIcon from '@mui/icons-material/Moving';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import Battery20Icon from '@mui/icons-material/Battery20';
-import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
+
 import { PieChart } from '@mui/x-charts/PieChart';
 import WarehouseForm from "./components/WarehouseForm";
 import ErrorState from "../../shared/components/messages/ErrorState";
@@ -46,7 +43,7 @@ import { stockAPI } from "./api/stockAPI";
 import { useWarehouses } from "./hooks/useWarehouses";
 import { useWarehouseWithTotalQty } from "./hooks/useWarehouseWithTotalQty";
 import { useScreen } from "../../shared/hooks/ScreenContext";
-import { STATUS } from "../../constants/status";
+
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
@@ -54,6 +51,12 @@ import { type Order } from "../products/AllProductsPage";
 import { TablePaginationActions } from "../../shared/components/pagination/PaginationAction";
 import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";
 import { styledTable } from "../../shared/styles/StyleTable";
+import { styledSelect } from "../../shared/components/global/select/styledSelect";
+import WarehouseStats from "./components/WarehouseStats";
+import WarehouseInfo from "./components/WarehouseInfo";
+import CloseIcon from '@mui/icons-material/Close';
+import FilterListIcon from '@mui/icons-material/FilterList';
+
 
 
 type OrderBy = 'productName' | 'sku' | 'quantity' | 'reservedQuantity' | 'available'
@@ -66,7 +69,7 @@ const WarehousePage = () => {
     const { showSnackbar } = useSnackbar();
     const queryClient = useQueryClient();
     const { confirmDelete } = useDialogs();
-    const { isSM, isLG } = useScreen();
+    const { isSM, isXL } = useScreen();
 
     // ステート
     // ページネーションの状態管理
@@ -76,13 +79,15 @@ const WarehousePage = () => {
     // 倉庫の作成・編集フォームの開閉状態
     const [openCreateWarehouseForm, setOpenCreateWarehouseForm] = useState(false);
     const [openEditWarehouseForm, setOpenEditWarehouseForm] = useState(false);
+    const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
+
 
     // 選択中の倉庫情報とその在庫データ
-    const [selectedWarehouse, setSelectedWarehouse] = useState<WarehousesData | undefined>(undefined);
-    const [selectedWarehouseWithTotal, setSelectedWarehouseWithTotal] = useState<WarehouseWithTotalChangedQtyData | undefined>(undefined);
+    const [selectedWarehouse, setselectedWarehouse] = useState<WarehousesData | undefined>(undefined);
+    const [selectedWarehouseWithTotal, setselectedWarehouseWithTotal] = useState<WarehouseWithTotalChangedQtyData | undefined>(undefined);
     const [currentWarehouseIndex, setCurrentWarehouseIndex] = useState<number>(0);
     const [addedWarehouseIndex, setAddedWarehouseIndex] = useState<number | null>(null);
-
+    const [tempWarehouseId, setTempWarehouseId] = useState<number | "">("");
     // ソートの順番と基準
     const [order, setOrder] = useState<Order>('asc');
     const [orderBy, setOrderBy] = useState<OrderBy>('productName');
@@ -159,11 +164,12 @@ const WarehousePage = () => {
         if (dataWH && dataWH.length > 0) {
             const firstWarehouse = dataWH[currentWarehouseIndex];
             if (firstWarehouse) {
-                setSelectedWarehouse(firstWarehouse);
+                setselectedWarehouse(firstWarehouse);
                 const firstWarehouseWithTotal = dataWHWithTotal?.find(
                     wh => wh.id === firstWarehouse.id
                 );
-                setSelectedWarehouseWithTotal(firstWarehouseWithTotal);
+                setselectedWarehouseWithTotal(firstWarehouseWithTotal);
+                setTempWarehouseId(firstWarehouse.id)
             }
         }
     }, [dataWH, dataWHWithTotal, currentWarehouseIndex]);
@@ -173,12 +179,12 @@ const WarehousePage = () => {
             const nextIndex = (currentWarehouseIndex + 1) % dataWH.length;
             setCurrentWarehouseIndex(nextIndex);
             const nextWarehouse = dataWH[nextIndex];
-            setSelectedWarehouse(nextWarehouse);
+            setselectedWarehouse(nextWarehouse);
 
             const nextWarehouseWithTotal = dataWHWithTotal?.find(
                 wh => wh.id === nextWarehouse.id
             );
-            setSelectedWarehouseWithTotal(nextWarehouseWithTotal);
+            setselectedWarehouseWithTotal(nextWarehouseWithTotal);
         }
     };
     // 前の倉庫に移動
@@ -187,12 +193,12 @@ const WarehousePage = () => {
             const prevIndex = (currentWarehouseIndex - 1 + dataWH.length) % dataWH.length;
             setCurrentWarehouseIndex(prevIndex);
             const prevWarehouse = dataWH[prevIndex];
-            setSelectedWarehouse(prevWarehouse);
+            setselectedWarehouse(prevWarehouse);
 
             const prevWarehouseWithTotal = dataWHWithTotal?.find(
                 (wh) => wh.id === prevWarehouse.id
             );
-            setSelectedWarehouseWithTotal(prevWarehouseWithTotal);
+            setselectedWarehouseWithTotal(prevWarehouseWithTotal);
         }
     };
     const stocks = selectedWarehouse?.stocks ?? [];
@@ -212,30 +218,8 @@ const WarehousePage = () => {
     };
     // 空行の処理
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, stocks.length - page * rowsPerPage);
-    // 合計数量の計算
-    const totalQuantity = selectedWarehouse?.stocks
-        .map(stock => stock.quantity)
-        .reduce((sum, qty) => sum + qty, 0);
-    // 他の指標（受領PO、出荷SO）の計算
-    const totalReceivedPO = selectedWarehouseWithTotal?.totalReceivedPo ?? 0
-    const totalReceivedPO7d = selectedWarehouseWithTotal?.totalReceivedPoInWeek ?? 0
-    const percentPO7d = totalReceivedPO > 0
-        ? (totalReceivedPO7d / totalReceivedPO) * 100
-        : 0
-    const totalDeliveredSo = selectedWarehouseWithTotal?.totalDeliveredSo ?? 0
-    const totalDeliveredSo7d = selectedWarehouseWithTotal?.totalDeliveredSoInWeek ?? 0
-    const percentSO7d = totalDeliveredSo > 0
-        ? (totalDeliveredSo7d / totalDeliveredSo) * 100
-        : 0
-    const percentQty = totalQuantity && selectedWarehouse?.stockLimit
-        ? (totalQuantity / selectedWarehouse.stockLimit) * 100
-        : 0;
 
-    const statusInfo =
-        STATUS[selectedWarehouse?.status as keyof typeof STATUS] ?? {
-            label: "不明",
-            color: "default",
-        };
+
     // ソート済みデータ
     const sortedFilteredData = useMemo(() => {
         const getValue = (item: StockData) => {
@@ -264,6 +248,29 @@ const WarehousePage = () => {
             return 0;
         });
     }, [stocks, order, orderBy]);
+
+    const pieData = Object.values(
+        (selectedWarehouse?.stocks ?? []).reduce<Record<number, {
+            id: number;
+            value: number;
+            label: string;
+        }>>((acc, stock) => {
+            if (!acc[stock.productId]) {
+                acc[stock.productId] = {
+                    id: stock.productId,
+                    value: 0,
+                    label: stock.productName
+                };
+            }
+            acc[stock.productId].value += stock.quantity;
+            return acc;
+        }, {})
+    );
+
+    // フィルタDrawerを開く
+    const handleOpenDrawer = () => {
+        setOpenFilterDrawer(true);
+    };
     return (
         <Box mx={3} mb={3}>
             {isLoadingWH ? (
@@ -283,116 +290,248 @@ const WarehousePage = () => {
                 {(errorWH || errorWHWithTotal) && (
                     <ErrorState />
                 )}
-                {isLG && (isLoadingWH ? (
-                    <Skeleton variant="rectangular" height={150} />
-                ) : (
-                    <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                    >
-                        <Stack
-                            direction="row"
-                            gap={1}
-                        >
-                            {dataWH && dataWH.map((wh) => (
-                                <Button
-                                    key={wh.id}
-                                    color="info"
-                                    variant={selectedWarehouse?.id === wh.id ? "contained" : "outlined"}
-                                    onClick={() => {
-                                        setSelectedWarehouse(wh);
-                                        const warehouseWithTotal = dataWHWithTotal?.find(
-                                            whWithTotal => whWithTotal.id === wh.id
-                                        );
-                                        setSelectedWarehouseWithTotal(warehouseWithTotal);
-
-                                        const newIndex = dataWH.findIndex(w => w.id === wh.id);
-                                        setCurrentWarehouseIndex(newIndex);
-                                        setPage(0);
-                                    }}
-                                >
-                                    {wh.location ? wh.location.split(",")[0].trim() : "未設定"}
-                                </Button>
-                            )
-                            )}
-                        </Stack>
-                        <Stack
-                            direction="row"
-                            gap={2}
-                        >
-                            <Tooltip title="戻">
-                                <IconButton onClick={handleBackWarehouse} aria-label="戻">
-                                    <ArrowBackIosIcon />
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip title="次">
-                                <IconButton onClick={handleNextWarehouse} aria-label="次">
-                                    <ArrowForwardIosIcon />
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip title="登録">
-                                <IconButton aria-label="登録" onClick={() => {
-                                    setOpenCreateWarehouseForm(true)
-                                }}>
-                                    <AddIcon />
-                                </IconButton>
-                            </Tooltip>
-                        </Stack>
-                    </Stack>
-                ))}
                 {isLoadingWHWithTotal ? (
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
                     <Box>
                         <Box
                             sx={{
-                                px: 2,
                                 py: 1,
+                                flexDirection: {
+                                    lg: "row",
+                                    sm: "column",
+                                    xs: "row"
+                                }
                             }}
+                            display="flex"
+                            justifyContent="space-between"
                         >
-                            <Typography variant="h6">{selectedWarehouse?.name}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                住所: {selectedWarehouse?.location}
-                            </Typography>
-                            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} mt={1}>
-                                <Chip
-                                    label={statusInfo.label}
-                                    color={statusInfo.color}
-                                    size="small"
+                            <Stack
+                             gap={2}
+                             flex={isSM ? 1 : ""}
+                             >
+                                <WarehouseInfo
+                                    warehouse={selectedWarehouse}
+                                    onDelete={handleDelete}
+                                    onEdit={() => setOpenEditWarehouseForm(true)}
                                 />
-                                <Tooltip title="削除">
-                                    <IconButton
-                                        aria-label="delete"
-                                        size="small"
-                                        sx={{
-                                            '&:hover': {
-                                                color: "red",
-                                            },
-                                        }}
-                                        onClick={() => {
-                                            handleDelete()
-                                        }}
+                                {isLoadingWH ? (
+                                    <Skeleton variant="rectangular" height={150} />
+                                ) : (!isXL ? (
+                                    <Stack
+                                        direction="row"
+                                        justifyContent="space-between"
                                     >
-                                        <DeleteIcon fontSize="inherit" />
-                                    </IconButton>
-                                </Tooltip>
-                                <Tooltip title="編集">
-                                    <IconButton
-                                        aria-label="edit"
-                                        size="small"
-                                        sx={{
-                                            '&:hover': {
-                                                color: "orange",
-                                            },
-                                        }}
-                                        onClick={() => {
-                                            setOpenEditWarehouseForm(true)
-                                        }}
-                                    >
-                                        <EditIcon fontSize="inherit" />
-                                    </IconButton>
-                                </Tooltip>
+                                        <Stack
+                                            direction="row"
+                                            gap={1}
+                                        >
+                                            {dataWH && dataWH.map((wh) => (
+                                                <Button
+                                                    key={wh.id}
+                                                    color="info"
+                                                    variant={selectedWarehouse?.id === wh.id ? "contained" : "outlined"}
+                                                    onClick={() => {
+                                                        setselectedWarehouse(wh);
+                                                        const warehouseWithTotal = dataWHWithTotal?.find(
+                                                            whWithTotal => whWithTotal.id === wh.id
+                                                        );
+                                                        setselectedWarehouseWithTotal(warehouseWithTotal);
+
+                                                        const newIndex = dataWH.findIndex(w => w.id === wh.id);
+                                                        setCurrentWarehouseIndex(newIndex);
+                                                        setPage(0);
+                                                    }}
+                                                >
+                                                    {wh.location ? wh.location.split(",")[0].trim() : "未設定"}
+                                                </Button>
+                                            )
+                                            )}
+                                        </Stack>
+                                        <Stack
+                                            direction="row"
+                                            gap={2}
+                                        >
+                                            <Tooltip title="戻">
+                                                <IconButton onClick={handleBackWarehouse} aria-label="戻">
+                                                    <ArrowBackIosIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="次">
+                                                <IconButton onClick={handleNextWarehouse} aria-label="次">
+                                                    <ArrowForwardIosIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="登録">
+                                                <IconButton aria-label="登録" onClick={() => {
+                                                    setOpenCreateWarehouseForm(true)
+                                                }}>
+                                                    <AddIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Stack>
+                                    </Stack>
+                                ) : (
+                                    <Box>
+                                        {/* // 小画面はDrawer開閉ボタンのみ */}
+                                        {isSM ? (<>
+                                            <IconButton
+                                                color="primary"
+                                                onClick={handleOpenDrawer}
+                                                aria-label="フィルター"
+                                            >
+                                                <FilterListIcon />
+                                            </IconButton>
+                                            <Drawer
+                                                anchor="left"
+                                                open={openFilterDrawer}
+                                                onClose={() => setOpenFilterDrawer(false)}
+                                                slotProps={{
+                                                    paper: {
+                                                        style: {
+                                                            width: '80vw',
+                                                            backgroundColor: colors.primary[400]
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                <Box p={2} display="flex" flexDirection="column" height="100%">
+                                                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                                                        <Typography variant="h6">フィルター</Typography>
+                                                        <IconButton onClick={() => setOpenFilterDrawer(false)}>
+                                                            <CloseIcon />
+                                                        </IconButton>
+                                                    </Box>
+                                                    <Divider sx={{ my: 1 }} />
+                                                    <FormControl sx={{ mt: 2 }}>
+                                                        <InputLabel
+                                                            id="warehouse-label"
+                                                            sx={{
+                                                                color: colors.grey[100],
+                                                                '&.Mui-focused': {
+                                                                    color: colors.grey[200],
+                                                                },
+                                                            }}
+                                                        >
+                                                            倉庫
+                                                        </InputLabel>
+                                                        <Select
+                                                            labelId="warehouse-label"
+                                                            id="warehouse"
+                                                            value={tempWarehouseId}
+                                                            onChange={(e) => {
+                                                                setTempWarehouseId(Number(e.target.value));
+                                                            }}
+                                                            input={<OutlinedInput label="倉庫" />}
+                                                            sx={styledSelect}
+                                                            MenuProps={{
+                                                                PaperProps: {
+                                                                    sx: {
+                                                                        backgroundColor: colors.blueAccent[800],
+                                                                        color: colors.grey[100],
+                                                                        minWidth: 200,
+                                                                        boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                                                    }
+                                                                }
+                                                            }}
+                                                        >
+
+                                                            {dataWH?.map((wh) => (
+                                                                <MenuItem key={wh.id} value={wh.id}>
+                                                                    {wh.name}
+                                                                </MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                    </FormControl>
+                                                    {/** Drawer フィルターの下部ボタン */}
+                                                    <Box mt="auto" display="flex" justifyContent="right" gap={2} py={2}>
+                                                        <Button variant="contained" color="warning" onClick={() => setOpenFilterDrawer(false)}>キャンセル</Button>
+                                                        <Button
+                                                            variant="contained"
+                                                            onClick={() => {
+                                                                const warehouse = dataWH?.find(
+                                                                    w => w.id === tempWarehouseId
+                                                                );
+
+                                                                if (warehouse) {
+                                                                    setselectedWarehouse(warehouse);
+                                                                    const warehouseWithTotal = dataWHWithTotal?.find(
+                                                                        w => w.id === warehouse.id
+                                                                    );
+                                                                    setselectedWarehouseWithTotal(warehouseWithTotal);
+                                                                    const newIndex = dataWH?.findIndex(w => w.id === warehouse.id) ?? 0;
+                                                                    setCurrentWarehouseIndex(newIndex);
+                                                                    setPage(0);
+                                                                }
+                                                                setOpenFilterDrawer(false);
+                                                            }}
+                                                        >
+                                                            適用
+                                                        </Button>
+                                                    </Box>
+                                                </Box>
+                                            </Drawer>
+                                        </>) : (
+                                            <FormControl sx={{ m: 1, minWidth: 270 }}>
+                                                <InputLabel
+                                                    id="warehouse-label"
+                                                    sx={{
+                                                        color: colors.grey[100],
+                                                        '&.Mui-focused': {
+                                                            color: colors.grey[200],
+                                                        },
+                                                    }}
+                                                >
+                                                    倉庫
+                                                </InputLabel>
+                                                <Select
+                                                    labelId="warehouse-label"
+                                                    id="warehouse"
+                                                    value={selectedWarehouse?.id ?? ""}
+                                                    onChange={(e) => {
+                                                        const id = Number(e.target.value);
+                                                        const warehouse = dataWH?.find(w => w.id === id);
+                                                        if (!warehouse) return;
+                                                        setselectedWarehouse(warehouse);
+                                                        const warehouseWithTotal = dataWHWithTotal?.find(
+                                                            w => w.id === warehouse.id
+                                                        );
+                                                        setselectedWarehouseWithTotal(warehouseWithTotal);
+                                                        const newIndex = dataWH?.findIndex(w => w.id === warehouse.id) ?? 0;
+                                                        setCurrentWarehouseIndex(newIndex);
+                                                        setPage(0);
+                                                    }}
+                                                    input={<OutlinedInput label="倉庫" />}
+                                                    sx={styledSelect}
+                                                    MenuProps={{
+                                                        PaperProps: {
+                                                            sx: {
+                                                                backgroundColor: colors.blueAccent[800],
+                                                                color: colors.grey[100],
+                                                                minWidth: 200,
+                                                                boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
+                                                            }
+                                                        }
+                                                    }}
+                                                >
+
+                                                    {dataWH?.map((wh) => (
+                                                        <MenuItem key={wh.id} value={wh.id}>
+                                                            {wh.name}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        )}
+                                    </Box>
+                                ))}
                             </Stack>
+
+                            {(selectedWarehouse && selectedWarehouseWithTotal) && < WarehouseStats
+                                selectedWarehouse={selectedWarehouse}
+                                selectedWarehouseWithTotal={selectedWarehouseWithTotal}
+                            />}
+
                         </Box>
                         <Box mt={1} display="flex" flexDirection={{ xs: 'column', xl: 'row' }} gap={4} >
                             <TableContainer component={Paper} sx={{ height: "100%", xs: 308, lg: 600 }}>
@@ -534,248 +673,22 @@ const WarehousePage = () => {
                                 flexDirection={{ xl: 'column', sm: 'row', xs: 'column' }}
                                 justifyContent="space-between"
                             >
-                                <Box
-                                    display='flex'
-                                    gap={2}
-                                    flexDirection={{ xl: 'column', lg: 'row', xs: 'column' }}
-                                >
-                                    <Stack direction="row" gap={2} justifyContent="space-between">
-                                        <Card
-                                            sx={{
-                                                backgroundColor: colors.primary[400],
-                                                color: colors.grey[100],
-                                                display: "flex",
-                                            }}
-                                        >
-                                            <Box
-                                                minWidth={140}
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                }}
-                                                flexGrow={1}
-                                            >
-                                                <CardContent
-                                                    sx={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        flex: 1,
-                                                        justifyContent: "space-between"
-                                                    }}
-                                                >
-                                                    <Stack direction="row" gap={2} justifyContent="space-between">
-                                                        <WidgetsIcon sx={{ fontSize: 40 }} />
-                                                        <Stack direction="column" gap={1}>
-                                                            <Battery20Icon sx={{ alignSelf: "center" }} color="warning" />
-                                                            <Typography variant="subtitle2" color="info" sx={{ fontWeight: 'bold' }}>
-                                                                {Math.round(percentQty * 100) / 100}%
-                                                            </Typography>
-                                                        </Stack>
-                                                    </Stack>
-                                                    <Typography
-                                                        component="div"
-                                                        sx={{
-                                                            fontSize: {
-                                                                xl: '2rem',
-                                                                xs: '3rem'
-                                                            },
-                                                            fontWeight: 'bold',
-                                                        }}
-                                                    >
-                                                        {totalQuantity}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="subtitle1"
-                                                        component="div"
-                                                        sx={{ color: 'text.secondary' }}
-                                                    >
-                                                        在庫合計
-                                                    </Typography>
-                                                </CardContent>
-                                            </Box>
-                                        </Card>
-                                        <Card
-                                            sx={{
-                                                backgroundColor: colors.primary[400],
-                                                color: colors.grey[100],
-                                                display: "flex",
-                                            }}
-                                        >
-                                            <Box
-                                                minWidth={140}
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                }}
-                                                flexGrow={1}>
-                                                <CardContent
-                                                    sx={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        flex: 1,
-                                                        justifyContent: "space-between"
-                                                    }}
-                                                >
 
-                                                    <Stack direction="row" gap={2} justifyContent="space-between">
-                                                        <PointOfSaleIcon sx={{ fontSize: 40 }} />
-                                                        <Stack direction="column" gap={1} sx={{ visibility: "hidden" }}>
-                                                            <MovingIcon sx={{ alignSelf: "center" }} color="success" />
-                                                            <Typography variant="subtitle2" color="success" sx={{ fontWeight: 'bold' }}>
-                                                                {Math.round(percentPO7d * 100) / 100}%
-                                                            </Typography>
-                                                        </Stack>
-                                                    </Stack>
-                                                    <Typography
-                                                        component="div"
-                                                        sx={{
-                                                            fontSize: {
-                                                                xl: '2rem',
-                                                                xs: '3rem'
-                                                            },
-                                                            fontWeight: 'bold',
-                                                        }}
-                                                    >
-                                                        {selectedWarehouse?.stocks
-                                                            .map(stock => stock.reservedQuantity)
-                                                            .reduce((sum, reserverdqty) => sum + reserverdqty, 0)}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="subtitle1"
-                                                        component="div"
-                                                        sx={{ color: 'text.secondary' }}
-                                                    >
-                                                        予約合計
-                                                    </Typography>
-                                                </CardContent>
-
-                                            </Box>
-
-                                        </Card>
-                                    </Stack>
-                                    <Stack direction="row" gap={2} justifyContent="space-between">
-                                        <Card
-                                            sx={{
-                                                backgroundColor: colors.primary[400],
-                                                color: colors.grey[100],
-                                                display: "flex",
-                                            }}
-                                        >
-                                            <Box
-                                                minWidth={140}
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                }}
-                                                flexGrow={1}
-                                            >
-                                                <CardContent
-                                                    sx={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        flex: 1,
-                                                        justifyContent: "space-between"
-                                                    }}
-                                                >
-                                                    <Stack direction="row" gap={2} justifyContent="space-between">
-                                                        <ArchiveIcon sx={{ fontSize: 40 }} />
-                                                        <Stack direction="column" gap={1}>
-                                                            <MovingIcon sx={{ alignSelf: "center" }} color="success" />
-                                                            <Typography variant="subtitle2" color="success" sx={{ fontWeight: 'bold' }}>
-                                                                {Math.round(percentPO7d * 100) / 100}%
-                                                            </Typography>
-                                                        </Stack>
-                                                    </Stack>
-                                                    <Typography
-                                                        component="div"
-                                                        sx={{
-                                                            fontSize: {
-                                                                xl: '2rem',
-                                                                xs: '3rem'
-                                                            },
-                                                            fontWeight: 'bold',
-                                                        }}
-                                                    >
-                                                        {totalReceivedPO}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="subtitle1"
-                                                        component="div"
-                                                        sx={{ color: 'text.secondary' }}
-                                                    >
-                                                        入荷合計
-                                                    </Typography>
-                                                </CardContent>
-                                            </Box>
-                                        </Card>
-                                        <Card
-                                            sx={{
-                                                backgroundColor: colors.primary[400],
-                                                color: colors.grey[100],
-                                                display: "flex",
-                                            }}
-                                        >
-                                            <Box
-                                                minWidth={140}
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                }}
-                                                flexGrow={1}
-                                            >
-                                                <CardContent
-                                                    sx={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        flex: 1,
-                                                        justifyContent: "space-between"
-                                                    }}
-                                                >
-                                                    <Stack direction="row" gap={2} justifyContent="space-between">
-                                                        <UnarchiveIcon sx={{ fontSize: 40 }} />
-                                                        <Stack direction="column" gap={1}>
-                                                            <TrendingDownIcon sx={{ alignSelf: "center" }} color="error" />
-                                                            <Typography variant="subtitle2" color="error" sx={{ fontWeight: 'bold' }}>
-                                                                {Math.round(percentSO7d * 100) / 100}%
-                                                            </Typography>
-                                                        </Stack>
-                                                    </Stack>
-                                                    <Typography
-                                                        component="div"
-                                                        sx={{
-                                                            fontSize: {
-                                                                xl: '2rem',
-                                                                xs: '3rem'
-                                                            },
-                                                            fontWeight: 'bold',
-                                                        }}
-                                                    >
-                                                        {totalDeliveredSo}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="subtitle1"
-                                                        component="div"
-                                                        sx={{ color: 'text.secondary' }}
-                                                    >
-                                                        出荷合計
-                                                    </Typography>
-                                                </CardContent>
-
-                                            </Box>
-
-                                        </Card>
-                                    </Stack>
-                                </Box>
 
                                 <Box display="flex">
                                     <PieChart
+                                        // series={[
+                                        //     {
+                                        //         data: selectedWarehouse?.stocks?.map(stock => ({
+                                        //             id: stock.productId,
+                                        //             value: stock.quantity,
+                                        //             label: stock.productName
+                                        //         })) || []
+                                        //     }
+                                        // ]}
                                         series={[
                                             {
-                                                data: selectedWarehouse?.stocks?.map(stock => ({
-                                                    id: stock.productId,
-                                                    value: stock.quantity,
-                                                    label: stock.productName
-                                                })) || []
+                                                data: pieData
                                             }
                                         ]}
                                         width={200}

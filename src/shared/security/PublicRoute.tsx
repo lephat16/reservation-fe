@@ -10,7 +10,7 @@ export const PublicRoute = ({ element }: Props) => {
   const { user } = useAuth();
 
   if (user) {
-    return <Navigate to="/profile" replace />;
+    return <Navigate to="/warehouses" replace />;
   }
 
   return element;

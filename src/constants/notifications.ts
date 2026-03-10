@@ -2,7 +2,7 @@
 export const NOTIFICATION_TYPE = {
     ORDER: {
         value: 'ORDER',
-        label: "注文",
+        label: "発注",
     },
     STOCK: {
         value: 'STOCK',

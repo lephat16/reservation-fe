@@ -5,9 +5,9 @@ import type { PurchaseOrderData, PurchaseOrderItem } from "../types/purchase";
 
 /** 
 
- * 注文書API 
+ * 発注書API 
 
- * 注文書のCRUD操作を提供する 
+ * 発注書のCRUD操作を提供する 
 
  */
 export const purchaseAPI = {

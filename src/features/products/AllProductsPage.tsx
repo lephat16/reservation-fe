@@ -442,12 +442,10 @@ const AllProductsPage = () => {
             <Box display="flex" justifyContent="space-between">
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
-                ) : (
-                    !isSM && <Header
-                        title="商品一覧"
-                        subtitle="商品情報の一覧表示"
-                    />
-                )}
+                ) : (<Header
+                    title="商品一覧"
+                    subtitle="商品情報の一覧表示"
+                />)}
                 {/** 商品追加ボタン */}
                 <Box mt={4}>
                     <Tooltip title="追加">
@@ -640,7 +638,6 @@ const AllProductsPage = () => {
                             anchor="left"
                             open={openFilterDrawer}
                             onClose={() => setOpenFilterDrawer(false)}
-
                             slotProps={{
                                 paper: {
                                     style: {

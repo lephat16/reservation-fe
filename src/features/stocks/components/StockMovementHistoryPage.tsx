@@ -355,9 +355,9 @@ const StockMovementHistoryPage = () => {
             {isLoading ? (
                 <Skeleton variant="text" width="80%" height={40} />
             ) : (
-                !isSM && <Header
+                <Header
                     title="取引履歴"
-                    subtitle="取引情報の一覧表示"
+                    subtitle={!isSM ? "取引情報の一覧表示" : undefined}
                 />
             )}
             <Box

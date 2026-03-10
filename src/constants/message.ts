@@ -9,8 +9,8 @@ export const SNACKBAR_MESSAGES = {
     SAVE_SUCCESS: "保存に成功しました",
     SAVE_FAILED: "保存に失敗しました",
     ORDER: {
-        CREATE_SUCCESS: "注文に成功しました",
-        CREATE_FAILED: "注文に失敗しました",
+        CREATE_SUCCESS: "発注に成功しました",
+        CREATE_FAILED: "発注に失敗しました",
         RECEIVE_SUCCESS: "入荷に成功しました",
         RECEIVE_FAILED: "入荷に失敗しました",
     },

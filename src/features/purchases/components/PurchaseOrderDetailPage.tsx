@@ -46,16 +46,16 @@ import { ORDER_STATUS } from "../../../constants/status";
 import { ORDER_TYPE } from "../../../constants/order";
 
 /**
- * 注文確認ダイアログコンポーネント
+ * 発注確認ダイアログコンポーネント
  *
- * 注文や受注などの確定操作をユーザーに確認するダイアログを表示する
+ * 発注や受注などの確定操作をユーザーに確認するダイアログを表示する
  *
  * @param open - ダイアログの表示・非表示
  * @param onClose - キャンセルボタン押下時のコールバック
  * @param onConfirm - 確定ボタン押下時のコールバック
  * @param type - 操作タイプ（例: "受注" / "発注"）
- * @param targetName - 対象名（例: 注文番号や商品名）、未指定の場合は汎用文言を表示
- * @param isPending - 確定処理中かどうか。true の場合ボタンは無効化され「注文中…」と表示
+ * @param targetName - 対象名（例: 発注番号や商品名）、未指定の場合は汎用文言を表示
+ * @param isPending - 確定処理中かどうか。true の場合ボタンは無効化され「発注中…」と表示
  */
 
 interface SubmitConfirmDialogProps {
@@ -117,16 +117,16 @@ export const SubmitConfirmDialog = ({
 }
 
 /**
- * 注文詳細ページコンポーネント
+ * 発注詳細ページコンポーネント
  *
- * 特定の注文番号に紐づく商品情報を表示し、
- * 状態に応じて編集、削除、注文、受領の操作を提供する。
+ * 特定の発注番号に紐づく商品情報を表示し、
+ * 状態に応じて編集、削除、発注、受領の操作を提供する。
  * 
  * 主な機能:
- * - 注文商品一覧の表示（数量、単価、小計、ステータス）
+ * - 発注商品一覧の表示（数量、単価、小計、ステータス）
  * - 合計金額計算
  * - 説明の編集および保存
- * - 注文削除、注文確定（NEWステータスの場合）
+ * - 発注削除、発注確定（NEWステータスの場合）
  * - 受領操作（PENDING / PROCESSINGステータスの場合）
  * - 権限による操作制御（スタッフ・倉庫管理者など）
  * - バリデーション（説明文字数500以内）
@@ -151,7 +151,7 @@ const PurchaseOrderDetailPage = () => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    const { poId } = useParams<{ poId: string }>(); // URLから注文IDを取得
+    const { poId } = useParams<{ poId: string }>(); // URLから発注IDを取得
 
     const { isStaff, isWarehouse } = useRoleFlags(); // ユーザーの権限フラグ
 
@@ -253,14 +253,14 @@ const PurchaseOrderDetailPage = () => {
     });
     const handleDelete = async () => {
         const ok = await confirmDelete(
-            `注文のアイテム「${poId}」を削除しますか`
+            `発注のアイテム「${poId}」を削除しますか`
         );
         if (ok) {
             deleteMutation.mutate();
         }
     }
 
-    // 注文Mutation
+    // 発注Mutation
     const submitMutation = useMutation({
         mutationFn: async () => purchaseAPI.placePurchaseOrder(Number(poId)),
         onSuccess: (response) => {
@@ -298,7 +298,7 @@ const PurchaseOrderDetailPage = () => {
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
                     <Header
-                        title={`注文番号: ${data?.id ?? ""} | 仕入先: ${data?.supplierName ?? ""}`}
+                        title={`発注番号: ${data?.id ?? ""} | 仕入先: ${data?.supplierName ?? ""}`}
                         subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${createdAt}`}
                     />
                 )}
@@ -430,13 +430,13 @@ const PurchaseOrderDetailPage = () => {
                         </Table>
                     </TableContainer>
                 )}
-                {/* 注文説明 */}
+                {/* 発注説明 */}
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
                     <Box mt={2} mb={2}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} mb={2}>
-                            注文説明:
+                            発注説明:
                         </Typography>
                         {isEditing ? (
                             <TextField
@@ -483,10 +483,10 @@ const PurchaseOrderDetailPage = () => {
                     {/* 削除ボタン */}
                 </Tooltip>
                 {data?.status === 'NEW' && (
-                    <Tooltip title={isWarehouse ? "管理者またはスタッフのみ注文可能" : ""} arrow>
+                    <Tooltip title={isWarehouse ? "管理者またはスタッフのみ発注可能" : ""} arrow>
                         <span>
                             <Button disabled={isWarehouse} variant="contained" color="info" onClick={() => setOpenSubmitConfirm(true)}>
-                                注文
+                                発注
                             </Button>
                         </span>
                     </Tooltip>
@@ -503,7 +503,7 @@ const PurchaseOrderDetailPage = () => {
                 )}
             </Stack>
 
-            {/* 注文確認ダイアログ */}
+            {/* 発注確認ダイアログ */}
             <SubmitConfirmDialog
                 open={openSubmitConfirm}
                 onClose={() => setOpenSubmitConfirm(false)}

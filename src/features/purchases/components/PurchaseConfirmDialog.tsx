@@ -17,20 +17,20 @@ import { descriptionTextField } from "../../../shared/styles/descriptionTextFiel
 import { ORDER_TYPE } from "../../../constants/order";
 
 /**
- * 注文確認ダイアログコンポーネント
+ * 発注確認ダイアログコンポーネント
  * 
- * 注文行の一覧、合計金額、説明入力を表示し、
- * 保存または即時注文を実行できる。
+ * 発注行の一覧、合計金額、説明入力を表示し、
+ * 保存または即時発注を実行できる。
  * 
  * @param open - ダイアログの表示状態
  * @param onClose - ダイアログを閉じるコールバック
  * @param dialogMode - "save" または "purchase" のモード
- * @param validRows - 注文対象の行データ配列
- * @param totalAmount - 注文の合計金額
+ * @param validRows - 発注対象の行データ配列
+ * @param totalAmount - 発注の合計金額
  * @param description - 説明文の状態
  * @param onDescriptionChange - 説明文変更時のコールバック
  * @param onConfirmSave - 保存ボタン押下時のコールバック
- * @param onConfirmPurchase - 注文ボタン押下時のコールバック
+ * @param onConfirmPurchase - 発注ボタン押下時のコールバック
  */
 
 type DialogProps = {
@@ -77,12 +77,12 @@ export const PurchaseConfirmDialog = ({
             }}
         >
             <DialogTitle textAlign="center" variant="h4" fontWeight="bold">
-                注文内容の確認 ({dialogMode === "save" ? "保存用" : "購入用"})
+                発注内容の確認 ({dialogMode === "save" ? "保存用" : "発注用"})
             </DialogTitle>
 
             <DialogContent dividers>
                 <Typography variant="h6" mb={1}>
-                    注文商品一覧
+                    発注商品一覧
                 </Typography>
 
                 <Box
@@ -98,7 +98,7 @@ export const PurchaseConfirmDialog = ({
                         <Box flex={1} textAlign="right">小計</Box>
                     </Stack>
 
-                    {/* 注文行 */}
+                    {/* 発注行 */}
                     {validRows.map((row, index) => (
                         <Stack
                             key={index}

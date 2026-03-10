@@ -12,7 +12,7 @@ class ErrorBoundary extends Component<Props, State> {
     state: State = { hasError: false };
 
     // エラーが発生した場合、stateを更新してfallback UIをレンダリングする
-    static getDerivedStateFromError(error: Error): State {
+    static getDerivedStateFromError(_error: Error): State {
         return { hasError: true };
     }
 

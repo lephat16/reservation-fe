@@ -217,9 +217,8 @@ const ProductPage = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    !isSM && <Header
+                    <Header
                         title="商品情報"
-                        subtitle={productDetail?.product?.productName ?? "―"}
                     />
                 )}
                 <Box>

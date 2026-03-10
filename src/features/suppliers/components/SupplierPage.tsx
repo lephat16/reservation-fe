@@ -48,8 +48,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 /** 
  * 仕入先ページコンポーネント
  * 
- * 仕入先の詳細情報、在庫商品、最近の注文などを表示します。仕入先の編集や削除、商品追加の操作が可能です。
- * カテゴリ別の商品リストや注文履歴も表示され、商品や仕入先情報を効率的に管理できます。
+ * 仕入先の詳細情報、在庫商品、最近の発注などを表示します。仕入先の編集や削除、商品追加の操作が可能です。
+ * カテゴリ別の商品リストや発注履歴も表示され、商品や仕入先情報を効率的に管理できます。
  * 
  * @param openEditSupplierForm - 仕入先情報を編集するためのフォームが開いているかどうかを制御する状態
  * @param openSupplierProductDialog - 商品追加のダイアログが開いているかどうかを制御する状態
@@ -57,7 +57,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
  * @param selectedCategoryId - 現在選択されているカテゴリのID
  * @param supplierId - 仕入先のID（URLパラメータから取得）
  * @param data - 仕入先の詳細情報および在庫商品データ
- * @param dataPO - 仕入先に関連する最近の注文データ
+ * @param dataPO - 仕入先に関連する最近の発注データ
  * 
  * 仕入先の情報を表示し、カテゴリごとに商品リストを管理。編集、削除、商品追加などの操作を提供します。
  * 仕入先情報の更新、商品情報の追加などを行うためのフォームも提供します。
@@ -196,7 +196,7 @@ const SupplierPage = () => {
                 ) : (
                     !isSM && <Header
                         title="仕入先情報"
-                        subtitle="在庫と最近の注文を確認できます"
+                        subtitle="在庫と最近の発注を確認できます"
                     />
 
                 )}

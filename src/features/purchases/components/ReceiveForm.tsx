@@ -50,19 +50,19 @@ import { StyledSelectTextField } from "../../../shared/components/global/select/
 /**
  * 受領確認ダイアログコンポーネント
  *
- * 指定した注文（PO）に対する受領数量を確認するダイアログを表示する
+ * 指定した発注（PO）に対する受領数量を確認するダイアログを表示する
  *
  * @param open - ダイアログの表示・非表示
  * @param onClose - キャンセルボタンや背景クリックで閉じる際のコールバック
  * @param onConfirm - 確認ボタン押下時のコールバック
  * @param supplier - 仕入先名
- * @param poId - 注文番号（Purchase Order ID）
+ * @param poId - 発注番号（Purchase Order ID）
  * @param warehouse - 倉庫名
  * @param quantity - 受領数量
  * @param isPending - 確認処理中かどうか。true の場合ボタンは無効化され「確認中…」と表示
  */
 
-// 購入確認ダイアログ
+// 出荷確認ダイアログ
 interface ReceiveConfirmDialogProps {
     open: boolean;
     onClose: () => void;    // ダイアログの開閉
@@ -127,7 +127,7 @@ export const ReceiveConfirmDialog = ({
  * 受領・配送フォームダイアログコンポーネント
  *
  * 指定した商品の受領または配送数量を入力して確認するためのダイアログ。
- * フォームには商品名（読み取り専用）、倉庫選択、数量、メモを入力できる。
+ * フォームには商品名（読み取り専用）、倉庫選択、数量、備考を入力できる。
  * 入力後、確認ダイアログを表示して親コンポーネントに送信する。
  *
  * @param open - ダイアログの表示・非表示
@@ -135,7 +135,7 @@ export const ReceiveConfirmDialog = ({
  * @param onReceive - 受領処理時のコールバック。フォームの入力値を受け取る
  * @param onDeliver - 配送処理時のコールバック。フォームの入力値を受け取る
  * @param product - 対象商品のデータ（productName, detailIdなど）
- * @param poId - 注文番号（Purchase Order ID）
+ * @param poId - 発注番号（Purchase Order ID）
  * @param supplier - 仕入先名
  * @param warehouses - 選択可能な倉庫の配列
  * @param isPending - 処理中フラグ。true の場合ボタンを無効化
@@ -181,7 +181,7 @@ export const ReceiveFormDialog = ({
     const colors = tokens(theme.palette.mode);
 
     const [openSubmitConfirm, setOpenSubmitConfirm] = useState(false);
-    const submitButton = title === "出荷" ? "売出" : "購入";
+    const submitButton = title === "出荷" ? "売出" : "入荷";
 
 
     // バリデーションスキーマ
@@ -196,8 +196,8 @@ export const ReceiveFormDialog = ({
             .required("受領数量は必須です")
             .max(remains, `受領数量は残りの数量(${remains})を超えることはできません`),
         note: yup.string()
-            .max(200, "メモの最大文字数は200文字です。")
-            .required("メモは必須です")
+            .max(200, "備考の最大文字数は200文字です。")
+            .required("備考は必須です")
     });
     const { control, handleSubmit, reset, formState: { errors }, getValues } = useForm({
         defaultValues: {
@@ -333,13 +333,13 @@ export const ReceiveFormDialog = ({
                             />
                         )}
                     />
-                    {/* メモフィールド */}
+                    {/* 備考フィールド */}
                     <Controller
                         name="note"
                         control={control}
                         render={({ field }) => (
                             <TextField
-                                label="メモ"
+                                label="備考"
                                 multiline
                                 rows={4}
                                 fullWidth
@@ -504,8 +504,10 @@ const ReceiveForm = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    !isSM && <Header
-                        title={`注文番号: ${data?.purchaseOrder?.id ?? ""} | 仕入先: ${data?.purchaseOrder?.supplierName ?? ""}`}
+                    <Header
+                        title={!isSM ?
+                            `発注番号: #${data?.purchaseOrder?.id ?? ""} | 仕入先: ${data?.purchaseOrder?.supplierName ?? ""}` :
+                            `発注番号: #${data?.purchaseOrder?.id ?? ""}`}
                         subtitle={`ステータス: ${data?.purchaseOrder?.status ?? ""}`}
                     />
                 )}

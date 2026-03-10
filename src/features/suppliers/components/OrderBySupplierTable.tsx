@@ -26,13 +26,13 @@ import InfoIcon from '@mui/icons-material/Info';
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 
 /** 
- * 注文履歴テーブルコンポーネント
+ * 発注履歴テーブルコンポーネント
  * 
- * 注文の基本情報、詳細を表示し、各注文の詳細を確認するためのダイアログを提供する
+ * 発注の基本情報、詳細を表示し、各発注の詳細を確認するためのダイアログを提供する
  * 
- * @param purchaseOrder - 注文データのリスト
- * @param openPODialog - 注文詳細ダイアログを開くためのコールバック
- * @param setSelectedPO - 選択した注文データを設定するコールバック
+ * @param purchaseOrder - 発注データのリスト
+ * @param openPODialog - 発注詳細ダイアログを開くためのコールバック
+ * @param setSelectedPO - 選択した発注データを設定するコールバック
  */
 
 type OrderBySupplierProps = {
@@ -48,7 +48,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
     const [selectedPO, setSelectedPO] = useState<PurchaseOrderData | null>(null);
     return (
         <>
-            {/* 注文一覧のテーブル */}
+            {/* 発注一覧のテーブル */}
             <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
                 <Table
                     stickyHeader
@@ -86,7 +86,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                     </TableHead>
 
                     <TableBody>
-                        {/* 注文データがある場合、テーブルに表示 */}
+                        {/* 発注データがある場合、テーブルに表示 */}
                         {(purchaseOrder) ? (
                             purchaseOrder.map(p => (
                                 <TableRow key={p.id}>
@@ -131,7 +131,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                     </TableBody>
                 </Table>
             </TableContainer>
-            {/* 注文詳細ダイアログ */}
+            {/* 発注詳細ダイアログ */}
             <Dialog
                 open={openPODialog}
                 onClose={() => setOpenPODialog(false)}
@@ -148,7 +148,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                 }}
             >
                 <DialogTitle align="center" variant="h4" fontWeight={600}>
-                    注文の詳細
+                    発注の詳細
                 </DialogTitle>
                 <DialogContent dividers>
                     <Box
@@ -156,7 +156,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                         borderRadius={1}
                         sx={{ borderColor: colors.grey[400], overflowX: 'auto' }}
                     >
-                        {/* 注文の詳細（ヘッダー） */}
+                        {/* 発注の詳細（ヘッダー） */}
                         <Stack direction="row" p={1} sx={{ fontWeight: "bold" }}>
                             <Box flex={3}>商品名</Box>
                             <Box flex={1} textAlign="right">数量</Box>
@@ -164,7 +164,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                             <Box flex={1} textAlign="right">小計</Box>
                         </Stack>
 
-                        {/* 注文アイテムの詳細行 */}
+                        {/* 発注アイテムの詳細行 */}
                         {selectedPO?.details.map((row, index) => (
                             <Stack
                                 key={index}

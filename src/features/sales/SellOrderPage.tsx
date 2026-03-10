@@ -217,7 +217,7 @@ const SellOrderPage = () => {
                     <Stack direction="row" justifyContent="space-between">
                         <Stack direction="row" gap={1}>
                             {/** ステータスフィルター */}
-                            <FormControl sx={{ width: { lg: 150, xs: 120 } }}>
+                            <FormControl sx={{ m: 1, ml: 0, width: { lg: 150, xs: 120 } }}>
                                 <InputLabel
                                     id="multiple-status-label"
                                     sx={{
@@ -350,19 +350,21 @@ const SellOrderPage = () => {
                                                         case "action":
                                                             displayContent = (
                                                                 <>
-                                                                    <IconButton
-                                                                        aria-label="info"
-                                                                        sx={{
-                                                                            "&:hover": {
-                                                                                color: theme.alpha(blue[800], 1),
-                                                                                backgroundColor: "transparent",
-                                                                            },
-                                                                            transition: "color 0.2s ease",
-                                                                        }}
-                                                                        onClick={() => navigate(`/sell-order/${order.id}`)}
-                                                                    >
-                                                                        <InfoIcon />
-                                                                    </IconButton>
+                                                                    <Tooltip title="詳細">
+                                                                        <IconButton
+                                                                            aria-label="info"
+                                                                            sx={{
+                                                                                "&:hover": {
+                                                                                    color: theme.alpha(blue[800], 1),
+                                                                                    backgroundColor: "transparent",
+                                                                                },
+                                                                                transition: "color 0.2s ease",
+                                                                            }}
+                                                                            onClick={() => navigate(`/sell-order/${order.id}`)}
+                                                                        >
+                                                                            <InfoIcon />
+                                                                        </IconButton>
+                                                                    </Tooltip>
                                                                     {!isMD && (
                                                                         <Tooltip title={isWarehouse ? "管理者またはスタッフのみ削除可能" : "削除"}>
                                                                             <span>

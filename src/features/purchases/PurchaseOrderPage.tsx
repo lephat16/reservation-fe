@@ -56,7 +56,7 @@ import type { Column } from "../../shared/types/shared";
 import { cellStyle } from "../../shared/styles/cellSyle";
 
 /** 
- * 購入一覧ページコンポーネント
+ * 発注一覧ページコンポーネント
  *
  * 発注情報の一覧をテーブル形式で表示する
  * ユーザー権限に応じて新規作成や削除、詳細確認が可能
@@ -137,7 +137,7 @@ const PurchaseOrderPage = () => {
 
     const handleDelete = async (orderId: number) => {
         const ok = await confirmDelete(
-            `注文「${orderId}」を削除しますか`
+            `発注「${orderId}」を削除しますか`
         );
         if (ok) {
             deleteMutation.mutate(orderId);
@@ -221,7 +221,10 @@ const PurchaseOrderPage = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    !isSM && <Header title="購入一覧" subtitle="購入情報の一覧表示" />
+                    <Header
+                        title="発注一覧"
+                        subtitle={!isSM ? "発注情報の一覧表示" : undefined}
+                    />
                 )}
                 <Box mt={4}>
                     {(isAdmin || isStaff) && (
@@ -230,7 +233,7 @@ const PurchaseOrderPage = () => {
                             color="success"
                             onClick={() => navigate(`/purchase-order/create`)}
                         >
-                            新規購入注文
+                            新規発注作成
                         </Button>
                     )}
                 </Box>

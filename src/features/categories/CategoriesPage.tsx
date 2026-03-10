@@ -16,7 +16,6 @@ import { useCategorySummaries } from "./hooks/useCategorySummaries";
 import CategoryForm from "./components/CategoryForm";
 import { useDeleteCategory } from "./hooks/useDeleteCategory";
 import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
-import { useScreen } from "../../shared/hooks/ScreenContext";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
@@ -100,7 +99,6 @@ const columns: GridColDef<CategorySummariesData>[] = [
 const CategoriesPage = () => {
 
     const theme = useTheme();
-    const { isSM } = useScreen();
     const navigate = useNavigate();
     const { showSnackbar } = useSnackbar();
 
@@ -164,12 +162,10 @@ const CategoriesPage = () => {
             <Box display="flex" justifyContent="space-between">
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
-                ) : (
-                    !isSM && <Header
-                        title="カテゴリ一覧"
-                        subtitle="カテゴリ一情報の一覧表示"
-                    />
-                )}
+                ) : (<Header
+                    title="カテゴリ一覧"
+                    subtitle="カテゴリ一情報の一覧表示"
+                />)}
                 <Box mt={4}>
                     <Tooltip title="追加">
                         <IconButton

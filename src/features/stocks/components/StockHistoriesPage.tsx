@@ -38,7 +38,7 @@ import { green, red } from "@mui/material/colors";
  * 
  * - 各在庫取引の概要を DataGrid で表示
  * - 行をクリックすると詳細ダイアログが開く
- * - 取引ごとの商品情報、数量、単価、合計金額、メモを表示
+ * - 取引ごとの商品情報、数量、単価、合計金額、備考を表示
  * - レスポンシブ対応: 中画面以下でフルスクリーンダイアログ
  */
 
@@ -293,7 +293,7 @@ const StockHistoriesPage = () => {
                                                 <TableCell>数量</TableCell>
                                                 <TableCell>単価</TableCell>
                                                 <TableCell>合計金額</TableCell>
-                                                <TableCell>メモ</TableCell>
+                                                <TableCell>備考</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>

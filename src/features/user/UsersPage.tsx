@@ -113,7 +113,7 @@ const UsersPage = () => {
         {isLoading ? (
           <Skeleton variant="text" width="80%" height={40} />
         ) : (
-          !isSM && <Header
+          <Header
             title="ユーザー覧"
             subtitle="ユーザー情報の一覧表示"
           />

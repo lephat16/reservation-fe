@@ -35,13 +35,13 @@ import { useQueryClient } from '@tanstack/react-query';
 /**
  * CreatePurchasePage コンポーネント
  *
- * 仕入先を選択し、商品の購入注文を作成・保存・即時発注するページ。
+ * 仕入先を選択し、商品の購入発注を作成・保存・即時発注するページ。
  * 
  * 主な機能:
  * - 仕入先選択
- * - 商品選択・数量・メモ管理
- * - 注文の保存または即時発注
- * - 注文合計金額の計算
+ * - 商品選択・数量・備考管理
+ * - 発注の保存または即時発注
+ * - 発注合計金額の計算
  * - 商品行の追加・削除
  *
  * @component
@@ -130,7 +130,7 @@ const CreatePurchasePage = () => {
         ]);
     };
 
-    // 注文データ構築
+    // 発注データ構築
     const buildPurchaseItem = (): PurchaseOrderItem | null => {
         if (!selectedSupplier) return null;
 
@@ -165,7 +165,7 @@ const CreatePurchasePage = () => {
         return true;
     };
 
-    // 注文確定処理（即時発注）
+    // 発注確定処理（即時発注）
     const handlePurchase = async () => {
         const purchaseItem = buildPurchaseItem();
         if (!purchaseItem) return;
@@ -186,7 +186,7 @@ const CreatePurchasePage = () => {
         }
     };
 
-    // 注文確認ダイアログでの保存
+    // 発注確認ダイアログでの保存
     const handleConfirmSave = async () => {
         if (!selectedSupplier) return;
         const purchaseItem: PurchaseOrderItem = {
@@ -262,9 +262,9 @@ const CreatePurchasePage = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    !isSM && <Header
-                        title="新規注文作成"
-                        subtitle="新しい注文の詳細を入力してください"
+                    <Header
+                        title="新規発注作成"
+                        subtitle="新しい発注の詳細を入力してください"
                     />
                 )}
                 <Box mt={4}>
@@ -388,7 +388,7 @@ const CreatePurchasePage = () => {
                     </Box>
                 )}
             </Box>
-            {/* 注文確認ダイアログ */}
+            {/* 発注確認ダイアログ */}
             <PurchaseConfirmDialog
                 open={openConfirmDialog}
                 dialogMode={dialogMode}

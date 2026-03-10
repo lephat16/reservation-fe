@@ -43,7 +43,7 @@ function App() {
 
   useEffect(() => {
     const restoreUser = async () => {
-      const publicPaths = ["/login", "/create-password", "/reset-password"];
+      const publicPaths = [ "/create-password", "/reset-password"];
       if (publicPaths.includes(window.location.pathname)) {
         setChecked(true);
         return;

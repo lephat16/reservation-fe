@@ -132,7 +132,6 @@ const columns: GridColDef<SupplierData>[] = [
 const AllSupplierPage = () => {
 
     const theme = useTheme();
-    const { isSM } = useScreen();
     const queryClient = useQueryClient();
 
     const navigate = useNavigate();
@@ -193,7 +192,7 @@ const AllSupplierPage = () => {
                 {isLoading ? (
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
-                    !isSM && <Header
+                    <Header
                         title={`仕入先一覧`}
                         subtitle={`全ての仕入先情報を表示`}
                     />

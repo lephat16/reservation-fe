@@ -1,7 +1,7 @@
 export const ORDER_TYPE = {
     PURCHASE: {
         value: 'PURCHASE',
-        label: "注文",
+        label: "発注",
     },
     SALE: {
         value: 'SALE',

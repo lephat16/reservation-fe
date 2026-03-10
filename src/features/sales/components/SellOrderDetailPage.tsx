@@ -188,7 +188,7 @@ const SellOrderDetailPage = () => {
                     <Skeleton variant="text" width="80%" height={40} />
                 ) : (
                     <Header
-                        title={`注文番号: ${data?.id ?? ""}`}
+                        title={`注文番号: #${data?.id ?? ""}`}
                         subtitle={`ステータス: ${data?.status ?? ""} | 作成日: ${createdAt}`}
                     />
                 )}

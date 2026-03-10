@@ -142,7 +142,7 @@ const SupplierProductForm = ({
             ...data,
             productId: data.productId ? Number(data.productId) : undefined
         };
-        
+
         onSubmit(submitData);
         setIsEdit(false);
         setOpenNoteForm(false);
@@ -218,10 +218,14 @@ const SupplierProductForm = ({
                                         categoryName: "",
                                         type: "create",
                                     };
-                                    const productOptions = [
-                                        ...(products ?? []),
-                                        createOption,
-                                    ];
+                                    const groupedProducts = (products ?? []).reduce<Record<string, ProductOption[]>>((acc, product) => {
+                                        if (!acc[product.categoryName]) acc[product.categoryName] = [];
+                                        acc[product.categoryName].push(product);
+                                        return acc;
+                                    }, {});
+
+
+                                    const productOptions = [...Object.values(groupedProducts).flat(), createOption];
                                     return (
                                         <Autocomplete<ProductOption>
                                             sx={{ flex: 1 }}
