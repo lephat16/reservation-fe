@@ -38,8 +38,8 @@ import ErrorState from "../../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../../constants/message";
 import { purchaseAPI } from "../api/purchaseAPI";
 import { stockAPI } from "../../stocks/api/stockAPI";
-import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid";
-import type { GridColDef } from "@mui/x-data-grid";
+import { styledDataGrid, } from "../../../shared/styles/StyledDataGrid";
+import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import useRoleFlags from "../../auth/hooks/useRoleFlags";
 import { getErrorMessage } from "../../../shared/utils/errorHandler";
@@ -610,7 +610,7 @@ const ReceiveForm = () => {
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
 
-                    <StyledDataGrid
+                    <DataGrid
                         rows={rows}
                         columns={columns}
                         initialState={{
@@ -624,7 +624,14 @@ const ReceiveForm = () => {
                         pageSizeOptions={[5]}
                         disableRowSelectionOnClick
                         autoHeight
-                        mode={theme.palette.mode}
+                        sx={{
+                            ...styledDataGrid(colors, {
+                                rowHoverBg:
+                                    theme.palette.mode === "dark"
+                                        ? colors.primary[500]
+                                        : colors.grey[900],
+                            }),
+                        }}
                     />
                 )}
                 {/* 受領フォームダイアログ */}

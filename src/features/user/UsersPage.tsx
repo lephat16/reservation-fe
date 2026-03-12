@@ -118,7 +118,7 @@ const UsersPage = () => {
             subtitle="ユーザー情報の一覧表示"
           />
         )}
-        <Box mt={4}>
+        {mode !== "create" && <Box mt={3}>
           <Tooltip title="追加">
             <IconButton
               color="success"
@@ -129,9 +129,9 @@ const UsersPage = () => {
               <PersonAddIcon fontSize="large" />
             </IconButton>
           </Tooltip>
-        </Box>
+        </Box>}
       </Box>
-      <Box mt={3} height="75vh">
+      <Box sx={{ mt: { sm: 3 } }} height="75vh">
         {/* エラー表示 */}
         {(error) && (
           <ErrorState />

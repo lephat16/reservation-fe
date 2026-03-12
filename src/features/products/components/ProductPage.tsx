@@ -2,8 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Box,
     Button,
-    Card,
-    CardContent,
     IconButton,
     Paper,
     Skeleton,
@@ -15,7 +13,6 @@ import {
     TableHead,
     TableRow,
     Tooltip,
-    Typography,
     useTheme
 } from "@mui/material";
 import Header from "../../../shared/components/layout/Header";
@@ -33,8 +30,6 @@ import StoreIcon from '@mui/icons-material/Store';
 import RealEstateAgentIcon from '@mui/icons-material/RealEstateAgent';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import SellIcon from '@mui/icons-material/Sell';
-import MovingIcon from '@mui/icons-material/Moving';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { useWeeklySalesByProduct } from "../hooks/useWeeklySalesByProduct";
 import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
@@ -42,12 +37,13 @@ import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useSnackbar } from "../../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ProductStat from "./ProductStat";
 
 
 /**
  * 商品詳細カードコンポーネント
  *
- * 商品の基本情報、ステータス、カテゴリー、週間売上などを表示する
+ * 商品の基本情報、ステータス、カテゴリ、週間売上などを表示する
  * また、編集・削除の操作も可能
  *
  * @param {Object} props - コンポーネントのプロパティ
@@ -241,18 +237,81 @@ const ProductPage = () => {
                 {(!isLoading && !error && data) ? (
                     <>
                         {/* 商品情報カード */}
-                        <Box>
+                        <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            sx={{
+                                gap: { xs: 1, sm: 3 },
+                                flexDirection: { xs: "column", sm: "row" }
+                            }}
+                        >
                             <ProductDetailCard
                                 product={data.productDetail.product}
                                 openDeleteDialog={() => handleDelete()}
                                 openEditDialog={() => setOpenEditProductForm(true)}
                             />
+                            {/** 上段カード群 */}
+                           {!isSM && <Box
+                                display='flex'
+                                sx={{
+                                    gap: { xs: 1, sm: 2 },
+                                }}
+                            >
+                                <Stack
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: { lg: "row" },
+                                        justifyContent: { xs: "space-between", sm: "unset" }
+                                    }}
+                                    gap={2}
+                                >
+                                    {/** 取引先数カード */}
+                                    <ProductStat
+                                        icon={<StoreIcon sx={{ fontSize: { xs: 20, sm: 40 } }} />}
+                                        title="取引先の数"
+                                        value={productDetail?.supplier.length ?? 0}
+                                    />
+                                    {/** 平均仕入価格カード */}
+                                    <ProductStat
+                                        icon={<ShowChartIcon sx={{ fontSize: { xs: 20, sm: 40 } }} />}
+                                        title="平均仕入価格"
+                                        value={`¥${Intl.NumberFormat("ja-JP").format(averagePrice)}`}
+                                    />
+                                </Stack>
+
+                                <Stack
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: { lg: "row" },
+                                        justifyContent: { xs: "space-between", sm: "unset" }
+                                    }}
+                                    gap={2}
+                                >
+                                    {/** 今週の売上カード */}
+                                    <ProductStat
+                                        icon={<RealEstateAgentIcon sx={{ fontSize: { xs: 20, sm: 40 } }} />}
+                                        title="今週の売上"
+                                        value={yenFormatter.format(thisWeekData.weeklySales)}
+                                        changePercent={revenueChangePercent}
+                                        isUp={isRevenueUp}
+                                        tooltipValue={yenFormatter.format(thisWeekData.weeklySales)}
+                                    />
+                                    {/** 今週の取引数カード */}
+                                    <ProductStat
+                                        icon={<SellIcon sx={{ fontSize: { xs: 20, sm: 40 } }} />}
+                                        title="今週の取引数"
+                                        value={thisWeekData.weeklyQty}
+                                        changePercent={qtyChangePercent}
+                                        isUp={isQtyUp}
+                                    />
+                                </Stack>
+                            </Box>}
                         </Box>
                         <Box
                             mt={1}
                             display="flex"
-                            flexDirection={{ xs: 'column', xl: 'row' }}
                             gap={4}
+                            flexDirection="column"
                         >
                             <Box flex={2}>
                                 {/** 仕入先テーブル */}
@@ -422,247 +481,9 @@ const ProductPage = () => {
                                 flexDirection={{ xl: 'column', md: 'row' }}
                                 justifyContent="space-between"
                             >
-                                {/** 上段カード群 */}
-                                <Box
-                                    display='flex'
-                                    gap={2}
-                                    flexDirection={{ xl: 'column', lg: 'row', xs: 'column' }}
-                                >
-                                    <Stack flex={1} direction="row" gap={2} justifyContent="space-between">
-                                        {/** 取引先数カード */}
-                                        <Card
-                                            sx={{
-                                                backgroundColor: colors.primary[400],
-                                                color: colors.grey[100],
-                                                display: "flex",
-                                                width: 220
-                                            }}
-                                        >
-                                            <Box
-                                                minWidth={140}
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                }}
-                                                flexGrow={1}
-                                            >
-                                                <CardContent
-                                                    sx={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        flex: 1,
-                                                        justifyContent: "space-between",
-                                                        alignItems: "center"
-                                                    }}
-                                                >
-                                                    <Stack direction="row" gap={2} justifyContent="space-between">
-                                                        <StoreIcon sx={{ fontSize: 40 }} />
 
-                                                    </Stack>
-                                                    <Typography
-                                                        component="div"
-                                                        sx={{
-                                                            fontSize: {
-                                                                xl: '2rem',
-                                                                xs: '3rem'
-                                                            },
-                                                            fontWeight: 'bold',
-                                                        }}
-                                                    >
-                                                        {productDetail?.supplier.length}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="subtitle1"
-                                                        component="div"
-                                                        sx={{ color: 'text.secondary' }}
-                                                    >
-                                                        取引先の数
-                                                    </Typography>
-                                                </CardContent>
-                                            </Box>
-                                        </Card>
-                                        {/** 平均仕入価格カード */}
-                                        <Card
-                                            sx={{
-                                                backgroundColor: colors.primary[400],
-                                                color: colors.grey[100],
-                                                display: "flex",
-                                                width: 220
-                                            }}
-                                        >
-                                            <Box
-                                                minWidth={140}
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                }}
-                                                flexGrow={1}
-                                            >
-                                                <CardContent
-                                                    sx={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        flex: 1,
-                                                        justifyContent: "space-between",
-                                                        alignItems: "center"
-                                                    }}
-                                                >
-                                                    <Stack direction="row" gap={2} justifyContent="space-between">
-                                                        <ShowChartIcon sx={{ fontSize: 40 }} />
-                                                        <Stack direction="column" gap={1}>
-
-                                                        </Stack>
-                                                    </Stack>
-                                                    <Typography
-                                                        component="div"
-                                                        sx={{
-                                                            fontSize: {
-                                                                xl: '1rem',
-                                                                xs: '2rem'
-                                                            },
-                                                            fontWeight: 'bold',
-                                                        }}
-                                                    >
-                                                        ¥{Intl.NumberFormat('ja-JP').format(averagePrice)}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="subtitle1"
-                                                        component="div"
-                                                        sx={{ color: 'text.secondary' }}
-                                                    >
-                                                        平均仕入価格
-                                                    </Typography>
-                                                </CardContent>
-                                            </Box>
-                                        </Card>
-                                    </Stack>
-                                    {/** 今週の売上カードと今週の取引数カード */}
-                                    <Stack flex={1} direction="row" gap={2} justifyContent="space-between">
-                                        {/** 今週の売上カード */}
-                                        <Card
-                                            sx={{
-                                                backgroundColor: colors.primary[400],
-                                                color: colors.grey[100],
-                                                display: "flex",
-                                                width: 220
-                                            }}
-                                        >
-                                            <Box
-                                                minWidth={140}
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                }}
-                                                flexGrow={1}
-                                            >
-                                                <CardContent
-                                                    sx={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        flex: 1,
-                                                        justifyContent: "space-between"
-                                                    }}
-                                                >
-                                                    <Stack direction="row" gap={2} justifyContent="space-between">
-                                                        <RealEstateAgentIcon sx={{ fontSize: 40 }} />
-                                                        <Stack direction="column" gap={1}>
-                                                            {isRevenueUp === true && <MovingIcon color="success" fontSize="small" />}
-                                                            {isRevenueUp === false && <TrendingDownIcon color="error" fontSize="small" />}
-                                                            <Typography variant="body2">
-                                                                {revenueChangePercent === null ? '—' : `${Math.abs(revenueChangePercent).toFixed(2)}%`}
-                                                            </Typography>
-                                                        </Stack>
-                                                    </Stack>
-                                                    <Tooltip title={yenFormatter.format(thisWeekData.weeklySales)}>
-                                                        <Typography
-                                                            component="div"
-                                                            sx={{
-                                                                fontSize: {
-                                                                    xl: '1rem',
-                                                                    xs: '2rem',
-                                                                    whiteSpace: 'nowrap',
-                                                                    overflow: 'hidden',
-                                                                    textOverflow: 'ellipsis',
-                                                                },
-                                                                fontWeight: 'bold',
-                                                            }}
-                                                        >
-                                                            {yenFormatter.format(thisWeekData.weeklySales)}
-
-                                                        </Typography>
-                                                    </Tooltip>
-                                                    <Typography
-                                                        variant="subtitle1"
-                                                        component="div"
-                                                        sx={{ color: 'text.secondary' }}
-                                                    >
-                                                        今週の売上
-                                                    </Typography>
-                                                </CardContent>
-                                            </Box>
-                                        </Card>
-                                        {/** 今週の取引数カード */}
-                                        <Card
-                                            sx={{
-                                                backgroundColor: colors.primary[400],
-                                                color: colors.grey[100],
-                                                display: "flex",
-                                                width: 220
-                                            }}
-                                        >
-                                            <Box
-                                                minWidth={140}
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                }}
-                                                flexGrow={1}
-                                            >
-                                                <CardContent
-                                                    sx={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        flex: 1,
-                                                        justifyContent: "space-between"
-                                                    }}
-                                                >
-                                                    <Stack direction="row" gap={2} justifyContent="space-between">
-                                                        <SellIcon sx={{ fontSize: 40 }} />
-                                                        <Stack direction="column" gap={1}>
-                                                            {isQtyUp === true && <MovingIcon color="success" fontSize="small" />}
-                                                            {isQtyUp === false && <TrendingDownIcon color="error" fontSize="small" />}
-                                                            <Typography variant="body2">
-                                                                {qtyChangePercent === null ? '—' : `${Math.abs(qtyChangePercent).toFixed(2)}%`}
-                                                            </Typography>
-                                                        </Stack>
-                                                    </Stack>
-                                                    <Typography
-                                                        component="div"
-                                                        sx={{
-                                                            fontSize: {
-                                                                xl: '2rem',
-                                                                xs: '3rem'
-                                                            },
-                                                            fontWeight: 'bold',
-                                                        }}
-                                                    >
-                                                        {thisWeekData.weeklyQty}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="subtitle1"
-                                                        component="div"
-                                                        sx={{ color: 'text.secondary' }}
-                                                    >
-                                                        今週の取引数
-                                                    </Typography>
-                                                </CardContent>
-                                            </Box>
-                                        </Card>
-                                    </Stack>
-
-                                </Box>
                                 {/** 過去4週間売上チャート */}
-                                <Box display="flex">
+                                <Box display="none">
                                     <Stack
                                         width="100%"
                                         direction="row"
@@ -674,7 +495,7 @@ const ProductPage = () => {
                                         }}
                                         gap={2}
                                     >
-                                        <Box flexGrow={1}>
+                                        <Box flexGrow={1} >
                                             <SparkLineChart
                                                 plotType="bar"
                                                 data={chartData}

@@ -9,7 +9,7 @@ import { LOGIN_STATUS } from "../../../constants/status";
 
 /**
  * 商品詳細カードコンポーネント
- * 商品の基本情報、ステータス、カテゴリーを表示する。
+ * 商品の基本情報、ステータス、カテゴリを表示する。
  *
  * @param product 商品データ
  * @param openDeleteDialog 削除ダイアログを開くコールバック関数

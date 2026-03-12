@@ -129,7 +129,7 @@ const ProfilePage = () => {
                         centered
                         value={tabValue}
                         indicatorColor="secondary"
-                        textColor="inherit"
+                        textColor="secondary"
                         onChange={handleTabChange}
                         aria-label="icon tabs"
 

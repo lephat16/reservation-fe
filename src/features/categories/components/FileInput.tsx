@@ -4,6 +4,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CancelIcon from '@mui/icons-material/Cancel';
 import ContentPasteGoIcon from '@mui/icons-material/ContentPasteGo';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 /**
  * FileInput コンポーネント
  *
@@ -33,6 +34,8 @@ type FileInputProps = {
 };
 
 export default function FileInput({ value, onChange, error }: FileInputProps) {
+
+    const { isSM } = useScreen();
     // プレビュー用の画像URL
     const [preview, setPreview] = useState<string | null>(null);
     const [urlInput, setUrlInput] = useState("");
@@ -85,7 +88,7 @@ export default function FileInput({ value, onChange, error }: FileInputProps) {
                 {/* ファイルアップロードボタン */}
                 <Box alignContent="center">
                     <Button component="label" variant="contained" startIcon={<CloudUploadIcon />} >
-                        Upload files
+                        {!isSM ? "ファイルをアップロード" : ""}
                         <VisuallyHiddenInput
                             type="file"
                             accept="image/*"

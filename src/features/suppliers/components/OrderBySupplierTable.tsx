@@ -24,6 +24,7 @@ import { useState } from "react";
 import { styledTable } from "../../../shared/styles/StyleTable";
 import InfoIcon from '@mui/icons-material/Info';
 import { useScreen } from "../../../shared/hooks/ScreenContext";
+import { renderStatusChip } from "../../purchases/PurchaseOrderPage";
 
 /** 
  * 発注履歴テーブルコンポーネント
@@ -97,7 +98,8 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
                                     <TableCell>¥{p.total.toLocaleString()}</TableCell>
                                     {!isMD && (
                                         <>
-                                            <TableCell>{p.status}</TableCell>
+                                            <TableCell>{renderStatusChip(p.status, 70)}
+                                            </TableCell>
                                             <TableCell>{p.description}</TableCell>
                                         </>
                                     )}
@@ -135,6 +137,7 @@ const OrderBySupplierTable = ({ purchaseOrder }: OrderBySupplierProps) => {
             <Dialog
                 open={openPODialog}
                 onClose={() => setOpenPODialog(false)}
+                disableRestoreFocus // ダイアログを閉じたときにフォーカスを元の要素へ戻さないようにする（aria-hidden の警告を防ぐため）
                 maxWidth="sm"
                 fullWidth
                 slotProps={{

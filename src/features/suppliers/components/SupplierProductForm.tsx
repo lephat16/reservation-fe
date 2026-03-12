@@ -35,6 +35,8 @@ import { StyledSelectTextField } from '../../../shared/components/global/select/
 import CommentIcon from '@mui/icons-material/Comment';
 import type { ProductData } from '../../products/types/product'
 import { STATUS } from '../../../constants/status'
+import { useScreen } from '../../../shared/hooks/ScreenContext'
+import Transition from '../../../shared/styles/TransitionDialog'
 
 /** 
  * 仕入先商品フォームコンポーネント
@@ -85,6 +87,7 @@ const SupplierProductForm = ({
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
 
+    const { isSM } = useScreen();
     const [isEdit, setIsEdit] = useState(false);
     const [openNoteForm, setOpenNoteForm] = useState(false)
 
@@ -164,17 +167,22 @@ const SupplierProductForm = ({
                 }
                 onClose();
             }}
+            fullScreen={isSM}
             maxWidth="md"
             fullWidth
+            disableRestoreFocus
             slotProps={{
                 paper: {
                     sx: {
                         backgroundColor: colors.blueAccent[900],
-                        borderRadius: 2,
+                        borderRadius: { sm: 2 },
                         p: 2,
-                        maxHeight: "80vh"
+                        maxHeight: { sm: "80vh" }
                     }
                 }
+            }}
+            slots={{
+                transition: Transition
             }}
         >
             <DialogTitle align="center" variant="h4" fontWeight={600}>
@@ -186,7 +194,7 @@ const SupplierProductForm = ({
                     component="form"
                     onSubmit={handleSubmit(handleFormSubmit)} mt={2}
                 >
-                    <Stack display="flex" flexDirection="row" gap={1} mb={1}>
+                    <Stack display="flex" gap={1} mb={1} sx={{ flexDirection: { xs: "column", sm: "row" } }}>
                         {supplierProduct ? (<TextField
                             label="商品名"
                             value={supplierProduct?.productName ?? ""}
@@ -207,7 +215,6 @@ const SupplierProductForm = ({
                             }}
                         />
                         ) : (
-
                             <Controller
                                 name="productId"
                                 control={control}
@@ -223,7 +230,6 @@ const SupplierProductForm = ({
                                         acc[product.categoryName].push(product);
                                         return acc;
                                     }, {});
-
 
                                     const productOptions = [...Object.values(groupedProducts).flat(), createOption];
                                     return (
@@ -258,13 +264,16 @@ const SupplierProductForm = ({
                                                 }
 
                                             }}
-                                            renderOption={(props, option) => (
-                                                <li {...props}>
-                                                    <Box sx={{ pl: 2 }}>
-                                                        {option.productName}
-                                                    </Box>
-                                                </li>
-                                            )}
+                                            renderOption={(props, option) => {
+                                                const { key, ...rest } = props;
+                                                return (
+                                                    <li key={key}{...rest}>
+                                                        <Box sx={{ pl: 2 }}>
+                                                            {option.productName}
+                                                        </Box>
+                                                    </li>
+                                                )
+                                            }}
                                             renderInput={(params) => (
                                                 <TextField
                                                     {...params}
@@ -340,7 +349,7 @@ const SupplierProductForm = ({
                         />
 
                     </Stack>
-                    <Stack display="flex" flexDirection="row" gap={1} mb={1}>
+                    <Stack display="flex" gap={1} mb={1} sx={{ flexDirection: { xs: "column", sm: "row" } }}>
                         <Stack display="flex" flexDirection="row" gap={1} mb={1} sx={{ flex: 2 }}>
                             <Controller
                                 name="supplierSku"

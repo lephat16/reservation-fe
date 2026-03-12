@@ -9,9 +9,10 @@ import FileInput from "./FileInput";
 import type { CategoryFormData } from "../types/category";
 import { STATUS } from "../../../constants/status";
 import { StyledSelectTextField } from "../../../shared/components/global/select/StyledSelectTextField";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 
 /**
- * カテゴリー作成・編集用フォームモーダル
+ * カテゴリ作成・編集用フォームモーダル
  *
  * Props:
  * - open: モーダル開閉フラグ
@@ -35,6 +36,7 @@ const CategoryForm = ({
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+    const { isSM } = useScreen();
 
     const schema = yup.object({
         name: yup
@@ -105,23 +107,36 @@ const CategoryForm = ({
                 }
                 onClose();
             }}
-            maxWidth="sm"
-            fullWidth
+            maxWidth="md"
+            fullScreen={isSM}
             slotProps={{
-                paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: 2, p: 2 } }
+                paper: {
+                    sx: {
+                        backgroundColor: colors.greenAccent[900],
+                        borderRadius: !isSM ? 2 : "none",
+                        p: !isSM ? 2 : "none",
+                    }
+                }
             }}
         >
-            <DialogTitle fontSize={20} textAlign="center">カテゴリーを作成</DialogTitle>
+            <DialogTitle
+                sx={{
+                    fontSize: { xs: 16, sm: 20 },
+                    pb: { xs: 0, sm: 1 }
+                }}
+                textAlign="center">
+                カテゴリを作成
+            </DialogTitle>
             <DialogContent>
                 <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} mt={2}>
-                    {/* カテゴリー名 */}
+                    {/* カテゴリ名 */}
                     <Controller
                         name="name"
                         control={control}
                         render={({ field }) => (
                             <TextField
                                 {...field}
-                                label="カテゴリー名"
+                                label="カテゴリ名"
                                 variant="outlined"
                                 fullWidth
                                 error={!!errors.name}

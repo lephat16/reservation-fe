@@ -61,6 +61,9 @@ export const tokens = (mode: 'light' | 'dark') => ({
         800: "#2a2d64",
         900: "#151632",
       },
+      gridHeader: {
+        100: "#141b2d"
+      }
     }
     : {
       grey: {
@@ -118,6 +121,9 @@ export const tokens = (mode: 'light' | 'dark') => ({
         800: "#c3c6fd",
         900: "#e1e2fe",
       },
+      gridHeader: {
+        100: "#fcfcfc"
+      }
     }),
 });
 

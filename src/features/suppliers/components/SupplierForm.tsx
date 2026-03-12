@@ -17,6 +17,7 @@ import { Controller, useForm } from "react-hook-form";
 import type { SupplierData } from "../types/supplier";
 import { STATUS } from "../../../constants/status";
 import { StyledSelectTextField } from "../../../shared/components/global/select/StyledSelectTextField";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 
 /** 
  * 仕入先情報フォームコンポーネント
@@ -45,7 +46,7 @@ const SupplierForm = ({
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-
+    const { isSM } = useScreen();
     const schema = useMemo(() => yup.object({
         name: yup
             .string()
@@ -123,8 +124,9 @@ const SupplierForm = ({
             }}
             maxWidth="sm"
             fullWidth
+            fullScreen={isSM}
             slotProps={{
-                paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: 2, px: 2, pt: 2 } }
+                paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: { sm: 2 }, px: 2, pt: 2 } }
             }}
         >
             <DialogTitle fontSize={20} textAlign="center">

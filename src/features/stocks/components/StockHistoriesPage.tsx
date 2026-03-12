@@ -24,12 +24,12 @@ import Header from "../../../shared/components/layout/Header";
 import { tokens } from "../../../shared/theme";
 import type { StockHistoriesWithDetailData } from "../types/stock";
 import { useQuery } from "@tanstack/react-query";
-import { type GridColDef, type GridRowParams } from "@mui/x-data-grid";
+import { DataGrid, type GridColDef, type GridRowParams } from "@mui/x-data-grid";
 import { jaJP } from '@mui/x-data-grid/locales';
 import { useMemo, useState } from "react";
 import ErrorState from "../../../shared/components/messages/ErrorState";
 import { stockAPI } from "../api/stockAPI";
-import { StyledDataGrid } from "../../../shared/components/global/StyledDataGrid";
+import { styledDataGrid, } from "../../../shared/styles/StyledDataGrid";
 import { useScreen } from "../../../shared/hooks/ScreenContext";
 import { green, red } from "@mui/material/colors";
 
@@ -235,7 +235,7 @@ const StockHistoriesPage = () => {
                 {isLoading ? (
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
-                    <StyledDataGrid
+                    <DataGrid
                         rows={rows}
                         columns={columns}
                         localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
@@ -243,10 +243,17 @@ const StockHistoriesPage = () => {
                             setSelectedRow(params.row);
                             setOpen(true);
                         }}
-                        mode={theme.palette.mode}
+                        sx={{
+                            ...styledDataGrid(colors, {
+                                rowHoverBg:
+                                    theme.palette.mode === "dark"
+                                        ? colors.primary[500]
+                                        : colors.grey[900],
+                            }),
+                        }}
                     />
                 )}
-                 {/* 詳細ダイアログ */}
+                {/* 詳細ダイアログ */}
                 <Dialog
                     open={open}
                     onClose={handleClose}

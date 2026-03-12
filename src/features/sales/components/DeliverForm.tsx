@@ -18,7 +18,7 @@ import { tokens } from '../../../shared/theme';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Header from '../../../shared/components/layout/Header';
-import { type GridColDef } from '@mui/x-data-grid';
+import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import CheckIcon from '@mui/icons-material/Check';
 import { ReceiveFormDialog } from '../../purchases/components/ReceiveForm';
@@ -29,7 +29,7 @@ import type { DeliverStockItem, } from '../../stocks/types/stock';
 import { stockAPI } from '../../stocks/api/stockAPI';
 import { useSaleOrderDetail } from '../hooks/useSaleOrderDetail';
 import { useInventoryHistoryBySaleOrder } from '../../stocks/hooks/useInventoryHistoryBySaleOrder';
-import { StyledDataGrid } from '../../../shared/components/global/StyledDataGrid';
+import { styledDataGrid, } from '../../../shared/styles/StyledDataGrid';
 import useRoleFlags from '../../auth/hooks/useRoleFlags';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import { useSnackbar } from '../../../shared/hooks/SnackbarContext';
@@ -225,7 +225,7 @@ const DeliverForm = () => {
                 {isLoadingStock ? (
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
-                    <StyledDataGrid
+                    <DataGrid
                         rows={rows}
                         columns={columns}
                         initialState={{
@@ -239,7 +239,14 @@ const DeliverForm = () => {
                         pageSizeOptions={[5]}
                         disableRowSelectionOnClick
                         autoHeight
-                        mode={theme.palette.mode}
+                        sx={{
+                            ...styledDataGrid(colors, {
+                                rowHoverBg:
+                                    theme.palette.mode === "dark"
+                                        ? colors.primary[500]
+                                        : colors.grey[900],
+                            }),
+                        }}
                     />
                 )}
                 {/* 受領フォームダイアログ */}

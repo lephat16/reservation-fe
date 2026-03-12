@@ -44,6 +44,7 @@ import ProductForm from "../../products/components/ProductForm";
 import { useAddProduct } from "../../products/hooks/useAddProduct";
 import { useCategorySummaries } from "../../categories/hooks/useCategorySummaries";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { getCommonMenuProps } from "../../../shared/components/global/select/SelectHelper";
 
 /** 
  * 仕入先ページコンポーネント
@@ -226,26 +227,14 @@ const SupplierPage = () => {
                                 <Box
                                     display="flex"
                                     justifyContent="space-between"
-                                    flexDirection={{ md: 'row', xs: 'column' }}
+                                    flexDirection={{ md: 'row' }}
                                 >
-                                    <Box display="flex" flexDirection="row" justifyContent="space-between">
-                                        <SupplierDetailCard
-                                            supplier={data?.supplier}
-                                            openDeleteDialog={() => handleDelete()}
-                                            openEditDialog={() => setOpenEditSupplierForm(true)}
-                                        />
-                                        {isSM && <Box>
-                                            <Tooltip title="元に戻す">
-                                                <IconButton aria-label="元に戻す" color='info' onClick={() => {
-                                                    navigate("/suppliers")
-                                                }}>
-                                                    <ArrowBackIcon fontSize="large" />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </Box>}
-                                    </Box>
-
-                                    <SupplierStatCard purchaseOrder={dataPO} />
+                                    <SupplierDetailCard
+                                        supplier={data?.supplier}
+                                        openDeleteDialog={() => handleDelete()}
+                                        openEditDialog={() => setOpenEditSupplierForm(true)}
+                                    />
+                                    {!isSM && <SupplierStatCard purchaseOrder={dataPO} />}
                                 </Box>
                                 {(!isSM && data.supplierProducts.length < 4) ? (
                                     <Stack
@@ -300,25 +289,19 @@ const SupplierPage = () => {
                                                 mb: 2
                                             }}
                                         >
-                                            <InputLabel id="select-category-label">カテゴリー</InputLabel>
+                                            <InputLabel id="select-category-label">カテゴリ</InputLabel>
                                             <Select
                                                 labelId="select-category-label"
                                                 id="select-category"
-                                                value={selectedCategoryId}
-                                                label="カテゴリー"
+                                                value={selectedCategoryId || ""}
+                                                label="カテゴリ"
                                                 sx={styledSelect}
-                                                MenuProps={{
-                                                    PaperProps: {
-                                                        sx: {
-                                                            backgroundColor: colors.primary[600],
-                                                            color: colors.grey[100],
-                                                            minWidth: 200,
-                                                            boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                                        }
-                                                    }
-                                                }}
+                                                MenuProps={getCommonMenuProps({
+                                                    backgroundColor: colors.blueAccent[800],
+                                                    color: colors.grey[100],
+                                                })}
                                                 onChange={(e) => {
-                                                    const value = e.target.value ? e.target.value : null;
+                                                    const value = e.target.value;
                                                     setSelectedCategoryId(Number(value));
                                                 }}
                                             >
@@ -327,7 +310,6 @@ const SupplierPage = () => {
                                                         {sp.categoryName}
                                                     </MenuItem>
                                                 ))}
-
                                             </Select>
                                         </FormControl>
                                         <Tooltip title="追加">

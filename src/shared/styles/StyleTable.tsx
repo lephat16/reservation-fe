@@ -23,6 +23,7 @@ export const styledTable = (
     },
     '& .MuiTableHead-root .MuiTableCell-root': {
         backgroundColor: options?.headerBg ?? colors.blueAccent[700],
+        padding: options?.cellPadding ?? "8px 16px",
         color: colors.grey[100],
         fontWeight: 600,
     },

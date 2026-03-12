@@ -40,8 +40,8 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
                 sx={{
                     backgroundColor: colors.primary[400],
                     color: colors.grey[200],
-                    width: { lg: 160, md: 100, sm: 160, xs: 90 },
-                    height: { md: 178, xs: 80 },
+                    width: { lg: 160, md: 100, xs: 90 },
+                    height: { md: 130, },
                 }}
             >
                 <CardContent
@@ -51,20 +51,18 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
                         height: "100%",
                         justifyContent: "space-between",
                         placeItems: "center",
-                        padding: {
-                            xs: 0,
-                            md: 2
-                        }
+                        padding: { xs: 1, md: 2 },
+                        "&:last-child": { pb: 1 }
                     }}
                 >
                     <CreditScoreIcon
                         sx={{
-                            display: { xs: "none", md: "inline-block" },
                             fontSize: {
                                 lg: '3rem',
                                 xs: "2rem"
                             }
                         }}
+                        color="warning"
                     />
                     <Typography
                         component="div"
@@ -75,6 +73,7 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
                             },
                             fontWeight: 'bold',
                         }}
+                        color="secondary"
                     >
                         {purchaseOrder.length}
                     </Typography>
@@ -91,8 +90,8 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
                 sx={{
                     backgroundColor: colors.primary[400],
                     color: colors.grey[200],
-                    width: { lg: 160, md: 100, sm: 160, xs: 90 },
-                    height: { md: 178, xs: 80 },
+                    width: { lg: 160, md: 100, xs: 90 },
+                    height: { md: 130, },
                 }}
             >
                 <CardContent
@@ -102,20 +101,18 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
                         height: "100%",
                         justifyContent: "space-between",
                         placeItems: "center",
-                        padding: {
-                            xs: 0,
-                            md: 2
-                        }
+                        padding: { xs: 1, md: 2 },
+                        "&:last-child": { pb: 1 }
                     }}
                 >
                     <HourglassBottomIcon
                         sx={{
-                            display: { xs: "none", md: "inline-block" },
                             fontSize: {
                                 lg: '3rem',
                                 xs: "2rem"
                             }
                         }}
+                        color="warning"
                     />
                     <Typography
                         component="div"
@@ -126,6 +123,7 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
                             },
                             fontWeight: 'bold',
                         }}
+                        color="secondary"
                     >
                         {purchaseOrder.filter(po => po.status === "PENDING").length}
                     </Typography>
@@ -142,8 +140,8 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
                 sx={{
                     backgroundColor: colors.primary[400],
                     color: colors.grey[200],
-                    width: { lg: 160, md: 100, sm: 160, xs: 120 },
-                    height: { md: 178, xs: 80 },
+                    width: { lg: 160, md: 100, sm: 120, xs: 120 },
+                    height: { md: 130, },
                 }}
             >
                 <CardContent
@@ -153,21 +151,18 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
                         height: "100%",
                         justifyContent: "space-between",
                         placeItems: "center",
-                        padding: {
-                            xs: 0,
-                            md: 2
-                        }
+                        padding: { xs: 1, md: 2 },
+                        "&:last-child": { pb: 1 }
                     }}
                 >
-
                     <PaidIcon
                         sx={{
-                            display: { xs: "none", md: "inline-block" },
                             fontSize: {
                                 lg: '3rem',
                                 xs: "2rem"
                             }
                         }}
+                        color="warning"
                     />
                     <Typography
                         component="div"
@@ -181,6 +176,7 @@ const SupplierStatCard = ({ purchaseOrder }: SupplierStatCardProps) => {
                                 xs: 3
                             }
                         }}
+                        color="secondary"
                     >
                         ¥{purchaseOrder.reduce((total, po) => total + po.total, 0).toLocaleString()}
                     </Typography>

@@ -9,6 +9,7 @@ import { tokens } from '../../../shared/theme';
 import type { CategoryData, CategorySummariesData } from '../../categories/types/category';
 import { StyledSelectTextField } from '../../../shared/components/global/select/StyledSelectTextField';
 import { STATUS } from '../../../constants/status';
+import { useScreen } from '../../../shared/hooks/ScreenContext';
 
 /** 
  * 商品フォームコンポーネント
@@ -44,6 +45,7 @@ const ProductForm = ({
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+    const { isSM } = useScreen();
 
     const getCategoryName = (cat: CategoryData | CategorySummariesData) =>
         "categoryName" in cat ? cat.categoryName : cat.name;
@@ -121,12 +123,13 @@ const ProductForm = ({
                 onClose();
             }}
             maxWidth="sm"
+            fullScreen={isSM}
             fullWidth
             slotProps={{
-                paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: 2, p: 2 } }
+                paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: { sm: 2 }, p: 2 } }
             }}
         >
-            <DialogTitle fontSize={20} textAlign="center">商品を追加</DialogTitle>
+            <DialogTitle fontSize={20} textAlign="center">{`商品を${product ? '編集' : '追加'}`}</DialogTitle>
             <DialogContent>
                 {/** フォーム全体 */}
                 <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} mt={2}>
@@ -185,7 +188,7 @@ const ProductForm = ({
                         />
                     </Stack>
 
-                    {/** カテゴリーと単位を横並びで入力 */}
+                    {/** カテゴリと単位を横並びで入力 */}
                     <Stack direction="row" gap={3}>
                         <Controller
                             name="categoryName"
@@ -194,7 +197,7 @@ const ProductForm = ({
                                 <StyledSelectTextField
                                     select
                                     {...field}
-                                    label="カテゴリー"
+                                    label="カテゴリ"
                                     variant="outlined"
                                     fullWidth
                                     error={!!errors.categoryName}

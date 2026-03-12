@@ -73,13 +73,14 @@ type PurchaseOrder = {
 
 
 // ステータスに応じたChipを表示する関数
-export const renderStatusChip = (status: keyof typeof ORDER_STATUS) => {
+export const renderStatusChip = (
+    status: keyof typeof ORDER_STATUS,
+    width: number = 100   // default 100
+) => {
     return <Chip
         label={ORDER_STATUS[status].label}
         color={ORDER_STATUS[status].color}
-        sx={{
-            width: 100
-        }}
+        sx={{ width }}
     />;
 };
 

@@ -7,11 +7,13 @@ import {
   Stack,
   Tooltip,
   Typography,
+  useTheme,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import type { SupplierData } from '../types/supplier';
 import { STATUS } from '../../../constants/status';
+import { orange, red } from '@mui/material/colors';
 
 /** 
  * サプライヤー詳細カードコンポーネント
@@ -33,7 +35,7 @@ const SupplierDetailCard: React.FC<SupplierDetailCardProps> = ({
   openDeleteDialog,
   openEditDialog,
 }) => {
-
+  const theme = useTheme();
   return (
     <Box sx={{ m: 2 }}>
       <Typography
@@ -64,7 +66,7 @@ const SupplierDetailCard: React.FC<SupplierDetailCardProps> = ({
             size="small"
             sx={{
               '&:hover': {
-                color: "red",
+                color: theme.alpha(red[700], 1),
               },
             }}
             onClick={openDeleteDialog}
@@ -78,7 +80,7 @@ const SupplierDetailCard: React.FC<SupplierDetailCardProps> = ({
             size="small"
             sx={{
               '&:hover': {
-                color: "orange",
+                color: theme.alpha(orange[700], 1),
               },
             }}
             onClick={openEditDialog}

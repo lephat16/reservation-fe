@@ -44,6 +44,11 @@ const SessionTable = ({
                         ...styledTable(colors, {
                             rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
                         }),
+                        '& .MuiTableCell-root': {
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                        },
                     }}
                 >
                     <colgroup>

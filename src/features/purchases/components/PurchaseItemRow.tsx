@@ -97,7 +97,7 @@ export const PurchaseItemRow = ({
             ) : productData?.length === 0 ? (
                 <Typography color="warning" ml={1}>選択可能な商品はありません</Typography>
             ) : (
-                <FormControl sx={{ m: 1, minWidth: 340 }}>
+                <FormControl sx={{ m: 1, minWidth: { xs: 290, sm: 340 } }}>
                     <InputLabel
                         id={`controlled-open-select-products-label-${i}`}
                         sx={{
@@ -146,10 +146,10 @@ export const PurchaseItemRow = ({
                     m={1}
                     p={2}
                     key={row.product?.id}
-                    width="340px"
                     sx={{
                         borderColor: colors.grey[400],
-                        position: "relative"
+                        position: "relative",
+                        width: { xs: 290, sm: 340 }
                     }}
                 >
                     {/* 削除ボタン */}

@@ -17,6 +17,7 @@ import type { WarehouseFormData } from "../types/stock";
 import { useEffect } from "react";
 import { STATUS } from "../../../constants/status";
 import { StyledSelectTextField } from "../../../shared/components/global/select/StyledSelectTextField";
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 
 /**
  * 倉庫作成・編集フォーム
@@ -44,6 +45,7 @@ const WarehouseForm = ({
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+    const { isSM } = useScreen();
 
     const schema = yup.object().shape({
         name: yup.string().required("倉庫名は必須です").min(3, "倉庫名は3文字以上で入力してください"),
@@ -88,12 +90,12 @@ const WarehouseForm = ({
                 onClose();
             }}
             maxWidth="sm"
-            fullWidth
+            fullScreen={isSM}
             slotProps={{
-                paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: 2, p: 2 } }
+                paper: { sx: { backgroundColor: colors.greenAccent[900], borderRadius: { sm: 2 }, p: 2 } }
             }}
         >
-            <DialogTitle fontSize={20} textAlign="center">倉庫を作成</DialogTitle>
+            <DialogTitle fontSize={20} textAlign="center">{`倉庫を${warehouse ? '編集' : '作成'}`}</DialogTitle>
             <DialogContent>
                 <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} mt={2}>
                     {/* 倉庫名の入力フィールド */}
@@ -183,7 +185,6 @@ const WarehouseForm = ({
                         >
                             キャンセル
                         </Button>
-
                     </Stack>
                 </Box>
             </DialogContent>

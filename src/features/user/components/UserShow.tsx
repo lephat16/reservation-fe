@@ -50,32 +50,32 @@ const UserShow = ({
             <Grid container spacing={2} sx={{ width: '100%' }}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                     <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[900] }}>
-                        <Typography fontSize="1.2rem">ID</Typography>
-                        <Typography fontSize="1.5rem" sx={{ mb: 1 }}>{user.userId}</Typography>
+                        <Typography sx={{ fontSize: { sm: "1.2rem" } }}>ID</Typography>
+                        <Typography sx={{ mb: 1, fontSize: { sm: "1.2rem" } }}>{user.userId}</Typography>
                     </Paper>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                     <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[900] }}>
-                        <Typography fontSize="1.2rem">名前</Typography>
-                        <Typography fontSize="1.5rem" sx={{ mb: 1 }}>{user.name}</Typography>
+                        <Typography sx={{ fontSize: { sm: "1.2rem" } }}>名前</Typography>
+                        <Typography sx={{ mb: 1, fontSize: { sm: "1.2rem" } }}>{user.name}</Typography>
                     </Paper>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                     <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[900] }}>
-                        <Typography fontSize="1.2rem">メールアドレス</Typography>
-                        <Typography fontSize="1.5rem" sx={{ mb: 1 }}>{user.email}</Typography>
+                        <Typography sx={{ fontSize: { sm: "1.2rem" } }}>メールアドレス</Typography>
+                        <Typography sx={{ mb: 1, fontSize: { sm: "1.2rem" } }}>{user.email}</Typography>
                     </Paper>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                     <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[900] }}>
-                        <Typography fontSize="1.2rem">電話番号</Typography>
-                        <Typography fontSize="1.5rem" sx={{ mb: 1 }}>{user.phoneNumber}</Typography>
+                        <Typography sx={{ fontSize: { sm: "1.2rem" } }}>電話番号</Typography>
+                        <Typography sx={{ mb: 1, fontSize: { sm: "1.2rem" } }}>{user.phoneNumber}</Typography>
                     </Paper>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                     <Paper sx={{ px: 2, py: 1, backgroundColor: colors.primary[900] }}>
-                        <Typography fontSize="1.2rem">役割</Typography>
-                        <Typography fontSize="1.5rem" sx={{ mb: 1 }}>{ROLES[user.role].label}</Typography>
+                        <Typography sx={{ fontSize: { sm: "1.2rem" } }}>役割</Typography>
+                        <Typography sx={{ mb: 1, fontSize: { sm: "1.2rem" } }}>{ROLES[user.role].label}</Typography>
                     </Paper>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
@@ -91,8 +91,8 @@ const UserShow = ({
                         }}
                         onClick={onShowSessionTable}
                     >
-                        <Typography fontSize="1.2rem">セッション管理</Typography>
-                        <Typography fontSize="1.5rem" sx={{ mb: 1 }} display="flex" alignItems="center">
+                        <Typography sx={{ fontSize: { sm: "1.2rem" } }}>セッション管理</Typography>
+                        <Typography sx={{ mb: 1, fontSize: { sm: "1.2rem" } }} display="flex" alignItems="center">
                             {session?.filter(ss => ss.status === SESSION_STATUS.ACTIVE.value).length ?? 0}
                             <Chip
                                 label={SESSION_STATUS.ACTIVE.label}

@@ -3,24 +3,32 @@ import {
     IconButton,
     Stack,
     Tooltip,
-    Typography
+    Typography,
+    useTheme
 } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { STATUS } from "../../../constants/status";
 import type { WarehousesData } from "../types/stock";
+import { green, orange, red } from "@mui/material/colors";
+import AddLocationIcon from '@mui/icons-material/AddLocation';
+import { useScreen } from "../../../shared/hooks/ScreenContext";
 
 type WarehouseInfoProps = {
-    warehouse: WarehousesData | undefined
-    onDelete: () => void
-    onEdit: () => void
+    warehouse: WarehousesData | undefined;
+    onDelete: () => void;
+    onEdit: () => void;
+    onAdd: () => void;
 }
 const WarehouseInfo = ({
     warehouse,
     onDelete,
     onEdit,
+    onAdd
 }: WarehouseInfoProps) => {
 
+    const theme = useTheme();
+    const { isXL } = useScreen();
     const statusInfo =
         STATUS[warehouse?.status as keyof typeof STATUS] ?? {
             label: "不明",
@@ -44,7 +52,7 @@ const WarehouseInfo = ({
                         size="small"
                         sx={{
                             '&:hover': {
-                                color: "red",
+                                color: theme.alpha(red[700], 1),
                             },
                         }}
                         onClick={onDelete}
@@ -58,7 +66,7 @@ const WarehouseInfo = ({
                         size="small"
                         sx={{
                             '&:hover': {
-                                color: "orange",
+                                color: theme.alpha(orange[700], 1),
                             },
                         }}
                         onClick={onEdit}
@@ -66,6 +74,19 @@ const WarehouseInfo = ({
                         <EditIcon fontSize="inherit" />
                     </IconButton>
                 </Tooltip>
+                {isXL && <Tooltip title="登録">
+                    <IconButton
+                        aria-label="create"
+                        size="small"
+                        sx={{
+                            '&:hover': {
+                                color: theme.alpha(green[700], 1),
+                            },
+                        }}
+                        onClick={onAdd}>
+                        <AddLocationIcon fontSize="inherit" />
+                    </IconButton>
+                </Tooltip>}
             </Stack>
         </Stack>
     )

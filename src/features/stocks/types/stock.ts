@@ -6,7 +6,7 @@ export interface ProductStockData {
     id: string;
     name: string;
     productCode: string;
-    status: string;
+    status: keyof typeof STATUS;
     unit: string;
 }
 export interface SupplierProductStockData {

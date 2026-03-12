@@ -36,4 +36,7 @@ export const supplierAPI = {
     deleteSupplier: async (supplierId: number): Promise<ApiResponse<void>> => {
         return (await api.delete(`/suppliers/${supplierId}/delete-sup`));
     },
+    deleteSupplierProductBySku: async (sku: string): Promise<ApiResponse<void>> => {
+        return (await api.delete(`/sup-product/${sku}/delete-sp`));
+    },
 }

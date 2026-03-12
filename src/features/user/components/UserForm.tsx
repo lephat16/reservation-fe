@@ -107,7 +107,6 @@ const UserForm = ({
             onSubmit={handleSubmit(handleFormSubmit)}
             noValidate
             autoComplete="off"
-            // onReset={handleReset}
             sx={{
                 width: '100%',
             }}
@@ -202,7 +201,10 @@ const UserForm = ({
                                     fullWidth
                                     error={!!errors.role}
                                     helperText={errors.role ? errors.role.message : ' '}
-                                    bgColor={theme.alpha(blueGrey[900], 1)}
+                                    bgColor={theme.palette.mode === "dark" ?
+                                        theme.alpha(blueGrey[900], 1) :
+                                        theme.alpha(blueGrey[100], 1)
+                                    }
                                     inputFontSize='1.5rem'
                                     labelFontSize='1.2rem'
                                 >

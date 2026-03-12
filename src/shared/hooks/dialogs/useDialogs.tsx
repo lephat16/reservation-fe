@@ -45,6 +45,7 @@ export function DeleteConfirmDialog({
                     sx: { backgroundColor: colors.blueAccent[700] }
                 }
             }}
+            disableRestoreFocus
         >
             <DialogTitle
                 sx={{

@@ -2,6 +2,7 @@ import {
     Box,
     Button,
     Checkbox,
+    Chip,
     Collapse,
     Divider,
     Drawer,
@@ -59,6 +60,7 @@ import { useAddProduct } from "./hooks/useAddProduct";
 import { getCommonSlotProps } from "../../shared/components/pagination/TablePaginationHelper";
 import { getCommonMenuProps } from "../../shared/components/global/select/SelectHelper";
 import { STATUS } from "../../constants/status";
+import { green, red } from "@mui/material/colors";
 
 /**
  * 在庫テーブルの1行コンポーネント
@@ -89,14 +91,11 @@ type InventoryByProduct = {
 
 export type Order = 'asc' | 'desc';
 
-type Status = 'ACTIVE' | 'INACTIVE' | "";
-
-
 function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockData) => void; }) {
 
+    const theme = useTheme();
     const { row, onDelete } = props;
     const { isMD } = useScreen(); // 画面サイズ判定
-
     const [open, setOpen] = useState(false); // Collapseの開閉状態
 
     const navigate = useNavigate();
@@ -131,7 +130,14 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                         <span>{row.product.name}</span>
                     </Tooltip>
                 </TableCell>}
-                <TableCell>{row.product.status}</TableCell>
+                <TableCell>
+                    <Chip
+                        label={STATUS[row.product.status].label}
+                        color={STATUS[row.product.status].color}
+                        size="small"
+                        variant="filled"
+                    />
+                </TableCell>
                 <TableCell>{row.totalQuantity}</TableCell>
                 {!isMD && <TableCell>{row.product.categoryName}</TableCell>}
                 <TableCell>
@@ -142,7 +148,7 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                                 size="small"
                                 sx={{
                                     '&:hover': {
-                                        color: "green",
+                                        color: theme.alpha(green[700], 1),
                                     },
                                 }}
                                 onClick={() => navigate(`/products/${row.product.id}`)}
@@ -156,7 +162,7 @@ function Row(props: { row: InventoryByProduct, onDelete: (product: ProductStockD
                                 size="small"
                                 sx={{
                                     '&:hover': {
-                                        color: "red",
+                                        color: theme.alpha(red[700], 1),
                                     },
                                 }}
                                 onClick={() => {
@@ -237,13 +243,13 @@ const AllProductsPage = () => {
     // フィルターや選択状態のstate
     const [categoryNames, setCategoryNames] = useState<string[]>([]);
     const [selectedQty, setSelectedQty] = useState<number | "">("");
-    const [selectedStatus, setSelectedStatus] = useState<Status>("");
+    const [selectedStatus, setSelectedStatus] = useState<keyof typeof STATUS | "">("");
     const [searchText, setSearchText] = useState<string>("");
 
     // フィルター用の一時state（Drawerでのキャンセル操作対応）
     const [tempCategoryNames, setTempCategoryNames] = useState<string[]>([]);
     const [tempQty, setTempQty] = useState<number | "">("");
-    const [tempStatus, setTempStatus] = useState<Status>("");
+    const [tempStatus, setTempStatus] = useState<keyof typeof STATUS | "">("");
 
     // スナックバー表示用カスタムフック
     const { showSnackbar } = useSnackbar();
@@ -489,7 +495,7 @@ const AllProductsPage = () => {
                             // 大画面はインラインでフィルター表示
                             <Stack direction="row" gap={1}>
 
-                                {/** カテゴリー選択 */}
+                                {/** カテゴリ選択 */}
                                 <FormControl sx={{ m: 1, ml: 0, width: { lg: 150, xs: 120 } }}>
                                     <InputLabel
                                         id="multiple-categories-label"
@@ -500,7 +506,7 @@ const AllProductsPage = () => {
                                             },
                                         }}
                                     >
-                                        カテゴリー
+                                        カテゴリ
                                     </InputLabel>
                                     <Select
                                         labelId="multiple-categories-label"
@@ -508,7 +514,7 @@ const AllProductsPage = () => {
                                         multiple
                                         value={categoryNames}
                                         onChange={handleChangeCategories}
-                                        input={<OutlinedInput label="カテゴリー" />}
+                                        input={<OutlinedInput label="カテゴリ" />}
                                         renderValue={(selected) => selected.join(', ')}
                                         sx={styledSelect}
                                         MenuProps={getCommonMenuProps({
@@ -656,7 +662,7 @@ const AllProductsPage = () => {
                                 </Box>
                                 <Divider sx={{ my: 1 }} />
 
-                                {/** Drawer 内のカテゴリー、在庫数、ステータスフィルター */}
+                                {/** Drawer 内のカテゴリ、在庫数、ステータスフィルター */}
                                 <FormControl sx={{ mt: 2 }}>
                                     <InputLabel
                                         sx={{
@@ -666,7 +672,7 @@ const AllProductsPage = () => {
                                             },
                                         }}
                                     >
-                                        カテゴリー
+                                        カテゴリ
                                     </InputLabel>
                                     <Select
                                         multiple
@@ -684,7 +690,7 @@ const AllProductsPage = () => {
 
                                             setTempCategoryNames(values);
                                         }}
-                                        input={<OutlinedInput label="カテゴリー" />}
+                                        input={<OutlinedInput label="カテゴリ" />}
                                         renderValue={(selected) => selected.join(', ')}
                                         MenuProps={getCommonMenuProps({
                                             backgroundColor: colors.primary[600],
@@ -767,7 +773,7 @@ const AllProductsPage = () => {
                                         onClick={() => {
                                             setCategoryNames(tempCategoryNames);
                                             setSelectedQty(tempQty);
-                                            setSelectedStatus(tempStatus as Status);
+                                            setSelectedStatus(tempStatus);
                                             setOpenFilterDrawer(false);
                                         }}
                                     >
@@ -858,7 +864,7 @@ const AllProductsPage = () => {
                                                 在庫数
                                             </TableSortLabel>
                                         </TableCell>
-                                        {!isMD && <TableCell>カテゴリー</TableCell>}
+                                        {!isMD && <TableCell>カテゴリ</TableCell>}
                                         <TableCell></TableCell>
                                     </TableRow>
                                 </TableHead>

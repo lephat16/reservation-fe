@@ -1,6 +1,20 @@
-import { GridActionsCell, GridActionsCellItem, type GridColDef, type GridRenderCellParams, type GridRowId } from "@mui/x-data-grid";
+import {
+    DataGrid,
+    GridActionsCell,
+    GridActionsCellItem,
+    type GridColDef,
+    type GridRenderCellParams,
+    type GridRowId
+} from "@mui/x-data-grid";
 import type { CategorySummariesData } from "./types/category";
-import { Box, Chip, IconButton, Skeleton, Tooltip, useTheme } from "@mui/material";
+import {
+    Box,
+    Chip,
+    IconButton,
+    Skeleton,
+    Tooltip,
+    useTheme
+} from "@mui/material";
 import Header from "../../shared/components/layout/Header";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { jaJP } from '@mui/x-data-grid/locales';
@@ -15,11 +29,13 @@ import { categoryAPI } from "./api/categoryAPI";
 import { useCategorySummaries } from "./hooks/useCategorySummaries";
 import CategoryForm from "./components/CategoryForm";
 import { useDeleteCategory } from "./hooks/useDeleteCategory";
-import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 import { STATUS } from "../../constants/status";
+import { useScreen } from "../../shared/hooks/ScreenContext";
+import { styledDataGrid } from "../../shared/styles/StyledDataGrid";
+import { tokens } from "../../shared/theme";
 
 interface ActionHandlers {
     deleteCategory: (id: GridRowId) => void;
@@ -55,7 +71,7 @@ const columns: GridColDef<CategorySummariesData>[] = [
     {
         field: "id",
         headerName: "ID",
-        flex: 0.2
+        flex: 0.5
     },
     {
         field: "categoryName",
@@ -99,8 +115,10 @@ const columns: GridColDef<CategorySummariesData>[] = [
 const CategoriesPage = () => {
 
     const theme = useTheme();
+    const colors = tokens(theme.palette.mode);
     const navigate = useNavigate();
     const { showSnackbar } = useSnackbar();
+    const { isSM, } = useScreen();
 
     const queryClient = useQueryClient();
     const { confirmDelete } = useDialogs();
@@ -132,7 +150,7 @@ const CategoriesPage = () => {
     // 削除処理
     const handleDelete = async (category: CategorySummariesData) => {
         const ok = await confirmDelete(
-            `カテゴリー「${category.categoryName}」を削除しますか？`
+            `カテゴリ「${category.categoryName}」を削除しますか？`
         );
         if (ok) {
             deleteMutation.mutate(category.id || 0);
@@ -156,6 +174,11 @@ const CategoriesPage = () => {
         }),
         [deleteCategory, seeMoreCategory],
     );
+
+    const displayColumns = isSM ? columns
+        .filter((c: GridColDef) => ["id", "categoryName", "status", "action"]
+            .includes(c.field)) :
+        columns;
     return (
         <Box mx={3} mb={3}>
             {/* ヘッダーと追加ボタン */}
@@ -191,13 +214,21 @@ const CategoriesPage = () => {
                 ) : (
                     <ActionHandlersContext.Provider value={actionHandlers}>
 
-                        <StyledDataGrid<CategorySummariesData>
+                        <DataGrid<CategorySummariesData>
                             rows={data ?? []}
-                            columns={columns}
+                            columns={displayColumns}
                             localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
                             loading={isLoading}
                             showToolbar
-                            mode={theme.palette.mode}
+                            sx={{
+                                ...styledDataGrid(colors, {
+                                    rowHoverBg:
+                                        theme.palette.mode === "dark"
+                                            ? colors.primary[500]
+                                            : colors.grey[900],
+                                }),
+                            }}
+                            columnHeaderHeight={40}
                         />
                     </ActionHandlersContext.Provider>
                 )}

@@ -1,7 +1,6 @@
 import {
     Box,
     Button,
-    Chip,
     Divider,
     Drawer,
     FormControl,
@@ -56,6 +55,7 @@ import WarehouseStats from "./components/WarehouseStats";
 import WarehouseInfo from "./components/WarehouseInfo";
 import CloseIcon from '@mui/icons-material/Close';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import { getCommonMenuProps } from "../../shared/components/global/select/SelectHelper";
 
 
 
@@ -307,13 +307,14 @@ const WarehousePage = () => {
                             justifyContent="space-between"
                         >
                             <Stack
-                             gap={2}
-                             flex={isSM ? 1 : ""}
-                             >
+                                gap={2}
+                                flex={isSM ? 1 : ""}
+                            >
                                 <WarehouseInfo
                                     warehouse={selectedWarehouse}
                                     onDelete={handleDelete}
                                     onEdit={() => setOpenEditWarehouseForm(true)}
+                                    onAdd={() => setOpenCreateWarehouseForm(true)}
                                 />
                                 {isLoadingWH ? (
                                     <Skeleton variant="rectangular" height={150} />
@@ -424,16 +425,10 @@ const WarehousePage = () => {
                                                             }}
                                                             input={<OutlinedInput label="倉庫" />}
                                                             sx={styledSelect}
-                                                            MenuProps={{
-                                                                PaperProps: {
-                                                                    sx: {
-                                                                        backgroundColor: colors.blueAccent[800],
-                                                                        color: colors.grey[100],
-                                                                        minWidth: 200,
-                                                                        boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                                                                    }
-                                                                }
-                                                            }}
+                                                            MenuProps={getCommonMenuProps({
+                                                                backgroundColor: colors.primary[600],
+                                                                color: colors.grey[100],
+                                                            })}
                                                         >
 
                                                             {dataWH?.map((wh) => (
@@ -548,11 +543,11 @@ const WarehousePage = () => {
                                         },
                                     }}>
                                     <colgroup>
-                                        <col style={{ width: "40%" }} />
+                                        <col style={{ width: isSM ? "35%" : "40%" }} />
                                         <col style={{ width: "15%" }} />
                                         <col style={{ width: "15%" }} />
                                         <col style={{ width: "15%" }} />
-                                        <col style={{ width: "15%" }} />
+                                        <col style={{ width: isSM ? "20%" : "15%" }} />
                                     </colgroup>
                                     <TableHead>
                                         <TableRow>
@@ -615,6 +610,11 @@ const WarehousePage = () => {
                                                         const isAsc = orderBy === 'available' && order === 'asc';
                                                         setOrder(isAsc ? 'desc' : 'asc');
                                                         setOrderBy('available');
+                                                    }}
+                                                    sx={{
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        display: 'block',
                                                     }}
                                                 >
                                                     出荷可能数

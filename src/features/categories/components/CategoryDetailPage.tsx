@@ -42,11 +42,12 @@ import { getErrorMessage } from "../../../shared/utils/errorHandler";
 import { useDialogs } from "../../../shared/hooks/dialogs/useDialogs";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useScreen } from "../../../shared/hooks/ScreenContext";
+import { orange, red } from "@mui/material/colors";
 /**
- * カテゴリー詳細ページ
+ * カテゴリ詳細ページ
  *
- * 指定カテゴリーの情報、関連商品の在庫情報、仕入先情報を表示。
- * カテゴリー編集・削除操作も可能。
+ * 指定カテゴリの情報、関連商品の在庫情報、仕入先情報を表示。
+ * カテゴリ編集・削除操作も可能。
  */
 
 interface ProductRowProps {
@@ -74,14 +75,9 @@ function ProductRow({ product }: ProductRowProps) {
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
                 </TableCell>
-
                 <TableCell>{product.productName}</TableCell>
-
-                <TableCell>
-                    {product.suppliers.length} 件
-                </TableCell>
-
-                <TableCell sx={{ borderBottom: 'none' }} align="right">{totalStock}</TableCell>
+                <TableCell>{product.suppliers.length} 件</TableCell>
+                <TableCell align="right">{totalStock}</TableCell>
             </TableRow>
 
             {/* 展開行：仕入先・在庫詳細 */}
@@ -156,7 +152,7 @@ function ProductRow({ product }: ProductRowProps) {
 }
 
 /**
- * カテゴリー詳細ページ
+ * カテゴリ詳細ページ
  */
 const CategoryDetailPage = () => {
 
@@ -174,7 +170,7 @@ const CategoryDetailPage = () => {
 
     const [showMore, setShowMore] = useState(false);
 
-    // カテゴリー情報取得カスタムフック
+    // カテゴリ情報取得カスタムフック
     const { isLoading, error, data } = useInfoCategory(Number(categoryId));
 
     const categoryImageUrl = data?.categoryInfo.imageUrl
@@ -183,7 +179,7 @@ const CategoryDetailPage = () => {
             : data.categoryInfo.imageUrl
         : import.meta.env.VITE_DEFAULT_CATEGORY_IMG;
 
-    // カテゴリー更新用Mutation
+    // カテゴリ更新用Mutation
     const updateMutation = useMutation({
         mutationFn: async ({ id, data }: { id: number; data: FormData }) => {
             return categoryAPI.updateCategory(id, data);
@@ -197,7 +193,7 @@ const CategoryDetailPage = () => {
         }
     });
 
-    // カテゴリー削除処理
+    // カテゴリ削除処理
     const deleteMutation = useDeleteCategory(showSnackbar);
     const handleDelete = async (category: CategoryData) => {
         const ok = await confirmDelete(
@@ -233,10 +229,10 @@ const CategoryDetailPage = () => {
                 ) : (
                     <Header
                         title={`カテゴリ: ${data?.categorySummary?.categoryName ?? ""}`}
-                        subtitle={`仕入先: ${getAllSuppliers(data?.categorySummary?.products)}`}
+                        subtitle={!isMD ? `仕入先: ${getAllSuppliers(data?.categorySummary?.products)}` : undefined}
                     />
                 )}
-                <Box>
+                {!isMD && <Box>
                     <Tooltip title="元に戻す">
                         <IconButton aria-label="元に戻す" color='info' onClick={() => {
                             navigate("/category");
@@ -244,7 +240,7 @@ const CategoryDetailPage = () => {
                             <ArrowBackIcon fontSize="large" />
                         </IconButton>
                     </Tooltip>
-                </Box>
+                </Box>}
             </Box>
             <Box minHeight="75vh">
 
@@ -253,7 +249,7 @@ const CategoryDetailPage = () => {
                     <ErrorState />
                 )}
 
-                {/* カテゴリー情報表示 */}
+                {/* カテゴリ情報表示 */}
                 {data && (
                     <>
                         {isLoading ? (
@@ -268,7 +264,7 @@ const CategoryDetailPage = () => {
                                     overflow: 'hidden',
                                 }}>
 
-                                {/* カテゴリー情報 */}
+                                {/* カテゴリ情報 */}
                                 <Box
                                     sx={{
                                         display: 'flex',
@@ -298,7 +294,7 @@ const CategoryDetailPage = () => {
                                                     size="small"
                                                     sx={{
                                                         '&:hover': {
-                                                            color: "red",
+                                                            color: theme.alpha(red[700], 1),
                                                         },
                                                     }}
                                                     onClick={() => {
@@ -316,7 +312,7 @@ const CategoryDetailPage = () => {
                                                     size="small"
                                                     sx={{
                                                         '&:hover': {
-                                                            color: "orange",
+                                                           color: theme.alpha(orange[700], 1),
                                                         },
                                                     }}
                                                     onClick={() => {
@@ -356,7 +352,7 @@ const CategoryDetailPage = () => {
                                     </CardContent>
                                 </Box>
 
-                                {/* カテゴリー画像 */}
+                                {/* カテゴリ画像 */}
                                 <CardMedia
                                     component="img"
                                     sx={{ width: 180, height: 180, objectFit: 'cover' }}
@@ -377,6 +373,11 @@ const CategoryDetailPage = () => {
                                         ...styledTable(colors, {
                                             rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
                                         }),
+                                        '& .MuiTableCell-root': {
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                        },
                                     }}
                                 >
                                     <TableHead>
@@ -411,7 +412,7 @@ const CategoryDetailPage = () => {
 
                 )}
 
-                {/* カテゴリー編集フォーム */}
+                {/* カテゴリ編集フォーム */}
                 {openEditCategoryForm && (
                     <CategoryForm
                         open

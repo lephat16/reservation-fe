@@ -1,4 +1,15 @@
-import { Avatar, Badge, Box, Divider, IconButton, ListItemIcon, Menu, MenuItem, Typography, useTheme } from "@mui/material";
+import {
+  Avatar,
+  Badge,
+  Box,
+  Divider,
+  IconButton,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Typography,
+  useTheme
+} from "@mui/material";
 import { useContext, useState } from "react";
 import { ColorModeContext, tokens } from "../../theme";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
@@ -54,7 +65,7 @@ const today = new Date();
 today.setHours(0, 0, 0, 0);
 
 const weekStart = new Date();
-weekStart.setDate(today.getDate() - today.getDay() + 1); // Monday
+weekStart.setDate(today.getDate() - today.getDay() + 1); //月曜
 weekStart.setHours(0, 0, 0, 0);
 
 const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -306,7 +317,7 @@ const Topbar = ({ onSidebarClick }: TopbarProps) => {
           <Avatar />マイアカウント
         </MenuItem>
         <Divider />
-        <MenuItem onClick={handleAcountClose}>
+        <MenuItem onClick={() => navigate("/users")} selected={isActive("/users")}>
           <ListItemIcon>
             <PersonAdd fontSize="small" />
           </ListItemIcon>

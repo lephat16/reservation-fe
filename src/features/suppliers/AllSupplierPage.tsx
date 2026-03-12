@@ -19,7 +19,7 @@ import {
 import { createContext, useContext, useMemo, useState } from "react";
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
-import { type GridValueGetter } from "@mui/x-data-grid";
+import { DataGrid, type GridValueGetter } from "@mui/x-data-grid";
 import { jaJP } from "@mui/x-data-grid/locales";
 import { useNavigate } from "react-router-dom";
 import SupplierForm from "./components/SupplierForm";
@@ -28,12 +28,14 @@ import ErrorState from "../../shared/components/messages/ErrorState";
 import { SNACKBAR_MESSAGES } from "../../constants/message";
 import { supplierAPI } from "./api/supplierAPI";
 import { useAllSuppliers } from "./hooks/useAllSuppliers";
-import { StyledDataGrid } from "../../shared/components/global/StyledDataGrid";
-import { useScreen } from "../../shared/hooks/ScreenContext";
+import { styledDataGrid } from "../../shared/styles/StyledDataGrid";
 import { getErrorMessage } from "../../shared/utils/errorHandler";
 import { useSnackbar } from "../../shared/hooks/SnackbarContext";
 import { useDialogs } from "../../shared/hooks/dialogs/useDialogs";
 import { STATUS } from "../../constants/status";
+import { useScreen } from "../../shared/hooks/ScreenContext";
+import { tokens } from "../../shared/theme";
+import { blue, red } from "@mui/material/colors";
 
 /** 
  * 仕入先一覧ページコンポーネント
@@ -52,20 +54,36 @@ const ActionHandlersContext = createContext<ActionHandlers>({
     seeMoreSupplier: () => { },
 });
 function ActionsCell(props: GridRenderCellParams) {
+    const theme = useTheme();
     const { deleteSupplier, seeMoreSupplier } =
         useContext(ActionHandlersContext);
 
     return (
         <GridActionsCell {...props}>
             <GridActionsCellItem
-                icon={<DeleteIcon />}
+                icon={<DeleteIcon
+                    sx={{
+                        '&:hover': {
+                            color: theme.alpha(red[700], 1),
+                        },
+                    }}
+                />}
                 label="削除"
                 onClick={() => deleteSupplier(props.id)}
+                size="small"
+
             />
             <GridActionsCellItem
-                icon={<InfoIcon />}
+                icon={<InfoIcon
+                    sx={{
+                        '&:hover': {
+                            color: theme.alpha(blue[700], 1),
+                        },
+                    }}
+                />}
                 label="詳細"
                 onClick={() => seeMoreSupplier(props.id)}
+                size="small"
             />
         </GridActionsCell>
     );
@@ -75,27 +93,27 @@ const columns: GridColDef<SupplierData>[] = [
     {
         field: "id",
         headerName: "ID",
-        flex: 0.2
+        flex: 0.5
     },
     {
         field: "name",
-        headerName: "カテゴリ名",
+        headerName: "仕入先名",
         flex: 1
     },
     {
         field: "contactInfo",
-        headerName: "商品",
+        headerName: "電話番号",
         flex: 1,
     },
     {
         field: "address",
-        headerName: "仕入先",
+        headerName: "住所",
         flex: 1,
     },
     {
         field: "categoryNames",
-        headerName: "カテゴリー数",
-        flex: 1,
+        headerName: "カテゴリ数",
+        flex: 0.8,
         valueGetter: ((_, row) => {
             const categories = row.categoryNames;
             if (!categories) return 0;
@@ -106,7 +124,7 @@ const columns: GridColDef<SupplierData>[] = [
     {
         field: "supplierStatus",
         headerName: "ステータス",
-        flex: 1,
+        flex: 0.8,
         renderCell: (params) => {
             const value = params.value as string;
 
@@ -132,7 +150,9 @@ const columns: GridColDef<SupplierData>[] = [
 const AllSupplierPage = () => {
 
     const theme = useTheme();
+    const colors = tokens(theme.palette.mode);
     const queryClient = useQueryClient();
+    const { isSM } = useScreen();
 
     const navigate = useNavigate();
     const { showSnackbar } = useSnackbar();
@@ -186,6 +206,11 @@ const AllSupplierPage = () => {
         }),
         [deleteSupplier, seeMoreSupplier],
     );
+
+    const displayColumns = isSM ? columns
+        .filter((c: GridColDef) => ["id", "name", "supplierStatus", "address", "action"]
+            .includes(c.field)) :
+        columns;
     return (
         <Box mx={3} mb={3}>
             <Box display="flex" justifyContent="space-between">
@@ -217,9 +242,9 @@ const AllSupplierPage = () => {
                     {isLoading ? (
                         <Skeleton variant="rectangular" height={400} />
                     ) : (
-                        <StyledDataGrid<SupplierData>
+                        <DataGrid<SupplierData>
                             rows={data ?? []}
-                            columns={columns}
+                            columns={displayColumns}
                             localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
                             loading={isLoading}
                             showToolbar
@@ -231,8 +256,14 @@ const AllSupplierPage = () => {
                                 },
                             }}
                             pageSizeOptions={[10]}
-                            mode={theme.palette.mode}
-                        />
+                            sx={{
+                                ...styledDataGrid(colors, {
+                                    rowHoverBg:
+                                        theme.palette.mode === "dark"
+                                            ? colors.primary[500]
+                                            : colors.grey[900],
+                                }),
+                            }} />
                     )}
                 </ActionHandlersContext.Provider>
 

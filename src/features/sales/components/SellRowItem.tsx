@@ -37,7 +37,7 @@ import { getCommonMenuProps } from "../../../shared/components/global/select/Sel
 /**
  * 商品詳細カードコンポーネント
  *
- * 販売注文作成ページ内で使用される、商品のカテゴリー・商品名・SKU・数量・単価・合計・備考を表示するカードコンポーネントです。
+ * 販売注文作成ページ内で使用される、商品のカテゴリ・商品名・SKU・数量・単価・合計・備考を表示するカードコンポーネントです。
  * 在庫情報や引当済み数量も表示され、数量や単価の変更、備考入力が可能です。
  * また行の削除や追加ボタンも提供します。
  */
@@ -92,7 +92,7 @@ const SellRowItem = ({
             width={374}
             position="relative"
         >
-            {/* カテゴリー選択 */}
+            {/* カテゴリ選択 */}
             <FormControl
                 fullWidth
                 sx={{ mb: 2 }}
@@ -106,11 +106,11 @@ const SellRowItem = ({
                         },
                     }}
                 >
-                    カテゴリー
+                    カテゴリ
                 </InputLabel>
                 <Select
                     value={categoryId ?? ""}
-                    label="カテゴリー"
+                    label="カテゴリ"
                     disabled={!customerName.trim()}
                     onChange={(e) =>
                         onUpdate(index, {

@@ -58,7 +58,7 @@ const sellRowSchema = yup.object({
     category: yup.object({
         id: yup.number().required(),
         categoryName: yup.string().required(),
-    }).nullable().required("カテゴリーを選択してください").noUnknown(true),
+    }).nullable().required("カテゴリを選択してください").noUnknown(true),
     productId: yup.number().nullable().required("商品を選択してください"),
     sku: yup.string().nullable().required("SKUを選択してください"),
     qty: yup
@@ -108,7 +108,7 @@ const CreateSellPage = () => {
     const [rows, setRows] = useState<SellRow[]>([defaultItem]);
     const [dialogMode, setDialogMode] = useState<DialogMode>("save");
 
-    // カテゴリー一覧データ取得
+    // カテゴリ一覧データ取得
     const { isLoading, error, data: categories = [] } = useCategorySummaries();
 
     // 指定行を更新
@@ -343,7 +343,7 @@ const CreateSellPage = () => {
                             required
                             label="顧客名"
                             sx={{
-                                minWidth: 340,
+                                minWidth: { xs: 277, sm: 340},
                                 m: 1,
                                 ...descriptionTextField
                             }}

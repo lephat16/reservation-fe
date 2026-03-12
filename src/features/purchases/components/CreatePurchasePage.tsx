@@ -28,10 +28,10 @@ import { useSupplierProductsWithLeadTime } from '../../suppliers/hooks/useSuppli
 import { PurchaseItemRow } from './PurchaseItemRow';
 import { PurchaseConfirmDialog } from './PurchaseConfirmDialog';
 import { styledSelect } from '../../../shared/components/global/select/styledSelect';
-import { useScreen } from '../../../shared/hooks/ScreenContext';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { ORDER_TYPE } from '../../../constants/order';
 import { useQueryClient } from '@tanstack/react-query';
+import { useScreen } from '../../../shared/hooks/ScreenContext';
 /**
  * CreatePurchasePage コンポーネント
  *
@@ -54,11 +54,10 @@ const CreatePurchasePage = () => {
     //フック
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    const { isSM } = useScreen();
     const location = useLocation();
     const { showSnackbar } = useSnackbar();  // スナックバー管理用カスタムフック
     const { preselectedSupplierId, preselectedSku } = location.state || {};
-
+    const { isSM } = useScreen();
     const queryClient = useQueryClient(); // React Queryのクライアント取得
     const navigate = useNavigate(); // ページ遷移用
     // ステート管理
@@ -136,7 +135,7 @@ const CreatePurchasePage = () => {
 
         return {
             supplierId: selectedSupplier.id ?? 0,
-            description: "",
+            description,
             details: rows
                 .filter(row => row.product !== null)
                 .map(row => ({
@@ -267,7 +266,7 @@ const CreatePurchasePage = () => {
                         subtitle="新しい発注の詳細を入力してください"
                     />
                 )}
-                <Box mt={4}>
+                {!isSM && <Box mt={4}>
                     <Tooltip title="元に戻す">
                         <IconButton aria-label="元に戻す" color='info' onClick={() => {
                             window.history.back()
@@ -275,9 +274,9 @@ const CreatePurchasePage = () => {
                             <ArrowBackIcon fontSize="large" />
                         </IconButton>
                     </Tooltip>
-                </Box>
+                </Box>}
             </Box>
-            <Box mt={3} minHeight="75vh">
+            <Box minHeight="75vh" >
                 {/* エラー表示 */}
                 {(error) && (
                     <ErrorState />
@@ -287,15 +286,15 @@ const CreatePurchasePage = () => {
                 {isLoading ? (
                     <Skeleton variant="rectangular" height={400} />
                 ) : (
-                    <Box m={1}>
+                    <Box sx={{ my: { sm: 1 }, mx: 1 }}>
                         <Button
-                            sx={{ display: 'block', mt: 2, ml: 1 }}
+                            sx={{ display: 'block', ml: 1 }}
                             color="secondary"
                             onClick={handleOpenSelectSupplier}
                         >
                             仕入先を選択
                         </Button>
-                        <FormControl sx={{ m: 1, minWidth: 340 }}>
+                        <FormControl sx={{ m: 1, minWidth: { xs: 290, sm: 340 } }}>
                             <InputLabel
                                 id="controlled-open-select-suppliers-label"
                                 sx={{

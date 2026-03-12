@@ -88,16 +88,21 @@ const UsersTable = ({
                             ...styledTable(colors, {
                                 rowHoverBg: theme.palette.mode === 'dark' ? colors.primary[500] : colors.grey[900],
                             }),
+                            '& .MuiTableCell-root': {
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                            },
                         }}
                     >
                         <colgroup>
                             <col style={{ width: "15%" }} />
                             <col style={{ width: "15%" }} />
-                            {!isMD && <col style={{ width: "25%" }} />}
+                            {!isMD && <col style={{ width: "20%" }} />}
                             {!isMD && <col style={{ width: "15%" }} />}
                             <col style={{ width: "15%" }} />
-                            {!isMD && <col style={{ width: "15%" }} />}
-                            <col style={{ width: "15%" }} />
+                            {!isMD && <col style={{ width: "10%" }} />}
+                            <col style={{ width: "12%" }} />
                         </colgroup>
                         <TableHead>
                             <TableRow>
@@ -180,7 +185,7 @@ const UsersTable = ({
                                     {!isMD && <TableCell>{user.phoneNumber}</TableCell>}
                                     <TableCell>{ROLES[user.role].label}</TableCell>
                                     {!isMD && <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>}
-                                    <TableCell>
+                                    <TableCell align="left">
                                         <Stack direction="row">
                                             <Tooltip title="詳細">
                                                 <IconButton
